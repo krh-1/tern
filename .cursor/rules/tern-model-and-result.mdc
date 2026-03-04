@@ -1,0 +1,16 @@
+---
+description: Tern — no archetypes, fixed five axes, code threshold
+alwaysApply: true
+---
+
+# Tern: Model and Result
+
+**No named archetypes.** Do not add `archetypes.js`, profile type names, or archetype names anywhere. Result = five-letter code + radar chart + distinction paragraph (and report UI: summary + axis breakdown).
+
+**Five axes (Ethics) are fixed:** O/R, C/I, H/T, L/P, S/D. Do not add, remove, or reorder. Code is five letters in that order.
+
+**Letter assignment:** Normalized score ≥ 5.0 → high-pole letter; &lt; 5.0 → low-pole letter. Threshold is 5.0. No weighted or fuzzy logic.
+
+**Core question set:** Fixed and universal. Same questions, same order, for every user. No randomization or personalization of core set. Personalization only in the depth graph.
+
+**Two phases:** Phase 1 (core) produces the code. Phase 2 (depth graph) produces the distinction. Do not merge phases. Phase transition is invisible in the UI.

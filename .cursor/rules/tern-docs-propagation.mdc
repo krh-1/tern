@@ -1,0 +1,17 @@
+---
+description: Tern — when to update which docs and propagate changes
+globs: docs/**/*.md, cursor.md, AGENTS.md, README.md
+alwaysApply: false
+---
+
+# Tern: Docs Propagation
+
+When changing behavior or content, update docs in the same session:
+
+- **Scoring/axes/convergence/distinction logic** → `docs/SCORING.md` (and golden tests if nudges change).
+- **Question text, assumptions, nudges, triggers** → `docs/QUESTIONS.md`; validate no-noise and axis coverage.
+- **Visuals, animations, copy principles** → `docs/DESIGN.md` first.
+- **Architecture, state, illustration loading** → `docs/ARCHITECTURE.md`.
+- **Terminology (e.g. distinction report vs core analytic components)** → keep README, ARCHITECTURE, DESIGN, VISION, SCORING, SIMULATIONS aligned.
+
+After any spec change: grep for stale IDs/constants (e.g. question IDs, `conflictAvoidant` logic). Append session learnings to `AGENTS.md` before ending.

@@ -1,0 +1,15 @@
+---
+description: Tern — data layer: questions and depth graph as single source of truth
+globs: src/data/**/*.js
+alwaysApply: false
+---
+
+# Tern: Data Layer
+
+**Single source of truth:** Core content lives in `src/data/questions.js`; depth nodes in `src/data/depthGraph.js`. Do not hardcode question text, nudges, follow-up triggers, or illustration filenames in components or engine.
+
+**questions.js:** Core question schema includes `id`, `title`, `illustration`, `setup`, `assumptions`, `question`, `phase: 'core'`, `answers` (with `id`, `text`, `nudges`), optional `followUp` (trigger, illustration, weight, same answer shape). Nudge keys: O, C, H, L, S; positive = first pole, negative = second.
+
+**depthGraph.js:** Node schema includes `probesAxes`, `probeTension`, `isClarifying`; same answer/nudge shape. No archetypes file.
+
+**Axis keys:** O/R, C/I, H/T, L/P, S/D. Use these in all nudge definitions.

@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+*.local
+
+# Env
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+*.swp
+*.swo

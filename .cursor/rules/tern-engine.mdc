@@ -1,0 +1,15 @@
+---
+description: Tern — engine is domain-agnostic
+globs: src/engine/**/*.js
+alwaysApply: false
+---
+
+# Tern: Engine Layer
+
+**Domain-agnostic:** `scoring.js` and `branching.js` must not know which domain is active. No hardcoded axis names, letter sets, or domain-specific logic. Domain config (axes, normalization ranges, letter assignment) is supplied by the caller or data layer.
+
+**scoring.js:** Accepts answer history and phase; returns axis scores, code, confidence, and (in phase 2) distinction outputs. Letter = high pole if normalized score ≥ 5.0, else low pole.
+
+**branching.js:** Core sequencing and depth-graph routing. `getNextCore`, `getNextDepth`, `detectInconsistency`. Clarifying questions are queued, not re-asking; surface with "Something came up that we want to explore."
+
+**Conflict avoidance:** Detect via Q5 trunk passive + Q5 follow-up active when permitted; flag in specialPatterns and feed distinction. Not an axis.

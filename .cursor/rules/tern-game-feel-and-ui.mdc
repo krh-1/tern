@@ -1,0 +1,15 @@
+---
+description: Tern — game-feel, no progress numbers, animation order
+globs: src/components/**/*.jsx, src/components/**/*.tsx, src/styles/**/*
+alwaysApply: false
+---
+
+# Tern: Game-Feel and UI
+
+**Game-feel:** Evaluate decisions by: does this feel like something you're moving through, or does it flatten that? No loading states (use illustration preloading). No progress numbers or step counts—ever. Code letters reveal one at a time, left to right (~300ms per letter, ~200ms pause). Phase transitions use slower timing (600ms out, 1000ms in); question transitions 400ms/800ms.
+
+**Follow-up transition (critical):** Illustration fades out → new illustration fades in → then question text updates. Never update text and image at once. Image leads.
+
+**Components:** Display only. State and sequencing live in `useAssessment` and engine. No routing—render by phase in `App.jsx`.
+
+**Design system:** Use `docs/DESIGN.md` for typography, colors (CSS vars like `--color-accent`), component specs, animation tokens. Dark background; accent used sparingly.

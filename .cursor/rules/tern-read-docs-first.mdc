@@ -1,0 +1,22 @@
+---
+description: Tern — read docs before coding and keep docs in sync
+alwaysApply: true
+---
+
+# Tern: Read Docs First
+
+Before writing any code, read in order:
+1. `docs/ARCHITECTURE.md` — system structure, two-phase model, data schemas
+2. `docs/SCORING.md` — five axes, code generation, distinction logic
+3. `docs/DESIGN.md` — visual system, screen states, animation specs
+4. `AGENTS.md` — patterns and gotchas from prior sessions
+
+If modifying questions, depth graph, or follow-up logic: also read `docs/QUESTIONS.md`.
+
+**Doc sync (non-negotiable):**
+- Scoring/axis/convergence/distinction changes → update `docs/SCORING.md` before merging.
+- Question wording, nudges, or triggers → update `docs/QUESTIONS.md`.
+- Visual or animation changes → update `docs/DESIGN.md` first.
+- After every session → append learnings to `AGENTS.md`.
+
+No routing. State-driven rendering only. No backend in V1.

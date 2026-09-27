@@ -30,11 +30,12 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Action:** When adjusting scoring, bias follow-up answers more heavily. See `docs/SCORING.md` for weights and rationale.
 
 ### 2026-02 — Illustration Swap Must Precede Text Update
+> **Still binding (2026-09):** applies unchanged to the code-drawn scenes inside the question card — the scene changes first, then the text.
 **Context:** Designing the follow-up transition animation.
 **Discovery:** The follow-up illustration swap is the most important interaction in the app. The image must change *before* the question text changes — this is what makes the follow-up feel like a real contextual shift. Getting this order wrong flattens the emotional impact entirely.
 **Action:** Always sequence: illustration fade out → illustration fade in → question text update. Never update text and image simultaneously. See `docs/DESIGN.md` section 8.
 
-### 2026-02 — No Progress Numbers, Ever
+### 2026-02 — No Progress Numbers, Ever [AMENDED 2026-09 — unlock closeness shown as dots (●●○○); still no question counts or percentages]
 **Context:** Designing the progress indicator.
 **Discovery:** Showing "Question 4 of 11" turns the experience into a test. Users start rushing rather than sitting with questions. The quiet progress bar with no numbers is a deliberate product decision.
 **Action:** Do not add question numbers, step counts, or percentage text anywhere in the UI. Non-negotiable.
@@ -49,12 +50,12 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Discovery:** Question wording, answer phrasing, and follow-up triggers directly affect scoring validity. Small wording changes can shift which axis a question measures or make one answer obviously correct, invalidating the question.
 **Action:** Never hardcode question content in components. Never change question wording without reviewing axis nudge validity and updating `docs/QUESTIONS.md`.
 
-### 2026-02 — Two-Phase Assessment Model Is Architectural
+### 2026-02 — Two-Phase Assessment Model Is Architectural [SUPERSEDED 2026-09-27 — replaced by the Progression Model (worlds + unlock ladder), docs/PLAN-progression.md]
 **Context:** Designing the adaptive assessment experience.
 **Discovery:** The assessment runs in two distinct phases: a fixed core set (same for all users) producing the code, followed by an adaptive depth graph (personalized per axis confidence) producing the distinction. Collapsing these loses both social value and analytical precision.
 **Action:** Do not merge the two phases. Do not make the core set adaptive. See `docs/ARCHITECTURE.md`, `docs/SCORING.md`, `docs/VISION.md`.
 
-### 2026-02 — Core Set Must Stay Fixed for Social Reasons
+### 2026-02 — Core Set Must Stay Fixed for Social Reasons [AMENDED 2026-09 — same 12 for everyone, but any order (free roam)]
 **Context:** Considering whether to personalize question order or selection.
 **Discovery:** The core set's social value depends entirely on every user having seen the same questions. If users get different questions, they can't compare notes or recognize shared experiences. This shared reference layer is a core product value.
 **Action:** Never randomize, personalize, or adapt the core question set. Personalization only happens in the depth graph.
@@ -69,7 +70,7 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Discovery:** Seven axes produce 128 letter combinations — too many to be memorable or socially useful. Five axes produce 32 combinations: enough variety to feel specific, few enough to be memorable. The reduction collapsed A+F into O/R (both measuring consequentialist vs. deontological reasoning) and absorbed E (Proximity) into L/P (closeness to people is a form of loyalty). The five-axis model retains all meaningful philosophical dimensions.
 **Action:** The Ethics domain has exactly five axes: O/R, C/I, H/T, L/P, S/D. Do not add axes. Do not re-expand to seven. Any new domain should also aim for 4–6 axes maximum. See `docs/SCORING.md`.
 
-### 2026-02 — No Named Archetypes
+### 2026-02 — No Named Archetypes [AMENDED 2026-09 — plain "You…" headline phrases now allowed; see "Progression Model Rulings"]
 **Context:** Simplifying the result model.
 **Discovery:** Named foundation archetypes ("The Pragmatic Rebel") add an interpretive layer that pre-digests the result for the user rather than letting them engage with it. The five-letter code becomes meaningful through use and conversation — like MBTI, the letters carry the identity. A pre-interpreted name is slightly paternalistic and adds a taxonomy that has to be maintained and that drifts toward kitsch.
 **Action:** Do not introduce named archetypes, an `archetypes.js` file, or foundation profile types. The result is the code + radar chart + distinction paragraph. If future agents suggest adding named archetypes, refer them to this entry.
@@ -84,7 +85,7 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Discovery:** The distinction needed to do two things: show magnitude (which the code alone doesn't convey) and surface what's specific and interesting about this particular profile. A radar chart handles magnitude visually. A generated paragraph handles specificity in language. Together they're stronger than either alone. The paragraph must feel like something a perceptive person observed — not a template, not a summary, not flattering.
 **Action:** The distinction always has both components. Do not ship a distinction with only a radar chart or only a paragraph. The paragraph is generated from axis scores + depth path, and must follow the result copy principles in `docs/DESIGN.md` Section 3.
 
-### 2026-02 — Game-Feel Is a Design Principle, Not a Feature
+### 2026-02 — Game-Feel Is a Design Principle, Not a Feature [AMENDED 2026-09 — unlocks allowed; still no points/badges/streaks]
 **Context:** Articulating what makes Tern engaging beyond its content.
 **Discovery:** Tern should feel like a game — not gamified (no points, badges, streaks) but genuinely engaging through intrinsic design: pacing, anticipation, satisfying reveals, the sense of building toward something. This quality is structural — it comes from question design, transition timing, and reveal choreography — and can be destroyed by adding friction, clinical language, loading states, or treating result screens as information pages rather than moments.
 **Action:** Evaluate every implementation decision against game-feel: does this make the experience feel more like something you're moving through, or does it flatten that quality? Protect the letter reveal animation, the illustration swap sequencing, the phase transition pacing, and the absence of progress numbers. See `docs/DESIGN.md` Section 1 and `docs/VISION.md` — Game Feel.
@@ -94,7 +95,8 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Discovery:** Phase transition screens — convergence offer, code reveal, distinction reveal — are fundamentally different from question screens. They are destinations, not steps. They require slower, more deliberate animation (800ms out, 1000ms in vs. 400ms/800ms for questions) and staggered text elements that feel like arriving somewhere rather than navigating to a page.
 **Action:** Always use the phase transition animation timings for non-question screens. Never use the question transition timings for arrival screens. See `docs/DESIGN.md` section 8 — Phase Transitions.
 
-### 2026-02 — Depth Illustration Preloading Timing
+### 2026-02 — Depth Illustration Preloading Timing [SUPERSEDED]
+> **Superseded 2026-09:** scenes are now drawn in code (`docs/DESIGN.md` §0), so there are no illustration files to preload. Kept for history.
 **Context:** Designing illustration loading for the two-phase model.
 **Discovery:** Core illustrations can be preloaded on init. Depth illustrations cannot all be preloaded on init — we don't know which axes will be lowest-confidence until the core set runs. Preloading all depth illustrations regardless would be a large unnecessary payload.
 **Action:** Preload core illustrations on init. After the code is determined, preload depth illustrations for nodes whose probesAxes include the lowest-confidence axes. See `docs/ARCHITECTURE.md` — Illustration Loading.
@@ -142,3 +144,55 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Context:** User requested deep repo read, feedback, and Cursor rules based on conventions.
 **Discovery:** The repo is documentation-only (no `src/` in this snapshot). All product and technical constraints live in cursor.md, ARCHITECTURE, SCORING, DESIGN, QUESTIONS, AGENTS. Rules can be split into: read-docs-first + model (always apply), data layer, engine, game-feel/UI, and docs propagation (file-scoped).
 **Action:** Use `.cursor/rules/` for Tern-specific guidance: `tern-read-docs-first.mdc` and `tern-model-and-result.mdc` are alwaysApply; `tern-data-layer.mdc`, `tern-engine.mdc`, `tern-game-feel-and-ui.mdc`, `tern-docs-propagation.mdc` use globs. When adding new constraints, consider adding or updating a rule so Cursor applies them in the right context.
+
+### 2026-03 — Gemini API Illustration Generation in Build Flow [SUPERSEDED]
+> **Superseded 2026-09:** Ken chose code-drawn, ink-on-paper scenes (`docs/DESIGN.md` §0). The Gemini/Imagen pipeline is on hold; don't extend it or add manifest entries. Kept for history.
+**Context:** User asked for a fully agentic workflow using an API to create all images as part of the build flow.
+**Discovery:** The Gemini API (Imagen) offers text-to-image with configurable aspect ratio. DESIGN.md already defines a single prompt template (editorial, ink sketch, sepia) plus per-scene description; QUESTIONS.md has an "Illustration:" line for every core (and follow-up) scene. A manifest + Node script can drive generation without new dependencies; the agent can maintain the manifest and run `--dry-run`; only the user or CI runs the script with GEMINI_API_KEY to produce files.
+**Action:** Illustrations are generated by `scripts/illustrations/generate.js` reading `scripts/illustrations/manifest.json`. Add new questions/follow-ups to the manifest when adding content. Prefer running generation as an explicit step (`npm run generate:illustrations`) rather than every build, to avoid unnecessary API cost. See `docs/ILLUSTRATION-GENERATION.md`.
+
+### 2026-09 — Avatars Must Not Prime Answers
+**Context:** Prototyping a character-select screen for an explorable-park version of Tern (`prototypes/trolley-walk.html`).
+**Discovery:** Character blurbs ("Goes one way, then the other", "Knows a little about everything") and symbolic props give the user an identity to perform. Someone who picks a character described as principled may answer the dilemmas the way that character "would", which contaminates axis scoring the same way leading question wording does.
+**Action:** Avatars carry a name and a look only — no descriptions, traits, stats, or "carries" lines. Keep designs and names abstract (no objects or words that suggest a value or temperament). Treat anything shown before or during the core set as part of the assessment instrument.
+
+### 2026-09 — Question Bank Expansion and the Escape-Answer Pattern
+**Context:** Massive expansion of the Ethics question set: 62 drafts, two independent judge-agent passes, plus balance gap-fillers → 57 candidates in `docs/QUESTION-BANK.md` (draft, not canonical). Verdict trail in `docs/question-bank-wip/`.
+**Discovery:** The most common quality failure is the *escape answer* — a compromise option ("split it", "defer to experts", "only if they ask", "I can't share the details") that lets people step around the dilemma and would win most votes. Both judges found it repeatedly, including in the existing Q/D set. Second most common: follow-ups that fire for people who can't change their answer, so the follow-up reveals nothing.
+**Action:** Before adding any question, remove escape answers or attach a real cost to them, and fire each follow-up only for answers that could plausibly flip. Use a separate skeptic judge agent for content passes — the second judge caught escapes the first judge let through. Bank questions have no nudges yet; they move into `QUESTIONS.md` only after Ken ratifies them.
+
+### 2026-09 — No Escape Answers; Questions Must Be Hard (Ken's Ruling)
+**Context:** Ken reviewed the question-bank expansion and ruled on the escape-answer pattern.
+**Discovery:** Ken: "definitely no escape answers — I want the questions to be challenging to answer," and they must be "interesting, thought provoking, and revealing to the reader." A third judge pass under this bar fixed 49 of 79 questions — including many that two earlier judges had passed — so each judge pass tends to be too lenient.
+**Action:** Binding rule, now in the `docs/QUESTIONS.md` validation checklist: no compromise / "do both" / "handle it later" / defer-to-others options; a middle option survives only with its own real cost. A thoughtful person must hesitate; if ~80% would answer the same way in seconds, sharpen or cut. Give follow-ups to *both* sides where possible so every answer faces pressure. The existing Q1–Q11 and D1–D12 were revised to this bar on 2026-09-27; scoring ranges and `docs/SIMULATIONS.md` traces are stale until recomputed.
+
+### 2026-09 — Progression Model Rulings (Map, Portrait, Unlocks)
+**Context:** Ken redirected the experience from "test, then result" to a running portrait on a map with unlockable worlds. Plan: `docs/PLAN-progression.md`.
+**Discovery:** Ken's rulings (2026-09-27): (1) **Identity phrasing:** no cheesy archetypes ("The Pragmatic Rebel") and no MBTI-style type labels, but the user must get short, plain, shareable statements about who they are, drawn directly from their choices (e.g. "You avoid conflict", "You're an observer"). Several phrases are fine. (2) **Unlocks are in:** more answers reveal more information, and that must be communicated; "if it comes off like a game, so be it." (3) **First world = 12 core questions, free roam.** Finishing them opens another world or region with more questions.
+**Action:** Portrait text is plain second-person statements that pass the "would a real person say this about a friend?" test. Unlocks reward with information and places, not points. Unlocks trigger on answer count, so the core 12 must be balanced in any subset. Don't update VISION/ARCHITECTURE/DESIGN to the new model until Ken approves the plan.
+
+### 2026-09 — Visual Direction: the Ink-on-Paper Park
+**Context:** A long UX session with Ken built `prototypes/trolley-walk.html`: an explorable park where each question is a stop.
+**Discovery:** Ken ratified a new look and feel: pure black-and-white, code-drawn, isometric 2.5D national park; free roam, tap to walk; the question card rises over the map carrying its own animated scene. This replaces the dark background, the orange accent, the full-bleed sepia illustrations and the Gemini image pipeline.
+**Action:** Treat `docs/DESIGN.md` §0 as the authoritative visual spec and the prototype as its reference implementation. Don't reintroduce colour accents, dark mode, raster illustrations or AI image generation without Ken's ruling. New worlds are drawn in the same style.
+
+### 2026-09 — Calm Is a Rule (Low-Intensity Cozy Game)
+**Context:** Ken reacted several times to motion in the prototype: "too windy", disliked wind lines, spinning trees, intense stop ripples, and trails that looked like they slid.
+**Discovery:** Ken: "having an overall vibe of less intensity, calming, cozy game vibe is critical." Every added effect raised intensity until the park felt busy.
+**Action:** Default to less motion. Wind shows only through trees and leaves. Trees sway but never churn. Water and paths never move. One slow ripple per stop. The "?" bubble fades up; no bursts. Respect reduced motion. Before adding any ambient effect, ask whether it makes the park calmer or busier. See `docs/DESIGN.md` §0.3.
+
+### 2026-09 — No Wayfinding
+**Context:** The prototype had arrows at the screen edge pointing toward off-screen stops.
+**Discovery:** Ken removed them: "I want the user to explore." But once a stop is on screen it must be obvious.
+**Action:** No arrows, compasses or pointers toward unseen stops. A stop announces itself only once it's on screen (pennant, ground disc and one ripple, "?" bubble). The progression model's ◆ "calling" glow must follow the same rule: a glow on the stop, never an arrow.
+
+### 2026-09 — The Puff Character Family (Main Character Direction)
+**Context:** Ken explored about 30 character designs across many rounds (instruction-manual people, 16 different drawing styles, weather clouds, prop-heavy puffs) before settling.
+**Discovery:** Ken chose **Puff**: small, puffy, abstract folk. His rulings along the way: abstract, not symbolic ("too many of these are trying to mean something"); decorations only if abstract, never known objects ("bows, ties, bowties"); every character its own silhouette ("they are all exact same shapes — don't do that"); not "strange for the sake of strange"; exactly one personality-less character (Puff); everyone else has personality through expression and idle habits; name and look only. Accidental look-alikes happen easily (onigiri, the poop emoji), and anything centred under the eyes reads as a mouth.
+**Action:** Follow the rules in `docs/DESIGN.md` §0.6 for any new character. Characters inside question scenes are plain puffs that never share the player's shape. Current roster: Puff, Nib, Sumi, Ro, Zig, Zo, Tri, Duo. Check every new design at portrait size for accidental objects, faces and mouths before showing Ken.
+
+
+### 2026-09 — Progression Plan Decisions (All Ruled)
+**Context:** Ken walked through the nine open decisions in `docs/PLAN-progression.md` §10 on 2026-09-27.
+**Discovery:** Rulings: the Neighborhood opens after all 12 core questions, and each later world after about two-thirds of the previous one. Portrait text comes from an authored tendency library with rules (a statement needs 2+ supporting answers). Unlock closeness is shown as dots, never numbers. V1 saves on the device; the magic link comes in Phase 4. The judge's core 12 is approved (Q1, B09, B02, B13, B18, B29, B37, D8 with "father", B40, Q6, B21, B01). The headline can change and announces it. Worlds: Park → Neighborhood → City → Coast → Observatory. **No crowd statistics ("how others answered") in V1.** Conflict avoidance becomes the tendency "You avoid open conflict."
+**Action:** Treat `docs/PLAN-progression.md` as approved. Next is the rest of Roadmap Phase 1: answer notes for the core 12, the tendency library, and rewriting ARCHITECTURE / DESIGN / QUESTIONS / SCORING to the new model. Don't add crowd statistics without Ken's say-so.

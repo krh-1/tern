@@ -52,7 +52,25 @@ None of these require extrinsic reward. The engagement is intrinsic to the conte
 
 ---
 
+## The Progression Model (2026-09 — approved)
+
+> **This is the direction going forward.** Ken set it on 2026-09-27; the full plan is in `docs/PLAN-progression.md`. It replaces "test, then result" with a **running mirror**. The two-phase section below is kept for history. Its ideas (the fixed shared set, adaptive routing, clarifying questions, the code) survive inside this model in a new form.
+
+**The idea:** Tern starts telling you who you are from your first answer, and the picture sharpens with every question. You can stop at any point and leave with something true and shareable. You come back because more of the world, and more of you, is still waiting to be uncovered.
+
+- **The map.** Every question is a place you can walk to. Markers show what you've answered and what's still open. Locked regions are visible but fogged. A soft glow marks the question the portrait most wants you to answer next; that glow is what's left of the old adaptive routing.
+- **The portrait.** A "who you are" panel sits beside the map. At the top is a plain headline about you, starting with "You" (for example *"You keep your word, even when it costs you"*), with a one-line description. Below it: notes on each answer, tendencies, what you protect and what you'll trade away, your five value axes, where you're torn, and, after the core, your code.
+- **Unlocks.** More answers reveal more. After 1 answer, a note on that answer; after 4, your headline; after 6, protect / trade away; after 8, your first tension; after all 12 core questions, the full portrait with the code reveal, and the next world opens. The rewards are information about you and new places to explore. Still no points, badges, streaks or leaderboards.
+- **Worlds.** The Park holds the **core 12**: the same questions for everyone, in any order. Later worlds group the rest of the library by theme: the Neighborhood (people close to you), the City (rules and institutions), the Coast (strangers and sacrifice), and the Observatory (the self).
+- **Stop, save, share, come back.** Progress autosaves after every answer. You can share your portrait at any milestone, or send a single question to a friend and compare answers.
+
+**Amended principles:** plain "You…" statements are allowed (still no archetype names or type labels); unlocks are allowed (still no points or badges); the core set is fixed but its order is free.
+
+---
+
 ## The Two-Phase Assessment Model
+
+> **Being replaced** by the Progression Model above. Kept for history; to be rewritten once Ken approves `docs/PLAN-progression.md`.
 
 This is a core architectural decision, not a feature. Every domain uses it.
 
@@ -173,48 +191,69 @@ New domains require only new data — questions, axes, distinction logic, and il
 
 ---
 
-## Freemium Model
+## Monetization (V2)
 
-**Free tier:** Five-letter code + radar chart showing core-set scores (some axes less precise, shown visually). Shareable. Complete and genuinely valuable.
+> **Note (2026-09):** under the Progression Model the portrait builds up gradually, so the free/paid split below no longer fits cleanly. It gets redrawn in Roadmap Phase 5.
 
-**Paid tier:** Same code + one-line summary + full precision radar chart + axis breakdown + distinction paragraph. The paragraph remains the core paid-value artifact — specific, personal, generated from the actual path taken.
+**V1 ships fully unlocked.** All users receive the full experience: code + depth graph + distinction report (summary, radar, axis breakdown, paragraph). No payment gate in V1. This lets us validate the product, the questions, and the distinction quality before introducing monetization.
 
-The gate is honest. The free result is not artificially degraded — it's the first phase of a two-phase experience. Users pay to go deeper, not to unlock something already computed.
+**Planned V2 freemium model:**
 
-Future paid features: cross-domain profiles, retake and compare, "how others answered" reveals, challenge a friend comparisons.
+- **Free tier:** Five-letter code + radar chart showing core-set scores. Shareable. Complete and genuinely valuable.
+- **Paid tier:** Same code + one-line summary + full precision radar chart + axis breakdown + distinction paragraph.
+
+The gate will be honest. The free result will not be artificially degraded — it's the first phase of a two-phase experience. Users pay to go deeper, not to unlock something already computed.
+
+**Future paid features:** cross-domain profiles, retake and compare, "how others answered" reveals, challenge a friend comparisons.
 
 ---
 
-## V2 Roadmap
+## Roadmap
 
-### Question Creator Pipeline
+Phases run in order. Each phase ends with a check Ken approves before the next starts. The detail lives in `docs/PLAN-progression.md`. The look and feel for every phase is fixed by `docs/DESIGN.md` §0 (ink-on-paper park, code-drawn scenes, calm pacing, the Puff characters), ratified 2026-09.
 
-A living question system that generates, reviews, and publishes new questions for the depth graph.
+### Phase 0 — The question library ✅ (2026-09)
+- Questions expanded and judged three times against the no-escape-answer bar. The existing Q1–Q11 and D1–D12 were revised, and a 53-question draft bank sits in `docs/QUESTION-BANK.md`.
+- A core 12 is proposed and judge-checked (`docs/PLAN-progression.md` §6).
 
-```
-Generate → Review → Stage → Publish → (Retire)
-```
+### Phase 1 — Decide and design (now)
+- ✅ Ken's rulings (2026-09-27, `docs/PLAN-progression.md` §10): the core 12 approved; world unlocks at all 12, then about two-thirds; an authored tendency library; dots, not numbers; on-device save; the headline can change; no crowd statistics in V1.
+- Write a note for every answer option in the core 12.
+- Write the **tendency library** (about 20 plain "You…" statements, each with the rule for when it appears) and the protect / trade-away rules. Test them on sample answer paths so no path produces a wrong or cheesy read.
+- Update `VISION.md`, `ARCHITECTURE.md`, `DESIGN.md`, `QUESTIONS.md` and `SCORING.md` to the approved model.
 
-1. **Generate** — CRON-triggered agent (Ralph) produces candidate questions using the domain's axis framework, existing question library, tone guidelines, and optionally current news context
-2. **Review** — Human gate: axis validity, answer balance, tone, no-noise guarantee, sensitivity check
-3. **Staging** — Approved questions tagged: axes probed, emotional intensity, topicality, expiry date
-4. **Publishing** — Depth graph nodes added; rotation logic for topical questions
-5. **Retirement** — News-linked questions expire; archived, not deleted
+### Phase 2 — Feel it (prototype)
+- **Already in the park prototype** (`prototypes/trolley-walk.html`, see `prototypes/PLAN.md`): the ink-on-paper park, free roam, stops that announce themselves on screen, the question card with animated code-drawn scenes and follow-ups, the character select modal, and the Puff characters, including the characters inside the scenes.
+- Update the park prototype: the 12 new stops (with wording from the current `QUESTIONS.md`), ✓/○ markers, a portrait panel with realistic text, the unlock moments, and a fogged Neighborhood on the horizon.
+- **Check with Ken:** does uncovering yourself feel like a game worth continuing?
 
-### New Domain: Parenting
+### Phase 3 — V1: the Park, for real
+- Scoring from partial answers, with confidence per axis. The unlock ladder. The "calling" stop pick. Clarifying stops.
+- The portrait engine (tendency library, headline, tensions), the code reveal at 12, and the radar chart.
+- On-device autosave. A share card at any milestone. Share-a-question.
+- Code-drawn scenes for the core 12 and their follow-ups, in the `DESIGN.md` §0 style. No image files or image generation.
+- Recompute the scoring constants and golden tests. Refresh `SIMULATIONS.md`.
 
-Helps parents understand their own philosophy and communicate it to their partners. Sample dilemmas: a child wants to quit an activity, a partner disciplines differently in the moment, a child lies to avoid punishment.
+### Phase 4 — V1.x: more worlds
+- The Neighborhood, then the City, the Coast and the Observatory: a code-drawn environment per world (same ink style, own setting), stops, and one portrait chapter per world.
+- Scores for every answer in the bank questions as they move into worlds.
+- Compare with a friend. (Crowd statistics such as "how others answered" were ruled out of V1; revisit after launch.)
+- Optional cross-device save (email magic link: a one-time sign-in link, no password).
 
-### Platform Evolution
-
-- Domain selector on app entry
-- Accounts and persistence
-- Shareable links with full breakdown
-- Aggregate analytics, anonymized, opt-in
-- Returning user detection — fresh depth questions on every visit
-- Retake and compare — same assessment 6 months later
-- Cross-domain profile — patterns across domains
-- "Challenge a friend" — compare codes and charts side by side
+### Phase 5 — V2 and beyond
+- **Question creator pipeline:** a living system that generates, reviews and publishes new questions into the worlds:
+  ```
+  Generate → Review → Stage → Publish → (Retire)
+  ```
+  1. **Generate:** a CRON-triggered agent (Ralph) drafts candidates from the axis framework, the existing library, the tone guidelines, and optionally current news. Drafts must pass the no-escape-answer bar.
+  2. **Review:** a human gate for axis validity, answer balance, tone, the no-noise guarantee and sensitivity. Judge agents pre-screen.
+  3. **Stage:** approved questions are tagged with the axes they probe, emotional intensity, topicality, expiry date and **home world**.
+  4. **Publish:** questions appear as new stops (✦) in their world. Topical ones rotate.
+  5. **Retire:** news-linked questions expire. They're archived, not deleted.
+- **Monetization:** redraw the free/paid line for an incremental portrait (to be decided; V1 ships fully unlocked).
+- **Accounts and persistence:** full accounts, retake-and-compare six months later, returning-user detection with fresh stops.
+- **New domains:** Parenting first (a child wants to quit an activity, a partner disciplines differently in the moment, a child lies to avoid punishment). Each domain can be its own region of worlds, and eventually there's a cross-domain profile.
+- **Social:** "challenge a friend" (compare codes and portraits side by side), and aggregate analytics that are anonymized and opt-in.
 
 ---
 

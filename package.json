@@ -1,0 +1,9 @@
+{
+  "name": "tern",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Values and decision-style assessment framework. Pre-bootstrap — see docs/WORKFLOW.md for setup.",
+  "scripts": {
+    "generate:illustrations": "node scripts/illustrations/generate.js"
+  }
+}

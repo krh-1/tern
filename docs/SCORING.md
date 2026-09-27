@@ -1,5 +1,7 @@
 # Scoring — Tern (Ethics Domain, V1)
 
+> **⚠ Stale as of 2026-09-27:** the no-escape-answer pass removed and added answer options and follow-ups across Q1–Q11 and D1–D12 in `docs/QUESTIONS.md`. Normalization ranges, golden-test math and numeric traces below have not been recomputed. Scoring is deliberately deferred until the question set is frozen. **Also broken:** the conflict-avoidance detection below keys on `Q5-D` and on the old Q5 follow-up (the parent repeating the request); Q5 now has only A/B and a different follow-up, so this pattern needs a new trigger.
+
 > **This document covers the Ethics domain (V1).** The scoring engine itself (`src/engine/scoring.js`) is domain-agnostic. Different domains define their own axes, letter assignments, normalization ranges, and distinction logic using the same engine. When a new domain is built, create a corresponding `SCORING-{domain}.md` alongside this file.
 
 How answers become axis scores, how axis scores become a five-letter code, and how depth-graph answers produce a distinction.
@@ -124,6 +126,10 @@ When convergence is detected before the core set is complete, the offer is surfa
 
 Continuing adds depth-graph signal to the radar chart and feeds the distinction. It never changes the code.
 
+### Core Set Completion Without Convergence
+
+If the user completes all 11 core questions without convergence being detected (stability or margin conditions never met), the system proceeds directly to code reveal using the current axis scores. No convergence offer is shown — the user transitions straight from the final core question to the code reveal screen. The code is valid regardless of convergence status; convergence is an optimization for early exit, not a quality gate.
+
 ### Axis Coverage by Core Question
 
 Every question that contains at least one nudge for the axis is listed. **Bold** = primary (nudge magnitude ≥ 2 on at least one answer).
@@ -207,6 +213,51 @@ The paragraph is not template-filled. It reads like something a perceptive perso
 - Keep average sentence length under ~22 words
 - Use plain language; avoid method jargon and abstractions
 - Include at most one explicit tension sentence
+
+### One-Line Summary Generation
+
+The one-line summary sits between the code and the radar chart. It orients the user before they read the chart or paragraph. It is generated, not templated.
+
+**Algorithm:**
+
+1. Identify the user's three strongest-signal axes — ranked by absolute distance from 5.0 (e.g., an axis at 8.5 has distance 3.5; an axis at 2.0 has distance 3.0).
+2. Name each pole using the user-facing pole name (e.g., "outcomes" not "O", "principle" not "P").
+3. Identify the single strongest axis (greatest distance from 5.0). If two axes tie, pick the one listed first in axis order (O, C, H, L, S).
+
+**Template:**
+
+```
+"You lean [pole1], [pole2], and [pole3] — with your strongest signal in [strongest axis name]."
+```
+
+**Examples:**
+- Scores: O=7.2, C=3.1, H=8.4, L=5.0, S=6.3 → `"You lean outcomes, individual, and heart — with your strongest signal in heart."`
+- Scores: O=2.0, C=7.5, H=6.0, L=8.5, S=4.0 → `"You lean rules, collective, and loyalty — with your strongest signal in loyalty."`
+
+**Edge case — all near-midpoint:** If no axis is more than 1.5 points from 5.0, use: `"Your profile sits near the center on most axes — context drives your decisions more than fixed instinct."`
+
+---
+
+### Axis Breakdown Gloss
+
+The distinction screen includes 5 rows, one per axis: `[LETTER] [Pole name] — [gloss]`. The gloss is **templated per pole letter** (10 total strings, one per pole). The gloss does not vary by score magnitude — magnitude is communicated by the radar chart.
+
+| Letter | Pole | Gloss |
+|--------|------|-------|
+| O | Outcomes | you optimize for the best result, even when the path is uncomfortable |
+| R | Rules | you hold lines that don't move, even when crossing them might help |
+| C | Collective | you weigh what's best for the group first |
+| I | Individual | you start from personal responsibility and work outward |
+| H | Heart | you lead with empathy and relational instinct |
+| T | Thought | you decide from distance before emotion |
+| L | Loyalty | people close to you get a different ethical response |
+| P | Principle | you apply one standard to everyone, including people you love |
+| S | System | you work within structures, even imperfect ones |
+| D | Disruption | you break from process when the principle is clear |
+
+**Format in UI:** `O · outcomes — you optimize for the best result, even when the path is uncomfortable`
+
+---
 
 ### V1 Distinction Generation Rules
 

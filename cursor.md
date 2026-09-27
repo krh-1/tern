@@ -15,6 +15,8 @@ Before writing any code, read these docs in order:
 
 If modifying questions, the depth graph, or follow-up logic: also read `docs/QUESTIONS.md`.
 
+Before any visual, UI, map, character or animation work: read `docs/DESIGN.md` §0 (the ratified visual direction) and `prototypes/PLAN.md`. The direction for the experience itself (map, portrait, unlocks, worlds) is `docs/PLAN-progression.md`.
+
 Do not skip this step.
 
 ---
@@ -51,9 +53,12 @@ Axis definitions, letter assignments, normalization ranges, convergence threshol
 ### Never change question content without updating QUESTIONS.md
 Questions are the assessment instrument, not UI copy. Wording changes affect scoring validity. Document every change in `docs/QUESTIONS.md`.
 
+### The look is the ink-on-paper park
+Pure black and white on paper, code-drawn, isometric park, calm and cozy, no wayfinding, Puff characters with name and look only. No accent colours, dark mode or raster illustrations. Full rules in `docs/DESIGN.md` §0.
+
 ### Protect game-feel in every decision
 Tern should feel like a game — not gamified, but genuinely engaging, with pacing and anticipation and satisfying reveals. Every implementation decision should be evaluated against this: does it make the experience feel more like something you're moving through, or does it flatten that quality? Specifically:
-- Never add loading states — use the illustration preloading strategy to make transitions instant
+- Never add loading states — scenes are code-drawn, so transitions can be instant
 - Never add progress numbers — the bar communicates progress without making it feel like a test
 - The code letter reveal must materialize one letter at a time — do not show all five simultaneously
 - Phase transitions are arrival moments, not navigation events — use the slower animation timings

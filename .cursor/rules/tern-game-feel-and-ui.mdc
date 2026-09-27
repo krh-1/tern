@@ -6,10 +6,12 @@ alwaysApply: false
 
 # Tern: Game-Feel and UI
 
-**Game-feel:** Evaluate decisions by: does this feel like something you're moving through, or does it flatten that? No loading states (use illustration preloading). No progress numbers or step counts—ever. Code letters reveal one at a time, left to right (~300ms per letter, ~200ms pause). Phase transitions use slower timing (600ms out, 1000ms in); question transitions 400ms/800ms.
+**Visual direction (ratified 2026-09, `docs/DESIGN.md` §0):** pure black and white on paper, code-drawn isometric park, calm low-intensity motion (wind only via trees and leaves, nothing that churns or slides, one soft ripple per stop), no wayfinding arrows, question card with an animated code-drawn scene, Puff characters (own silhouette each, abstract decorations only, name and look only). Reference: `prototypes/trolley-walk.html`.
 
-**Follow-up transition (critical):** Illustration fades out → new illustration fades in → then question text updates. Never update text and image at once. Image leads.
+**Game-feel:** Evaluate decisions by: does this feel like something you're moving through, or does it flatten that? No loading states. No progress numbers or step counts—ever. Code letters reveal one at a time, left to right (~300ms per letter, ~200ms pause). Phase transitions use slower timing (600ms out, 1000ms in); question transitions 400ms/800ms.
+
+**Follow-up transition (critical):** The scene changes first, then the question text updates. Never update text and scene at once. The scene leads.
 
 **Components:** Display only. State and sequencing live in `useAssessment` and engine. No routing—render by phase in `App.jsx`.
 
-**Design system:** Use `docs/DESIGN.md` for typography, colors (CSS vars like `--color-accent`), component specs, animation tokens. Dark background; accent used sparingly.
+**Design system:** Use `docs/DESIGN.md` §0 for palette (paper, ink, graphite, hairline; no accent), type (Cormorant Garamond + Quattrocento Sans), characters and motion. §5–6 (dark background, orange accent, sepia illustrations) are superseded.

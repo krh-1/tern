@@ -11,13 +11,19 @@ The framework is **domain-agnostic**. Each domain asks a different question of t
 - **Leadership** — how do you distribute authority, handle conflict, and build trust? *(Future)*
 - **Relationships** — what do you believe about commitment, conflict, and care? *(Future)*
 
-Each domain produces a **five-letter code** — one letter per philosophical axis — and for users who go deeper, a **distinction report**: a one-line summary, radar chart, axis breakdown, and generated paragraph describing what's most specific and interesting about their particular profile.
+Each domain produces a **five-letter code**, one letter per philosophical axis, and a **living portrait**: plain statements about who you are that start after your first answer and grow as you keep going.
+
+> **Direction change (2026-09):** Tern is moving from "test, then result" to a map of questions with a growing portrait and unlockable worlds. See `docs/PLAN-progression.md` and the Roadmap in `docs/VISION.md`. Parts of this README and the spec docs still describe the old model until the rulings in Phase 1 are made.
+>
+> **Look and feel (ratified 2026-09):** a calm, cozy, black-and-white, code-drawn park you walk around as a small puffy character. See `docs/DESIGN.md` §0 and the prototype in `prototypes/` (`prototypes/PLAN.md`).
 
 ---
 
 ## What a User Experiences
 
-A user opens Tern and is immediately placed inside a scenario — a full-screen illustrated scene with a question fading in over it. They choose from carefully designed answers, each one genuinely defensible. Some questions branch into follow-ups that shift the context: the person they're protecting becomes someone they love, the wealthy neighborhood becomes a poor one. These shifts are the emotional core of the experience.
+**New model (planned):** you land in a park, a map where every question is a place. Answer any question, in any order. After your first answer, a "who you are" panel starts writing itself. After four answers you get a plain headline about yourself (*"You keep your word, even when it costs you"*). As you continue you unlock what you protect and what you'll trade away, then where you're torn. Finish the 12 park questions to get your code and full portrait, and a new world opens (the Neighborhood, then the City, the Coast and the Observatory). Stop, save, share and come back any time.
+
+**Current spec (being replaced):** A user opens Tern and is immediately placed inside a scenario — a full-screen illustrated scene with a question fading in over it. They choose from carefully designed answers, each one genuinely defensible. Some questions branch into follow-ups that shift the context: the person they're protecting becomes someone they love, the wealthy neighborhood becomes a poor one. These shifts are the emotional core of the experience.
 
 After enough signal is gathered, the user receives their **code** — five letters materializing one at a time, each representing where they landed on one of five philosophical axes. The code is shareable, comparable, and immediately discussable: *"You're OCHLS and I'm RCHLS — we agree on everything except the first axis, that's probably why we argue about this."*
 
@@ -95,8 +101,8 @@ tern/
 │   │   ├── AnswerButton.jsx
 │   │   ├── ProgressBar.jsx
 │   │   ├── ConvergenceOffer.jsx     # Mid-assessment invitation screen
-│   │   ├── CodeReveal.jsx           # Five-letter code reveal — free tier endpoint
-│   │   ├── DistinctionReveal.jsx    # Summary + radar + axis breakdown + paragraph — paid tier endpoint
+│   │   ├── CodeReveal.jsx           # Five-letter code reveal — primary result screen
+│   │   ├── DistinctionReveal.jsx    # Summary + radar + axis breakdown + paragraph — distinction result
 │   │   ├── RadarChart.jsx
 │   │   └── ShareCard.jsx
 │   ├── hooks/
@@ -115,6 +121,9 @@ tern/
 │   ├── DESIGN.md                    # Visual and interaction system
 │   ├── SCORING.md                   # Five axes, code logic, distinction generation
 │   ├── QUESTIONS.md                 # Core question set + depth graph documentation
+│   ├── QUESTION-BANK.md             # Draft question pool (judged, awaiting ratification)
+│   ├── PLAN-progression.md          # Map + portrait + unlocks + worlds plan (2026-09)
+│   ├── BUILD-READINESS.md           # Current gate before building
 │   └── WORKFLOW.md                  # Tools and development process
 ```
 
@@ -132,10 +141,11 @@ tern/
 7. `AGENTS.md` — patterns and gotchas from prior sessions
 
 **If you are a product person, designer, or stakeholder:**
-1. `docs/VISION.md` — what Tern is, the code model, game-feel principle, freemium structure
-2. `docs/DESIGN.md` — the visual and product experience
-3. `docs/QUESTIONS.md` — the question library
-4. `docs/SCORING.md` — how the axes and code work
+1. `docs/VISION.md` — what Tern is, the code model, game-feel principle, roadmap
+2. `docs/PLAN-progression.md` — the new map / portrait / unlock plan
+3. `docs/DESIGN.md` — the visual and product experience
+4. `docs/QUESTIONS.md` and `docs/QUESTION-BANK.md` — the question library
+5. `docs/SCORING.md` — how the axes and code work
 
 ---
 

@@ -68,7 +68,7 @@ The depth question graph. A network of nodes tagged with which axes they probe a
 ```js
 {
   id: 'D1',
-  title: 'The Promise Under Pressure',
+  title: 'The Promise About the Home',
   illustration: 'depth/D1.jpg',
   setup: '...',
   assumptions: ['...'],                   // required scenario constraints
@@ -199,9 +199,23 @@ All assessment state lives here. Components are thin — they call this hook.
 - `submitAnswer(answerId)` — records answer, recomputes scores, advances question or phase
 - `acceptCodeOffer()` — user accepts early convergence offer, transitions to code-reveal
 - `continueToDepth()` — user declines early offer or completes core set, transitions to depth
-- `continueExploring()` — user continues after distinction reveal
+- `continueExploring()` — user continues after distinction reveal, transitions to exploration
+- `returnToResults()` — user returns from exploration to distinction-reveal with updated scores
 - `restart()` — resets all state
 - `goToShare()` — transitions to share phase
+
+**Phase transitions:**
+```
+core → (convergence detected) → convergence-offer → (accept) → code-reveal
+core → (convergence detected) → convergence-offer → (keep going) → core (continues)
+core → (all questions answered, no convergence) → code-reveal
+code-reveal → (go deeper) → depth
+depth → (distinction ready) → distinction-reveal
+distinction-reveal → (keep exploring) → exploration
+exploration → (user returns or no questions remain) → distinction-reveal (updated)
+distinction-reveal → (share) → share
+any → (restart) → core (fresh)
+```
 
 ---
 
@@ -227,10 +241,10 @@ if (phase === 'share') return <ShareCard />
 | `AnswerButton.jsx` | Single answer option, manages visual selected state |
 | `ProgressBar.jsx` | Fixed bottom bar, no labels. Core: question progress. Depth: axis confidence. |
 | `ConvergenceOffer.jsx` | Mid-assessment invitation screen — *"We have a pretty clear picture of you."* |
-| `CodeReveal.jsx` | Five-letter code reveal — the primary result screen. Free tier endpoint. |
-| `DistinctionReveal.jsx` | Code + one-line summary + radar chart + axis breakdown + distinction paragraph. Paid tier endpoint. |
+| `CodeReveal.jsx` | Five-letter code reveal — the primary result screen. |
+| `DistinctionReveal.jsx` | Code + one-line summary + radar chart + axis breakdown + distinction paragraph. |
 | `RadarChart.jsx` | Recharts spider chart, five axes, accent color fill |
-| `ShareCard.jsx` | Off-screen rendered PNG via html-to-image. Free: code only. Paid: code + chart + paragraph excerpt. |
+| `ShareCard.jsx` | Off-screen rendered PNG via html-to-image. Code only, or code + chart + paragraph excerpt if distinction is available. |
 
 ---
 
@@ -252,6 +266,8 @@ Phase transitions (convergence offer, code reveal, distinction reveal) use a lon
 
 ## Illustration Loading
 
+> **[SUPERSEDED 2026-09]** Scenes are drawn in code inside the question card (`docs/DESIGN.md` §0). There are no illustration files to load or generate. Kept for history until the architecture is rewritten after Ken approves `docs/PLAN-progression.md`.
+
 Core illustrations preloaded on init. Depth illustrations preloaded after code is determined — we then know which depth nodes are candidates.
 
 ```js
@@ -269,6 +285,20 @@ candidates.forEach(q => {
   new Image().src = `/illustrations/${q.illustration}`
 })
 ```
+
+---
+
+## Illustration Generation (Agentic Build)
+
+> **[SUPERSEDED 2026-09]** Scenes are drawn in code inside the question card (`docs/DESIGN.md` §0). There are no illustration files to load or generate. Kept for history until the architecture is rewritten after Ken approves `docs/PLAN-progression.md`.
+
+Illustrations can be generated at build time via the **Gemini API (Imagen)** so the pipeline stays fully agentic: no manual art step required.
+
+- **Manifest:** `scripts/illustrations/manifest.json` — lists every core (and optionally depth) illustration with a scene description. Prompts are built from the DESIGN.md style (editorial, ink sketch, sepia) + scene.
+- **Script:** `scripts/illustrations/generate.js` — calls the Gemini Imagen API per entry, decodes base64 response, writes to `public/illustrations/` and `public/illustrations/depth/`.
+- **Build integration:** Run `node scripts/illustrations/generate.js` when `GEMINI_API_KEY` is set — either as a dedicated step (`npm run generate:illustrations`) or before the app build. The app build then uses whatever is in `public/illustrations/`.
+
+See `docs/ILLUSTRATION-GENERATION.md` for manifest format, flags (`--dry-run`, `--core-only`), and agent responsibilities.
 
 ---
 
@@ -294,11 +324,44 @@ No engine changes needed. The scoring and branching engines are domain-agnostic 
 
 ---
 
+## Exploration Mode
+
+After the distinction is revealed, users can tap "Keep exploring" to enter exploration mode. This phase lets users continue answering questions they haven't seen — the depth graph keeps routing by lowest-confidence axis.
+
+### Behavior
+
+- **Question rendering:** identical to depth phase. No visual announcement. `App.jsx` renders `<QuestionCard />`.
+- **Scoring:** `submitAnswer()` continues to record answers and recompute axis scores.
+- **Live radar update:** after each answer, `axisScores` are updated. The radar chart is not visible during question flow — the user sees it when they return to results.
+- **Distinction regeneration:** the distinction paragraph and one-line summary are regenerated after every answer in exploration mode, using the updated scores and expanded answer history. The user sees the updated distinction when they return to results.
+- **Code is locked:** the five-letter code never changes after Phase 1. Exploration refines magnitude, not category.
+
+### Navigation
+
+- **Return to results:** a persistent quiet text link ("See your results") appears below the progress bar during exploration. Tapping it transitions to `distinction-reveal` with updated radar + paragraph.
+- **Share:** available from the updated distinction reveal screen.
+- **Restart:** available from the updated distinction reveal screen.
+
+### Exit Conditions
+
+- **Exhaustion:** when no unasked depth-graph candidates remain (`getNextDepth` returns `null`), the system automatically transitions back to `distinction-reveal` with a quiet message: *"You've explored everything we have."*
+- **User choice:** user taps "See your results" at any time.
+- **No timeout or question limit.** The experience ends when the content does or the user decides.
+
+### State Transition
+
+```
+distinction-reveal → (user taps "Keep exploring") → exploration
+exploration → (user taps "See your results" OR no questions remain) → distinction-reveal (updated)
+```
+
+---
+
 ## Known V1 Constraints
 
 - No persistence — resets on reload, intentional
 - No accounts — V2 feature
-- Illustrations are static pre-generated assets
+- Scenes are drawn in code, in the ink-on-paper style (`docs/DESIGN.md` §0); no image assets. (The old Gemini pipeline in `docs/ILLUSTRATION-GENERATION.md` is on hold.)
 - Share card (html-to-image) has inconsistent behavior on iOS Safari — test carefully
 - Distinction paragraph generation in V1 is rule-based (pattern matching on axis scores + depth path). V2 may use a language model for more naturalistic output.
 - The depth graph in V1 is small (10–15 nodes). V2 question pipeline will grow it significantly.

@@ -180,17 +180,18 @@ Examples:
 
 ---
 
-## Branching Strategy
+## Branching Strategy (V1 — Main-Only)
+
+V1 uses a simplified branching model. Feature branches merge directly to main.
 
 | Branch | Purpose |
 |---|---|
 | `main` | Production. Every push deploys to Vercel. |
-| `dev` | Integration branch. All feature branches merge here first. |
-| `feat/[name]` | Feature work. Branch from dev. |
-| `fix/[name]` | Bug fixes. Branch from main if hotfix, dev otherwise. |
+| `feat/[name]` | Feature work. Branch from main, merge back to main. |
+| `fix/[name]` | Bug fixes. Branch from main. |
 | `content/[name]` | New questions, distinction copy, depth nodes. |
 
-Ralph creates its own branch from `prd.json` branchName — keep this in mind when running the question pipeline.
+V2 may introduce a `dev` integration branch when the team grows or release cadence requires it.
 
 ---
 
@@ -204,7 +205,7 @@ V1 has no automated test suite. Manual verification checklist before any merge:
 - [ ] Results screen shows correct code for a known answer set (see golden test cases in SCORING.md)
 - [ ] Share card generates and downloads correctly
 - [ ] App works offline after first load (PWA)
-- [ ] Illustrations preload without flash
+- [ ] Scenes appear with no loading flash (they're code-drawn; see `docs/DESIGN.md` §0)
 - [ ] Animations respect `prefers-reduced-motion`
 
 V2 will introduce automated scoring unit tests. Add them when building the question pipeline.

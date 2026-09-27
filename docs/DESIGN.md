@@ -1,10 +1,77 @@
 # Tern — UX/UI Design Document
 
-**Version:** 1.2
-**Last updated:** March 2026
-**Status:** V1 — Ethics Domain
+**Version:** 1.3
+**Last updated:** September 2026
+**Status:** V1 — Ethics Domain. **§0 (Visual Direction) is ratified and authoritative.** Sections 5 and 6 below describe the earlier dark, orange-accent, sepia-illustration look and are kept for history only. The screen architecture in §7 still describes the old test-then-result flow; it will be rewritten when Ken approves `docs/PLAN-progression.md`.
 
 > This document defines the visual system for the Ethics domain and establishes the core design language for Tern. Future domains may introduce domain-specific visual variations. Those should be documented as addendum sections within this file, not as separate documents.
+
+---
+
+## 0. Visual Direction — the Ink-on-Paper Park (ratified by Ken, 2026-09)
+
+**Why:** Tern should feel like a calm, cozy game you wander through, not a test you sit. The world is a place; the questions are stops in it; you are a small, soft character walking between them. Everything is drawn in code, in black ink on paper, so the whole world shares one hand and one mood.
+
+**Reference implementation:** `prototypes/trolley-walk.html` (published as a private artifact; see `prototypes/PLAN.md`). It is a throwaway prototype, but it is the visual reference for everything in this section. When this section and the prototype disagree, this section wins and the prototype gets fixed.
+
+### 0.1 Palette and type
+- **Pure black and white. No accent colour.** One look only (no dark mode variant).
+
+| Token | Hex | Use |
+|---|---|---|
+| Paper | `#FAFAF8` | Ground, cards, fills |
+| Ink | `#141414` | Outlines, text, solid shapes |
+| Graphite | `#6E6E6A` | Secondary lines: grass, hatching, ties, faint marks |
+| Hairline | `#DCDCD7` | Trail edges, card borders, far ridge |
+| Trail | `#EDEDE8` | Trail bands |
+| Shadow | `rgba(20,20,20,0.10)` | Soft ground shadows under everything that stands |
+
+- **Type is unchanged:** Cormorant Garamond for questions, names and headlines (italic for the short setup line above each question); Quattrocento Sans for answers and small UI text.
+
+### 0.2 The world
+- **Isometric 2.5D national park**, drawn in canvas code. No image files and no image generation: the Gemini/Imagen pipeline (`docs/ILLUSTRATION-GENERATION.md`) is on hold.
+- **What's in it:** winding trails with a dotted centre line (like a park map), a road, an old rail line, a stream with irregular wavy banks and a pond, bridges wherever paths cross water, hills drawn as stacked contour rings, pine and round-tree forests, wildflowers, rocks, a mountain ridge on the horizon, and one old windmill on the far ridge.
+- **Life:** animals only (deer, rabbits, squirrels, mice, ducks, butterflies, terns overhead, the occasional fish jump). The only people in the world are the player and the characters inside question scenes.
+- **Movement:** free roam, tap or click to walk (arrow keys on desktop). Nothing blocks walking except the world's edge; you can walk over hills.
+- **Each world** (Park, Neighborhood, City, Coast, Observatory in `docs/PLAN-progression.md`) is drawn in this same style, with its own setting.
+
+### 0.3 Calm is a rule, not a mood
+Low intensity everywhere. The overall feel is a calm, cozy game.
+- Wind is mild and shown **only** through trees swaying, grass bending and a few leaves falling. No wind lines or streaks.
+- Trees sway and their canopy edge gently breathes in place. They never churn or look like they rotate.
+- Water, trails and roads never look like they slide. Water gets small static wave marks.
+- One slow, faint ripple per stop. Flags wave slowly. Creatures potter rather than dart.
+- Respect `prefers-reduced-motion`: ambient motion stops and figures hold still.
+- If something feels busy, calm it; don't add more.
+
+### 0.4 Stops and discovery
+- **No wayfinding.** No arrows toward off-screen stops. Discovery is part of the game.
+- A stop announces itself only once it is on screen: a tall pennant flag, a pale ground disc with one soft ripple, and a black **"?"** speech bubble that fades up gently and floats. No bursts or bounces.
+- When a stop is done, its pennant lowers and shows a tick. (Map markers for the progression model, such as ✓ ○ ◆ ✦ and locked regions, are specified in `docs/PLAN-progression.md` §3 and will be drawn in this style.)
+
+### 0.5 The question card
+- The card rises from the bottom over the map (the map stays visible above it). It carries its own **animated, code-drawn scene** above the question.
+- **The scene arrives first, then the words.** On a follow-up the scene changes *before* the question text (the rule in AGENTS.md "Illustration Swap Must Precede Text Update" applies to code-drawn scenes).
+- Choosing an answer plays a small action in the scene (the lever moves, the wallet is lifted), then the scene fades to paper. Harm is never shown: fade before impact.
+- Relationships are shown without identity cues: a thin thread from you to someone you love, a smaller figure for a child.
+- "Step away" closes the card without answering.
+
+### 0.6 Characters: the Puff family
+The main character direction is **Puff**: small, puffy, abstract folk. Binding rules for any character, now or later:
+1. **One body grammar:** a soft puffy outline, tiny stick legs, floating round puff hands, a gentle float when walking.
+2. **Every character has its own silhouette.** Never reuse a body shape.
+3. **Abstract, not symbolic.** Nothing that stands for something. Decorations are allowed but must be abstract marks and patterns (stripes, a band, a split, a zigzag). Never known objects: no hats, bows, ties, flowers, ears, props. Watch for accidental look-alikes; a rounded triangle with a dark base read as an onigiri, and a dark pear with a curl on top read as the poop emoji.
+4. **Only one neutral character (Puff).** Every other character has a personality, shown only through expression and idle habits: a glance, a roving eye, a hop, a sway.
+5. **Nothing centred just under the eyes.** Bands, dots and patterns there read as a mouth. Keep body patterns low and off-centre.
+6. **Name and look only.** No descriptions, traits, stats or "carries" lines. They could prime how someone answers (AGENTS.md "Avatars Must Not Prime Answers"). Names are short, made-up sounds.
+7. **Everyone in the question scenes is a puff too,** but plain and undecorated. Each keeps one shape for the whole scene and never shares the player's shape, so "you" always stands out. The player's chosen character is "you" inside every scene.
+
+**Current roster (v21):** Puff (classic puff, sleepy, the neutral one) · Nib (round, glasses, striped lower half) · Sumi (small, all ink, shy side-glance) · Ro (soft rounded square, one big roving eye, curious) · Zig (tall stack, low zigzag band) · Zo (smooth oval, ink band across the eyes) · Tri (soft rounded triangle, arched brows, grin, periodic hop) · Duo (lopsided, split half ink / half paper, mismatched eyes, sway). Nib's glasses are the one known object, kept by Ken's choice.
+
+### 0.7 Character select
+- Shown first, as a **modal over the live park**: the map animates behind a light veil as a clue to what's ahead, and your figure in the park previews the character you're browsing.
+- Heading: **"Choose One"**. A large animated profile of the selected character plus the grid: **2×4 grid to the right in landscape; 4×2 grid below in portrait.** The selected tile is marked with the park's pennant. Hover previews on desktop; arrow keys and Enter work.
+- Buttons: **Start walking** and **Surprise me** (random pick). Starting fades the modal away into the park.
 
 ---
 
@@ -126,6 +193,8 @@ The distinction paragraph is the most important piece of copy in the product. It
 
 ## 5. Color Palette
 
+> **[SUPERSEDED — history only]** Replaced by §0.1 (pure black and white on paper, no accent). Do not build with the dark background or Monarch Orange below.
+
 ### Core Palette
 
 | Name | Hex | Usage |
@@ -187,6 +256,8 @@ The component specs in Section 9 below give exact values. Use these directly in 
 
 ## 6. Illustration System
 
+> **[SUPERSEDED — history only]** Replaced by §0.2 and §0.5: scenes are drawn in code, in the ink-on-paper style, inside the question card. No full-bleed sepia images and no AI image generation.
+
 ### Style
 - **Hand-drawn, sketch aesthetic** — not photorealistic, not flat vector
 - Black and white with sepia toning — warm, aged, like a woodcut or editorial illustration
@@ -244,6 +315,8 @@ Used for core set, depth graph, and exploration mode. The layout is identical ac
 
 **Depth phase:** no visual announcement when the depth graph begins. Questions continue seamlessly. The shift is felt in question quality, not labeled in UI.
 
+**Exploration phase:** identical to depth phase visually. One addition: a quiet text link ("See your results") appears below the progress bar, styled in `var(--color-muted)` at 13px. This is the only way to distinguish exploration from depth visually — and only for the user, not an observer. When no questions remain, the system transitions back to the distinction reveal with the message *"You've explored everything we have."* displayed as setup text.
+
 **Clarifying question:** when meaningful inconsistency triggers a clarifying question, a single quiet line appears above the setup text: *"Something came up that we want to explore."* No explanation of the tension. No accusatory framing. The question does the work.
 
 ### Screen 2: Follow-up Screen
@@ -286,7 +359,7 @@ Appears when axis letters have stabilized before the core set is complete. Frame
 
 ### Screen 4: Code Reveal
 
-The primary result screen. Free tier endpoint. The code is the moment.
+The primary result screen. The code is the moment.
 
 ```
 ┌─────────────────────────────┐
@@ -321,7 +394,7 @@ The primary result screen. Free tier endpoint. The code is the moment.
 
 ### Screen 5: Distinction Reveal
 
-Paid tier endpoint. Code + one-line summary + full radar chart + axis breakdown + distinction paragraph.
+The distinction result screen. Code + one-line summary + full radar chart + axis breakdown + distinction paragraph.
 
 ```
 ┌─────────────────────────────┐
@@ -378,8 +451,41 @@ Paid tier endpoint. Code + one-line summary + full radar chart + axis breakdown 
 - Charcoal background, faint Arctic Tern silhouette watermark
 - Code letters large, tracked, cream — the hero element
 - Axis legend in muted small type below the code
-- Free tier: code + legend + Tern wordmark
-- Paid tier: code + radar chart (small) + first sentence of distinction paragraph + Tern wordmark
+- Code + legend + Tern wordmark
+- If distinction is available: code + radar chart (small) + first sentence of distinction paragraph + Tern wordmark
+
+#### Share Card Generation
+
+The share card is rendered using `html-to-image` from a **hidden off-screen component** (`ShareCard.jsx`). The component is always mounted when the share screen is active but positioned off-viewport (`position: absolute; left: -9999px`). It renders at a fixed 1080×1080px regardless of device viewport.
+
+When the user taps "Share this":
+1. `html-to-image` captures the hidden component as a PNG blob
+2. The share flow is attempted in this order:
+
+**Primary — Web Share API (mobile):**
+```js
+if (navigator.share && navigator.canShare({ files: [file] })) {
+  navigator.share({ files: [pngFile], title: 'My Tern code', text: `I'm ${code}` })
+}
+```
+This opens the native share sheet (iMessage, WhatsApp, Instagram Stories, etc.) with the image attached.
+
+**Fallback — Download (desktop and unsupported mobile):**
+```js
+// Create a download link with the PNG blob
+a.download = `tern-${code}.png`
+```
+Downloads `tern-OCHLS.png` (or whatever the code is) directly.
+
+**Share content:** Image only. No link back to Tern in V1 (no backend to resolve). The Tern wordmark on the card serves as branding.
+
+#### iOS Safari Known Issue
+
+`html-to-image` has inconsistent rendering on iOS Safari — particularly with custom fonts and CSS transforms. Mitigations:
+- Use `toPng()` with `pixelRatio: 2` for retina quality
+- Ensure Cormorant Garamond is fully loaded before capture (`document.fonts.ready`)
+- If `toPng()` fails, retry once with `toCanvas()` fallback
+- If both fail, show a quiet message: *"Screenshot your result to share it"* — do not break the experience
 
 ---
 

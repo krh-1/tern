@@ -1,5 +1,7 @@
 # Simulation Walkthroughs — Tern (Ethics Domain, V1)
 
+> **⚠ Stale as of 2026-09-27:** the no-escape-answer pass removed and added answer options and follow-ups across Q1–Q11 and D1–D12 in `docs/QUESTIONS.md`. Normalization ranges, golden-test math and numeric traces below have not been recomputed. Scoring is deliberately deferred until the question set is frozen.
+
 This document provides three end-to-end assessment simulations based on:
 - Core question logic and follow-up rules from `docs/QUESTIONS.md`
 - Exact scoring method and normalization ranges from `docs/SCORING.md`

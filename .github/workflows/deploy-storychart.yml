@@ -1,0 +1,43 @@
+# When Tern main ships, trigger a storych.art (hamada-world) Production rebuild
+# so the build-time sync pulls this tip into /tern — no manual Peanut redeploy.
+name: Deploy storych.art
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  trigger-storychart:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require Deploy Hook secret
+        env:
+          STORYCHART_DEPLOY_HOOK: ${{ secrets.STORYCHART_DEPLOY_HOOK }}
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          HOOK="${STORYCHART_DEPLOY_HOOK:-$VERCEL_DEPLOY_HOOK}"
+          if [ -z "$HOOK" ]; then
+            echo "::error::Missing secret STORYCHART_DEPLOY_HOOK (or VERCEL_DEPLOY_HOOK)."
+            echo "Create a Vercel Production Deploy Hook on hamada-world (Settings → Git → Deploy Hooks),"
+            echo "then paste the URL into this repo's Actions secrets as STORYCHART_DEPLOY_HOOK."
+            exit 1
+          fi
+          echo "HOOK_PRESENT=1" >> "$GITHUB_ENV"
+          # Do not echo the URL
+          echo "Deploy hook secret is set."
+
+      - name: POST Vercel Deploy Hook
+        env:
+          STORYCHART_DEPLOY_HOOK: ${{ secrets.STORYCHART_DEPLOY_HOOK }}
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          HOOK="${STORYCHART_DEPLOY_HOOK:-$VERCEL_DEPLOY_HOOK}"
+          code=$(curl -sS -o /tmp/hook-body.txt -w "%{http_code}" -X POST "$HOOK")
+          echo "Deploy hook HTTP status: $code"
+          if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+            echo "::error::Deploy hook POST failed (HTTP $code)."
+            head -c 500 /tmp/hook-body.txt || true
+            echo
+            exit 1
+          fi
+          echo "Triggered storych.art Production rebuild."

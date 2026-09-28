@@ -56,7 +56,7 @@ Three things carry this:
 | Marker | Meaning |
 |---|---|
 | **○ open** | Not answered yet. The "?" bubble pops when it comes on screen (as in the prototype). |
-| **✓ done** | Answered. Tapping it re-reads your answer and its note. You can't change answers; the portrait depends on your first honest call. |
+| **✓ done** | Answered. Tapping it re-reads your answer and its note, with "Answer again" to redo that one question (Ken, 2026-09-27). |
 | **◆ calling** | A question the portrait most wants you to answer next, because it's least sure about one part of you. A soft glow on the stop itself, only once it's on screen: never an arrow or an edge pointer (AGENTS.md "No Wayfinding"). This replaces the old adaptive "depth graph": it's a suggestion, not a forced path. |
 | **✦ new** | A stop that just appeared, for example a clarifying question: *"Something came up that we want to explore."* |
 | **░ locked** | A region you can see but can't enter yet. It is fogged or sketched in, so you know it's there. |

@@ -196,3 +196,18 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Context:** Ken walked through the nine open decisions in `docs/PLAN-progression.md` §10 on 2026-09-27.
 **Discovery:** Rulings: the Neighborhood opens after all 12 core questions, and each later world after about two-thirds of the previous one. Portrait text comes from an authored tendency library with rules (a statement needs 2+ supporting answers). Unlock closeness is shown as dots, never numbers. V1 saves on the device; the magic link comes in Phase 4. The judge's core 12 is approved (Q1, B09, B02, B13, B18, B29, B37, D8 with "father", B40, Q6, B21, B01). The headline can change and announces it. Worlds: Park → Neighborhood → City → Coast → Observatory. **No crowd statistics ("how others answered") in V1.** Conflict avoidance becomes the tendency "You avoid open conflict."
 **Action:** Treat `docs/PLAN-progression.md` as approved. Next is the rest of Roadmap Phase 1: answer notes for the core 12, the tendency library, and rewriting ARCHITECTURE / DESIGN / QUESTIONS / SCORING to the new model. Don't add crowd statistics without Ken's say-so.
+
+### 2026-09 — V1 First Playable Lives in `game/`
+**Context:** Ken asked for the first playable game and told the agent to decide any open questions itself (2026-09-27).
+**Discovery:** The game is four static files with no build step: `game/index.html` is the engine, forked from the park prototype. `game/content.js` is the instrument: the core 12, nudges, answer notes, tendencies and tensions. `game/portrait.js` is pure scoring and portrait logic that also runs in node. `game/scenes.js` holds the code-drawn scenes. The decisions made for V1 are listed in `game/plan.md`: a tendency needs 2+ net supporting answers from 2+ questions; the compass shows an axis once 2 questions touch it; ◆ calling marks the open stop that probes the least-certain axis; answers can be redone from a done stop ([AMENDED] see next entry); the Neighborhood is a fogged sketch east of the park, "opening soon"; sharing copies text only; saves stay on the device.
+**Action:** Change question wording, nudges, notes and tendencies only in `content.js`, and only as instrument changes (see "questions.js Is the Assessment Instrument"). The nudges on the bank questions were authored by an agent and still need Ken's ratification. Keep portrait logic in `portrait.js` so it stays testable in node. Run it with `python3 -m http.server 8123 --directory game`.
+
+### 2026-09 — Answers Can Be Redone; Character Can Change (Ken's Ruling)
+**Context:** Ken asked for a way to change your character mid-game, and said that people who want to reset a choice "can always revisit a question."
+**Discovery:** This reverses PLAN-progression §3 ("You can't change answers"). Revisiting a done stop now offers "Answer again", which clears that one answer and asks the question fresh. Changing character (from the sidebar link, or by tapping your own figure) never touches answers. Unlocks you've already seen stay seen, so there are no repeat reveal moments.
+**Action:** Treat answers as editable, one question at a time. Never make a character change reset or alter answers.
+
+### 2026-09 — The Neutral Character Is Now "Mof" (Ken's Ruling)
+**Context:** Ken renamed the neutral main character on 2026-09-27.
+**Discovery:** The character once called "Puff" is now **Mof**. "The Puff family" remains the name of the character style: puffy abstract folk, which covers all eight characters.
+**Action:** Current roster: Mof, Nib, Sumi, Ro, Zig, Zo, Tri, Duo. Earlier entries that say "Puff" for the neutral character mean Mof. Mof is the app icon.

@@ -61,12 +61,12 @@ The main character direction is **Puff**: small, puffy, abstract folk. Binding r
 1. **One body grammar:** a soft puffy outline, tiny stick legs, floating round puff hands, a gentle float when walking.
 2. **Every character has its own silhouette.** Never reuse a body shape.
 3. **Abstract, not symbolic.** Nothing that stands for something. Decorations are allowed but must be abstract marks and patterns (stripes, a band, a split, a zigzag). Never known objects: no hats, bows, ties, flowers, ears, props. Watch for accidental look-alikes; a rounded triangle with a dark base read as an onigiri, and a dark pear with a curl on top read as the poop emoji.
-4. **Only one neutral character (Puff).** Every other character has a personality, shown only through expression and idle habits: a glance, a roving eye, a hop, a sway.
+4. **Only one neutral character (Mof).** Every other character has a personality, shown only through expression and idle habits: a glance, a roving eye, a hop, a sway.
 5. **Nothing centred just under the eyes.** Bands, dots and patterns there read as a mouth. Keep body patterns low and off-centre.
 6. **Name and look only.** No descriptions, traits, stats or "carries" lines. They could prime how someone answers (AGENTS.md "Avatars Must Not Prime Answers"). Names are short, made-up sounds.
 7. **Everyone in the question scenes is a puff too,** but plain and undecorated. Each keeps one shape for the whole scene and never shares the player's shape, so "you" always stands out. The player's chosen character is "you" inside every scene.
 
-**Current roster (v21):** Puff (classic puff, sleepy, the neutral one) · Nib (round, glasses, striped lower half) · Sumi (small, all ink, shy side-glance) · Ro (soft rounded square, one big roving eye, curious) · Zig (tall stack, low zigzag band) · Zo (smooth oval, ink band across the eyes) · Tri (soft rounded triangle, arched brows, grin, periodic hop) · Duo (lopsided, split half ink / half paper, mismatched eyes, sway). Nib's glasses are the one known object, kept by Ken's choice.
+**Current roster (v21):** Mof (classic puff, sleepy, the neutral one; named Puff until 2026-09-27) · Nib (round, glasses, striped lower half) · Sumi (small, all ink, shy side-glance) · Ro (soft rounded square, one big roving eye, curious) · Zig (tall stack, low zigzag band) · Zo (smooth oval, ink band across the eyes) · Tri (soft rounded triangle, arched brows, grin, periodic hop) · Duo (lopsided, split half ink / half paper, mismatched eyes, sway). Nib's glasses are the one known object, kept by Ken's choice.
 
 ### 0.7 Character select
 - Shown first, as a **modal over the live park**: the map animates behind a light veil as a clue to what's ahead, and your figure in the park previews the character you're browsing.

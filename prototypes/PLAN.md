@@ -31,7 +31,7 @@ Answers are recorded in memory and logged to the console (`[Tern prototype]`). N
 **Characters** — see `docs/DESIGN.md` §0.6.
 - Direction: **Puff**, small puffy abstract folk. Shared body grammar: soft puffy outline, tiny legs, floating puff hands, gentle float.
 - Every character has its own silhouette. Abstract, not symbolic. Decorations are abstract marks only, never known objects. Not "strange for the sake of strange".
-- Exactly one neutral character (Puff). Everyone else shows personality through expression and idle habits.
+- Exactly one neutral character (Mof, formerly Puff). Everyone else shows personality through expression and idle habits.
 - Name and look only; no descriptions (priming risk: AGENTS.md "Avatars Must Not Prime Answers").
 - Gotchas: anything centred under the eyes reads as a mouth; watch for accidental objects (a rounded triangle with a dark base = onigiri; a dark pear with a curl = the poop emoji).
 
@@ -39,7 +39,7 @@ Answers are recorded in memory and logged to the console (`[Tern prototype]`). N
 
 | Name | Shape | Decoration / personality |
 |---|---|---|
-| Puff | classic puff | none; sleepy; the neutral one |
+| Mof (was Puff) | classic puff | none; sleepy; the neutral one |
 | Nib | round | glasses, striped lower half |
 | Sumi | small round, all ink | shy: eyes glance aside and back |
 | Ro | soft rounded square | curious: one big roving eye |

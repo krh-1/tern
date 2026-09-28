@@ -1,5 +1,7 @@
-# When Tern main ships, trigger a storych.art (hamada-world) Production rebuild
-# so the build-time sync pulls this tip into /tern — no manual Peanut redeploy.
+# When Tern main ships, redeploy storych.art (hamada-world) Production so the
+# build-time sync pulls this tip into /tern — no manual Peanut redeploy.
+# Primary: Vercel Redeploy API (Origin-linked projects have no Deploy Hooks).
+# Optional fallback: STORYCHART_DEPLOY_HOOK / VERCEL_DEPLOY_HOOK if Git-connected later.
 name: Deploy storych.art
 
 on:
@@ -10,34 +12,74 @@ jobs:
   trigger-storychart:
     runs-on: ubuntu-latest
     steps:
-      - name: Require Deploy Hook secret
+      - name: Trigger storych.art Production redeploy
         env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
           STORYCHART_DEPLOY_HOOK: ${{ secrets.STORYCHART_DEPLOY_HOOK }}
           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
-          HOOK="${STORYCHART_DEPLOY_HOOK:-$VERCEL_DEPLOY_HOOK}"
-          if [ -z "$HOOK" ]; then
-            echo "::error::Missing secret STORYCHART_DEPLOY_HOOK (or VERCEL_DEPLOY_HOOK)."
-            echo "Create a Vercel Production Deploy Hook on hamada-world (Settings → Git → Deploy Hooks),"
-            echo "then paste the URL into this repo's Actions secrets as STORYCHART_DEPLOY_HOOK."
+          set -euo pipefail
+          HOOK="${STORYCHART_DEPLOY_HOOK:-${VERCEL_DEPLOY_HOOK:-}}"
+
+          # Optional Deploy Hook path (only if project is Git-connected later)
+          if [ -n "$HOOK" ]; then
+            echo "Using Deploy Hook fallback…"
+            code=$(curl -sS -o /tmp/hook-body.txt -w "%{http_code}" -X POST "$HOOK")
+            echo "Deploy hook HTTP status: $code"
+            if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+              echo "::error::Deploy hook POST failed (HTTP $code)."
+              head -c 500 /tmp/hook-body.txt || true
+              echo
+              exit 1
+            fi
+            echo "Triggered storych.art Production rebuild via Deploy Hook."
+            exit 0
+          fi
+
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "::error::Missing secret VERCEL_TOKEN (create a Vercel token with deploy scope)."
+            echo "Also set VERCEL_PROJECT_ID (and VERCEL_TEAM_ID if the project is under a team)."
+            echo "Optional fallback: STORYCHART_DEPLOY_HOOK if Deploy Hooks become available."
             exit 1
           fi
-          echo "HOOK_PRESENT=1" >> "$GITHUB_ENV"
-          # Do not echo the URL
-          echo "Deploy hook secret is set."
 
-      - name: POST Vercel Deploy Hook
-        env:
-          STORYCHART_DEPLOY_HOOK: ${{ secrets.STORYCHART_DEPLOY_HOOK }}
-          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
-        run: |
-          HOOK="${STORYCHART_DEPLOY_HOOK:-$VERCEL_DEPLOY_HOOK}"
-          code=$(curl -sS -o /tmp/hook-body.txt -w "%{http_code}" -X POST "$HOOK")
-          echo "Deploy hook HTTP status: $code"
-          if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
-            echo "::error::Deploy hook POST failed (HTTP $code)."
-            head -c 500 /tmp/hook-body.txt || true
+          PROJECT_ID="${VERCEL_PROJECT_ID:-prj_cud2lmLeTR6JMhxvmNBzKoI12hl8}"
+          TEAM_ID="${VERCEL_TEAM_ID:-team_EQGS2uczGs5QOazkhAIixbRv}"
+          TEAM_QS="teamId=${TEAM_ID}"
+
+          echo "Fetching latest Production deployment for project ${PROJECT_ID}…"
+          list_code=$(curl -sS -o /tmp/deps.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+            "https://api.vercel.com/v6/deployments?projectId=${PROJECT_ID}&target=production&limit=1&${TEAM_QS}")
+          if [ "$list_code" -lt 200 ] || [ "$list_code" -ge 300 ]; then
+            echo "::error::List deployments failed (HTTP $list_code)."
+            head -c 800 /tmp/deps.json || true
             echo
             exit 1
           fi
-          echo "Triggered storych.art Production rebuild."
+
+          DEP_ID=$(python3 -c 'import json,sys; d=json.load(open("/tmp/deps.json")); print((d.get("deployments") or [{}])[0].get("uid") or "")')
+          if [ -z "$DEP_ID" ]; then
+            echo "::error::No production deployment found to redeploy."
+            head -c 800 /tmp/deps.json || true
+            echo
+            exit 1
+          fi
+          echo "Redeploying deployment ${DEP_ID}…"
+
+          redeploy_code=$(curl -sS -o /tmp/redeploy.json -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "https://api.vercel.com/v13/deployments/${DEP_ID}/redeploy?${TEAM_QS}" \
+            -d '{"target":"production"}')
+          echo "Redeploy HTTP status: $redeploy_code"
+          if [ "$redeploy_code" -lt 200 ] || [ "$redeploy_code" -ge 300 ]; then
+            echo "::error::Redeploy failed (HTTP $redeploy_code)."
+            head -c 800 /tmp/redeploy.json || true
+            echo
+            exit 1
+          fi
+          echo "Triggered storych.art Production redeploy (build-time Tern sync will pull this tip after #31)."

@@ -5,7 +5,7 @@
   const LADDER = [
     { at: 1, key: 'notes', name: 'Your first answer note' },
     { at: 2, key: 'compass', name: 'Your compass' },
-    { at: 4, key: 'headline', name: 'Your headline' },
+    { at: 4, key: 'headline', name: 'Your one-line summary' },
     { at: 6, key: 'protect', name: 'What you protect' },
     { at: 8, key: 'tension', name: 'Where you’re torn' },
     { at: 10, key: 'allBars', name: 'Your whole compass' },
@@ -39,8 +39,12 @@
     const picked = new Set();
     done.forEach(q => Object.values(answers[q.id].picks).forEach(id => picked.add(id)));
 
+    // One answer, as a plain fact: what you chose, and in which question.
+    const fact = id => { const e = idx[id]; return { id, title: e.q.title, did: e.a.did || e.a.text }; };
+
     const axes = content.axes.map(ax => {
       let score = 0, got = 0, total = 0, touched = 0;
+      const pulls = []; // every picked answer that moved this axis, with its weighted push
       content.questions.forEach(q => {
         const p = possible(q, ax.id);
         total += p;
@@ -48,7 +52,9 @@
         got += p; touched++;
         Object.entries(answers[q.id].picks).forEach(([key, id]) => {
           const e = idx[id]; if (!e) return;
-          score += ((e.a.nudges || {})[ax.id] || 0) * stepWeight(e.step, key);
+          const push = ((e.a.nudges || {})[ax.id] || 0) * stepWeight(e.step, key);
+          score += push;
+          if (push) pulls.push(Object.assign(fact(id), { push }));
         });
       });
       const lean = got ? Math.max(-1, Math.min(1, score / got * 1.6)) : 0; // -1 … 1 toward neg … pos
@@ -56,6 +62,9 @@
         score, lean, touched, confidence: total ? got / total : 0,
         letter: score >= 0 ? ax.pos : ax.neg,
         known: touched >= 2,
+        // the answers that pulled you toward your side (strongest first), and the ones that pulled the other way
+        toward: pulls.filter(x => (x.push > 0) === (score >= 0)).sort((x, y) => Math.abs(y.push) - Math.abs(x.push)),
+        away: pulls.filter(x => (x.push > 0) !== (score >= 0)).sort((x, y) => Math.abs(y.push) - Math.abs(x.push)),
       });
     });
 
@@ -63,7 +72,8 @@
       const sup = (t.support || []).filter(id => picked.has(id));
       const ag = (t.against || []).filter(id => picked.has(id)).length;
       const qs = new Set(sup.map(id => idx[id] && idx[id].q.id));
-      return Object.assign({}, t, { strength: sup.length - ag, questions: qs.size, evidence: sup, order: i });
+      const counter = (t.against || []).filter(id => picked.has(id));
+      return Object.assign({}, t, { strength: sup.length - ag, questions: qs.size, evidence: sup.map(fact), counter: counter.map(fact), order: i });
     }).filter(t => t.strength >= (t.min || 2) && t.questions >= 2)
       .sort((a, b) => b.strength - a.strength || (a.priority || 99) - (b.priority || 99) || a.order - b.order);
 

@@ -246,11 +246,11 @@ Follow-up (if A): You learn several other students had hard weeks too but didn't
 
 ### B18 The Pond and the Faraway Child
 Scene: A small child is drowning in a pond in front of you. Saving them will ruin your $800 phone. Meanwhile, $800 given to a proven charity would very likely save a child's life far away.
-**Is walking past the pond worse than not giving the $800?**
+**Is walking past the drowning child worse than not giving $800 to charity?**
 - A: Yes. Being right there makes it mine.
 - B: No. A child is a child.
 
-Follow-up (if B): Most people don't live as if that's true. Do you?
+Follow-up (if B): Most people don't act as if a faraway child counts the same. Do you?
 - A: Mostly, yes.
 - B: Not really, and it bothers me.
 - C: Not really, and I'm at peace with that.

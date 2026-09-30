@@ -54,7 +54,8 @@
   .scene { width: 100%; max-width: 100%; aspect-ratio: 16 / 10; display: block; border-radius: 10px; border: 1px solid var(--hair); background: var(--paper); }
 
   .text { display: flex; flex-direction: column; gap: 12px; transition: opacity 400ms; }
-  .text.out { opacity: 0; }
+  .text.out { opacity: 0; pointer-events: none; }
+  .card.gliding { overflow: hidden; transition: transform 800ms cubic-bezier(.2, .75, .2, 1), height 550ms cubic-bezier(.4, 0, .2, 1); }
   .setup { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-size: 18px; line-height: 1.4; color: var(--graphite); }
   .q { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: clamp(21px, 5.4vw, 26px); line-height: 1.3; text-wrap: balance; }
   .answers { display: flex; flex-direction: column; gap: 8px; }
@@ -178,6 +179,21 @@
   .notes summary::-webkit-details-marker { display: none; }
   .notes .n { margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; }
   .notes .n i { color: var(--graphite); }
+  .p-more { margin-top: 14px; display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 14px; padding: 8px 14px; background: none; color: var(--ink); border: 1.5px solid var(--ink); border-radius: 999px; cursor: pointer; }
+  .p-more::after { content: ""; width: 7px; height: 7px; border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); transform: translateY(-2px) rotate(45deg); transition: transform .3s; }
+  .p-more[aria-expanded="true"]::after { transform: translateY(2px) rotate(-135deg); }
+  .p-more:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .detail { border-left: 1.5px solid var(--ink); padding-left: 14px; }
+  .detail h3 + .p-desc { margin: 0 0 4px; }
+  .detail .d-item { padding: 12px 0; border-top: 1px solid var(--hair); }
+  .detail .d-item:first-of-type { border-top: none; }
+  .detail h4 { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 19px; line-height: 1.25; }
+  .detail p { margin: 6px 0 0; font-size: 14px; line-height: 1.55; }
+  .detail .d-lab { margin: 10px 0 2px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--graphite); font-weight: 700; }
+  .detail ul { margin: 0; padding-left: 16px; font-size: 13.5px; line-height: 1.5; }
+  .detail li { margin: 4px 0; }
+  .detail li i { color: var(--graphite); font-style: normal; }
+  .detail h3.d-part { margin-top: 18px; }
   .code { font-family: "Cormorant Garamond", Georgia, serif; font-size: 44px; letter-spacing: .12em; margin: 0; }
   .p-next { border-top: 1.5px solid var(--ink); padding: 12px 20px calc(14px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; }
   .p-next .dots { letter-spacing: .2em; font-size: 14px; }
@@ -204,6 +220,10 @@
     .p-handle .t { flex: 1; font-family: "Cormorant Garamond", Georgia, serif; font-size: 19px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .p-handle .glow { width: 9px; height: 9px; border-radius: 50%; background: var(--ink); opacity: 0; transition: opacity .6s; }
     .portrait.news .p-handle .glow { opacity: 1; }
+    .p-handle { touch-action: none; }
+    .p-handle .chev { width: 9px; height: 9px; margin: 4px 4px 0; border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); transform: rotate(-135deg); transition: transform .5s; }
+    .portrait.up .p-handle .chev { transform: translateY(-5px) rotate(45deg); }
+    .p-body { overscroll-behavior: contain; }
     .card { z-index: 6; }
   }
 
@@ -299,7 +319,7 @@
 
 
 <aside class="portrait pre" id="portrait" aria-label="You, so far" hidden>
-  <button class="p-handle" id="pHandle" type="button" aria-expanded="false"><span class="grip"></span><span class="t" id="pHandleText">You, so far</span><span class="glow"></span></button>
+  <button class="p-handle" id="pHandle" type="button" aria-expanded="false"><span class="grip"></span><span class="t" id="pHandleText">You, so far</span><span class="glow"></span><span class="chev" aria-hidden="true"></span></button>
   <button class="p-min" id="pMin" type="button" aria-label="Minimize the portrait" title="Minimize">›</button>
   <button class="p-rail" id="pRail" type="button" aria-label="Open the portrait"><span class="glow"></span><span class="v">You, so far</span></button>
   <div class="p-body" id="pBody"></div>
@@ -1860,7 +1880,8 @@
   function resize() {
     DPR = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
     PWt = (typeof pEl !== 'undefined' && pEl && !pEl.hidden) ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--pw')) || 0 : 0;
-    cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (cv.width !== Math.round(W * DPR) || cv.height !== Math.round(H * DPR)) { cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); }
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     sizeScene();
   }
   addEventListener('resize', resize);
@@ -1915,6 +1936,7 @@
   }
   cv.addEventListener('pointerdown', ev => {
     if (cardOpen) return;
+    if (sheet() && pEl.classList.contains('up')) { setSheet(false); return; }
     const hit = nodeAtScreen(ev.clientX, ev.clientY);
     if (hit && hit.done) { openReview(hit); return; }
     { const me = toScreen(player.x, player.y); if (!hit && Math.abs(ev.clientX - me.x) < 18 && ev.clientY < me.y + 4 && ev.clientY > me.y - 46) { changeCharacter(); return; } }
@@ -2623,7 +2645,7 @@
   async function openCard(n) {
     const my = ++flow;
     activeNode = n; activeQ = n.q; scene = SCENES[activeQ.scene] || SCENES.trolley;
-    cardOpen = true; step = 'trunk'; picks = {}; reviewing = false;
+    cardOpen = true; step = 'trunk'; picks = {}; reviewing = false; setSheet(false);
     player.tx = player.ty = null; keys.clear();
     Object.assign(sc, { t: 0, fade: 0, fadeT: 0 });
     resetScene('trunk');
@@ -2639,7 +2661,7 @@
   function openReview(n) {
     ++flow;
     activeNode = n; activeQ = n.q; scene = SCENES[activeQ.scene] || SCENES.trolley;
-    cardOpen = true; reviewing = true; player.tx = player.ty = null; keys.clear();
+    cardOpen = true; reviewing = true; setSheet(false); player.tx = player.ty = null; keys.clear();
     const rec = state.answers[activeQ.id], keysDone = Object.keys(rec.picks), lastKey = keysDone[keysDone.length - 1];
     Object.assign(sc, { t: 0, fade: 0, fadeT: 0 });
     resetScene(lastKey);
@@ -2664,7 +2686,18 @@
     renderPortrait([]);
     openCard(n);
   }
-  function closeCard() { flow++; card.classList.remove('open'); card.setAttribute('aria-hidden', 'true'); cardOpen = false; }
+  // Swap the card's (hidden) words without a jump: the card glides to its new height.
+  async function glide(render) {
+    const h0 = parseFloat(getComputedStyle(card).height);
+    render(); card.scrollTop = 0;
+    const h1 = parseFloat(getComputedStyle(card).height);
+    if (reduce || Math.abs(h1 - h0) < 2) return;
+    card.style.height = h0 + 'px'; card.offsetHeight; // start from the old height
+    card.classList.add('gliding'); card.style.height = h1 + 'px';
+    await sleep(560);
+    card.classList.remove('gliding'); card.style.height = '';
+  }
+  function closeCard() { flow++; card.classList.remove('open', 'gliding'); card.style.height = ''; card.setAttribute('aria-hidden', 'true'); cardOpen = false; }
   awayBtn.addEventListener('click', () => {
     if (!activeNode) return;
     if (reviewing) { activeNode.snoozed = true; closeCard(); return; }
@@ -2682,15 +2715,17 @@
       if (scene.act) await scene.act(Object.assign({ act }, a)); else { sto(act, 2.5); await sleep(1100); }
     } catch (e) { console.error('[Tern] scene act', a.id, e); await sleep(600); }
     if (gone()) return;
-    sc.fadeT = 1; await sleep(550); if (gone()) return;
     const next = activeQ.next ? activeQ.next(step, picks) : null;
+    sc.fadeT = 1;
+    if (next && activeQ.steps[next]) glide(() => renderText(next)); // words stay hidden (.out) until the scene has changed
+    await sleep(550); if (gone()) return;
     if (!next || !activeQ.steps[next]) { finish(); return; }
     step = next;
     resetScene(next);
     sc.fadeT = 0; await sleep(550); if (gone()) return;
     try { if (scene.shift) scene.shift(variantOf(activeQ, next)); } catch (e) { console.error('[Tern] scene shift', e); } // the world changes before the question does
-    await sleep(1400); if (gone()) return;
-    renderText(next); textEl.classList.remove('out');
+    await sleep(900); if (gone()) return;
+    textEl.classList.remove('out');
     answersEl.querySelector('button')?.focus({ preventScroll: true });
   }
   function finish() {
@@ -2718,7 +2753,7 @@
   // ---------- the portrait panel ----------
   const pEl = document.getElementById('portrait'), pBody = document.getElementById('pBody'), pNext = document.getElementById('pNext');
   const pHandle = document.getElementById('pHandle'), pHandleText = document.getElementById('pHandleText');
-  let P = null, headlineChanged = false;
+  let P = null, headlineChanged = false, detailOpen = false;
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const sheet = () => !matchMedia('(min-width: 900px) and (orientation: landscape)').matches;
   function setMin(m) {
@@ -2730,10 +2765,52 @@
   document.getElementById('pMin').addEventListener('click', () => setMin(true));
   document.getElementById('pRail').addEventListener('click', () => setMin(false));
   try { if (localStorage.getItem('tern.panelMin')) { pEl.classList.add('min'); document.documentElement.classList.add('pmin'); } } catch (e) {}
-  pHandle.addEventListener('click', () => {
-    const up = !pEl.classList.contains('up');
-    pEl.classList.toggle('up', up); pEl.classList.remove('news'); pHandle.setAttribute('aria-expanded', String(up));
-  });
+  function setSheet(up) {
+    pEl.classList.toggle('up', up); if (up) pEl.classList.remove('news'); pHandle.setAttribute('aria-expanded', String(up));
+  }
+  let dragged = false;
+  pHandle.addEventListener('click', () => { if (dragged) { dragged = false; return; } setSheet(!pEl.classList.contains('up')); });
+  // On phones the portrait is a sheet: drag it down to close, or up by its handle to open.
+  {
+    let d = null;
+    pEl.addEventListener('touchstart', e => {
+      if (!sheet() || e.touches.length !== 1) { d = null; return; }
+      const up = pEl.classList.contains('up'), onHandle = pHandle.contains(e.target);
+      if (!up && !onHandle) { d = null; return; }
+      d = { y0: e.touches[0].clientY, t0: performance.now(), up, onHandle, top: pBody.scrollTop <= 0, on: false, y: 0, v: 0, lastY: e.touches[0].clientY, lastT: performance.now() };
+    }, { passive: true });
+    pEl.addEventListener('touchmove', e => {
+      if (!d) return;
+      const y = e.touches[0].clientY, dy = y - d.y0, closed = pEl.offsetHeight - 64;
+      if (!d.on) {
+        if (d.up && d.top && dy > 0) e.preventDefault(); // claim the pull before Safari starts a bounce
+        if (Math.abs(dy) < 6) return;
+        const pullDown = d.up && dy > 0 && (d.onHandle || d.top), pullUp = !d.up && dy < 0;
+        if (!pullDown && !pullUp && !d.onHandle) { d = null; return; } // an ordinary scroll
+        d.on = true; pEl.style.transition = 'none';
+      }
+      e.preventDefault();
+      const now = performance.now(); d.v = (y - d.lastY) / Math.max(1, now - d.lastT); d.lastY = y; d.lastT = now;
+      d.y = Math.max(0, Math.min(closed, (d.up ? 0 : closed) + dy));
+      pEl.style.transform = `translateY(${d.y}px)`;
+    }, { passive: false });
+    const end = e => {
+      if (!d) return;
+      if (!d.on && d.onHandle && e.type === 'touchend') { // a tap on the handle: toggle here, skip the click that follows
+        e.preventDefault(); setSheet(!d.up);
+      } else if (d.on) {
+        const closed = pEl.offsetHeight - 64, moved = d.up ? d.y : closed - d.y;
+        const up = d.v > 0.4 ? false : d.v < -0.4 ? true : moved > closed * 0.2 ? !d.up : d.up; // a quarter-ish pull is enough
+        dragged = true; setTimeout(() => { dragged = false; }, 400);
+        pEl.style.transition = 'transform 450ms cubic-bezier(.2, .75, .2, 1)';
+        pEl.style.transform = '';
+        setSheet(up);
+        setTimeout(() => { pEl.style.transition = ''; }, 460);
+      }
+      d = null;
+    };
+    pEl.addEventListener('touchend', end); pEl.addEventListener('touchcancel', end);
+  }
 
   function renderPortrait(fresh) {
     P = TernPortrait.compute(CONTENT, state.answers);
@@ -2743,19 +2820,21 @@
     if (P.has('headline') && P.headline) {
       h += `<section data-k="headline" class="p-sec${f('headline')}"><p class="p-kicker">You, ${P.complete ? 'in full' : 'so far'}</p><h2 class="p-head">${esc(P.headline)}</h2>`
         + (P.description ? `<p class="p-desc">${esc(P.description)}</p>` : '')
-        + (headlineChanged ? '<p class="p-changed">Your headline changed.</p>' : '') + '</section>';
+        + (headlineChanged ? '<p class="p-changed">Your summary changed.</p>' : '')
+        + `<button class="p-more" id="pMore" type="button" aria-expanded="${detailOpen}" aria-controls="pDetail">${detailOpen ? 'Show less' : 'Read more about you'}</button></section>`;
+      if (detailOpen) h += detailHTML();
     } else {
-      h += `<section data-k="headline" class="p-sec"><p class="p-kicker">You, so far</p><h2 class="p-head" style="color:var(--graphite)">${P.count ? 'Still listening.' : 'Answer a question to begin.'}</h2></section>`;
+      h += `<section data-k="headline" class="p-sec"><p class="p-kicker">You, so far</p><h2 class="p-head" style="color:var(--graphite)">${P.count ? 'Keep going. Your summary appears after a few answers.' : 'Answer a question to begin.'}</h2></section>`;
     }
     if (P.has('code')) h += `<section data-k="code" class="p-sec${f('code')}"><h3>Your code</h3><p class="code">${P.code}</p><p class="p-desc">${esc(CONTENT.codeLine || 'One letter for each line of your compass.')}</p></section>`;
     const tl = P.tendencies.slice(P.has('headline') ? 1 : 0, 6);
-    if (P.has('headline') && tl.length) h += `<section data-k="tend" class="p-sec${f('tend')}"><h3>Tendencies</h3><div class="chips">${tl.map(t => `<span class="chip">${esc(t.text)}</span>`).join('')}</div></section>`;
+    if (P.has('headline') && tl.length) h += `<section data-k="tend" class="p-sec${f('tend')}"><h3>More about you</h3><div class="chips">${tl.map(t => `<span class="chip">${esc(t.text)}</span>`).join('')}</div></section>`;
     if (P.has('protect') && (P.protect.length || P.trade.length)) {
       h += `<section data-k="protect" class="p-sec${f('protect')}"><div class="pt"><div><b>You protect</b>${esc(P.protect.join(', ') || '—')}</div><div><b>You'll trade away</b>${esc(P.trade.join(', ') || '—')}</div></div></section>`;
     }
     if (P.has('compass')) {
       const bars = P.axes.filter(a => P.has('allBars') || a.known);
-      if (bars.length) h += `<section data-k="compass" class="p-sec${f('compass')}"><h3>Your compass</h3>${bars.map(a => {
+      if (bars.length) h += `<section data-k="compass" class="p-sec${f('compass')}"><h3>Your compass</h3><p class="p-desc">Which side you lean toward on each pair, and how far.</p>${bars.map(a => {
         const w = Math.abs(a.lean) * 50, left = a.lean >= 0 ? 50 : 50 - w;
         return `<div class="bar"><span class="${a.lean > 0.05 ? 'dim' : ''}">${esc(a.negLabel)}</span><span class="track"><span class="fill" style="left:${left}%;width:${Math.max(w, 1.5)}%"></span></span><span class="${a.lean < -0.05 ? 'dim' : ''}">${esc(a.posLabel)}</span></div>`;
       }).join('')}</section>`;
@@ -2776,7 +2855,41 @@
     void so;
     return changed;
   }
+  // "Read more about you": what each line means, and the answers it comes from. Plain facts, no verdicts.
+  function toggleDetail() {
+    detailOpen = !detailOpen;
+    renderPortrait();
+    const el = document.getElementById(detailOpen ? 'pDetail' : 'pMore');
+    if (el) el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+    document.getElementById('pMore')?.focus({ preventScroll: true });
+  }
+  function factList(label, facts) {
+    if (!facts.length) return '';
+    return `<p class="d-lab">${label}</p><ul>${facts.map(x => `<li>${esc(x.did)} <i>(${esc(x.title)})</i></li>`).join('')}</ul>`;
+  }
+  function leanWords(a) {
+    const m = Math.abs(a.lean), side = a.lean >= 0 ? a.posLabel : a.negLabel;
+    if (m < 0.15) return `You sit near the middle.`;
+    return `You lean ${m < 0.45 ? 'a little' : m < 0.8 ? 'clearly' : 'strongly'} toward ${side.toLowerCase()}.`;
+  }
+  function detailHTML() {
+    let h = `<section data-k="detail" class="p-sec detail" id="pDetail"><h3>What your answers show</h3><p class="p-desc">What each line means, and the answers it comes from.</p>`;
+    h += P.tendencies.slice(0, 6).map(t => `<div class="d-item"><h4>${esc(t.text)}</h4>${t.detail ? `<p>${esc(t.detail)}</p>` : ''}`
+      + factList('From your answers', t.evidence) + factList('Answers that point the other way', t.counter) + '</div>').join('');
+    if (P.has('compass')) {
+      const axes = P.axes.filter(a => P.has('allBars') || a.known);
+      if (axes.length) h += `<h3 class="d-part">How you lean</h3><p class="p-desc">Each pair on your compass, in plain words.</p>` + axes.map(a => {
+        const mid = Math.abs(a.lean) < 0.15, pos = a.lean >= 0;
+        const meaning = mid ? `${a.posLabel}: ${a.posDetail} ${a.negLabel}: ${a.negDetail}` : (pos ? a.posDetail : a.negDetail);
+        return `<div class="d-item"><h4>${esc(a.negLabel)} or ${esc(a.posLabel.toLowerCase())}</h4><p><b>${esc(leanWords(a))}</b> ${esc(meaning || '')}</p>`
+          + factList(mid ? 'Answers that pulled you one way' : 'Answers that pulled you this way', a.toward.slice(0, 3))
+          + factList(mid ? 'And the other way' : 'Answers that pulled the other way', a.away.slice(0, 2)) + '</div>';
+      }).join('');
+    }
+    return h + '</section>';
+  }
   function bindTools() {
+    document.getElementById('pMore')?.addEventListener('click', toggleDetail);
     document.getElementById('pCopy')?.addEventListener('click', copyPortrait);
     document.getElementById('pShare')?.addEventListener('click', sharePortrait);
     document.getElementById('pReset')?.addEventListener('click', startOver);
@@ -2823,7 +2936,7 @@
     g.textAlign = 'center'; g.fillStyle = GRAPH; g.font = '700 22px "Quattrocento Sans", sans-serif';
     g.letterSpacing = '6px'; g.fillText(P.complete ? 'YOU, IN FULL' : 'YOU, SO FAR', Wc / 2, 130); g.letterSpacing = '0px';
     // measure the words first, so the whole card can sit centred
-    const head = P.has('headline') && P.headline ? P.headline : 'Still listening.';
+    const head = P.has('headline') && P.headline ? P.headline : 'Just getting started.';
     g.font = '500 66px "Cormorant Garamond", Georgia, serif';
     const headLines = wrapText(g, head, Wc - 220).slice(0, 4);
     g.font = '400 30px "Quattrocento Sans", sans-serif';
@@ -2936,7 +3049,7 @@
     });
   }
   function revealHeadline() {
-    return arrive(`<p class="k">So far</p><h2>${esc(P.headline)}</h2>${P.description ? `<p>${esc(P.description)}</p>` : ''}<p>This can still change as you walk. Keep going.</p><button class="go" type="button">Keep walking</button>`);
+    return arrive(`<p class="k">So far</p><h2>${esc(P.headline)}</h2>${P.description ? `<p>${esc(P.description)}</p>` : ''}<p>This can change as you answer more.</p><button class="go" type="button">Keep walking</button>`);
   }
   function radarSVG() {
     const n = P.axes.length, R = 100, c = 130, pt = (i, r) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [c + Math.cos(a) * r, c + Math.sin(a) * r]; };
@@ -2946,10 +3059,10 @@
     return `<svg viewBox="0 0 260 260" role="img" aria-label="Your compass as a radar chart"><polygon points="${ring(1)}" fill="none" stroke="#DCDCD7"/><polygon points="${ring(0.5)}" fill="none" stroke="#DCDCD7"/>${P.axes.map((_, i) => `<line x1="${c}" y1="${c}" x2="${pt(i, R)[0]}" y2="${pt(i, R)[1]}" stroke="#DCDCD7"/>`).join('')}<polygon points="${shape}" fill="rgba(20,20,20,.12)" stroke="#141414" stroke-width="1.6"/>${labels}</svg>`;
   }
   async function revealCode() {
-    const p = arrive(`<p class="k">Every stop in the park</p><div class="letters" id="letters">${P.code.split('').map(ch => `<span>${ch}</span>`).join('')}</div>`
+    const p = arrive(`<p class="k">You answered every question in the park</p><div class="letters" id="letters">${P.code.split('').map(ch => `<span>${ch}</span>`).join('')}</div>`
       + `<h2 style="font-size:clamp(22px,4.4vw,30px)">${esc(P.headline || '')}</h2>${radarSVG()}`
       + `<p>${P.axes.map(a => `<b>${a.letter}</b> ${esc(a.letter === a.pos ? a.posLabel : a.negLabel)}`).join(' · ')}</p>`
-      + `<p>The fog is lifting at the edge of the park. The Neighborhood — the people closest to you — is opening soon.</p><button class="go" type="button">Back to the park</button>`);
+      + `<p>The fog is lifting at the edge of the park. Next is the Neighborhood, with questions about the people closest to you. It opens soon.</p><button class="go" type="button">Back to the park</button>`);
     // letters arrive one at a time, left to right: ~300ms each, ~200ms apart
     await sleep(1300);
     const spans = [...document.querySelectorAll('#letters span')];
@@ -2963,7 +3076,8 @@
   function sizeScene() {
     const r = scv.getBoundingClientRect(); if (!r.width) return;
     sDPR = Math.min(devicePixelRatio || 1, 2); sk = r.width / 400;
-    scv.width = r.width * sDPR; scv.height = r.width * 0.625 * sDPR;
+    const w = Math.round(r.width * sDPR), h = Math.round(r.width * 0.625 * sDPR);
+    if (scv.width !== w || scv.height !== h) { scv.width = w; scv.height = h; }
   }
   function updateScene(dt) {
     sc.t += dt;
@@ -3099,13 +3213,14 @@
   }
 
   // ---------- loop ----------
-  let last = performance.now(), T = 0;
+  let last = performance.now(), T = 0, skip = false;
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000); last = now; T += dt;
     if (!selEl.hidden) drawSelect(T);
     if (!titleEl.hidden) drawTitle(T);
     updateWorld(dt);
-    drawWorld(T);
+    const behind = cardOpen && sheet() && Math.abs(cam.off + Math.min(H * 0.3, 280)) < 1;
+    if (!behind || (skip = !skip)) drawWorld(T);
     if (scene && (cardOpen || sc.fade < 0.99)) { updateScene(dt); if (scv.width) drawScene(); }
     requestAnimationFrame(frame);
   }

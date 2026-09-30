@@ -149,7 +149,7 @@ The core set is **fixed and universal**. Every user answers these in the same or
 **Question:** A runaway trolley is heading toward 5 people. You can pull a lever that diverts it to a side track where 1 person will die. What do you do?
 
 - A: Pull the lever *(O+3)*
-- B: Do not pull — I won't directly cause a death *(O-3)*
+- B: Do not pull. I won't directly cause a death. *(O-3)*
 
 **Follow-up A (everyone):** *Illustration: the single figure becomes your mother's silhouette*
 **Assumptions (follow-up):**
@@ -157,15 +157,15 @@ The core set is **fixed and universal**. Every user answers these in the same or
 - Everything else is unchanged.
 What if the 1 person on the side track is your mother?
 - A: Pull anyway *(O+2, L-2, H-2)*
-- B: I can't do it — not her *(H+3, L+2)*
+- B: I can't do it. Not her. *(H+3, L+2)*
 
 **Follow-up B (only if pulled for stranger, won't pull for mother):** *Illustration: a child's silhouette*
 **Assumptions (follow-up):**
 - The 100 are strangers.
 - Your child is the only person on the side track.
 What if the 1 person on the side track is your child, and pulling now would save 100 strangers?
-- A: Pull — 100 lives outweigh one *(O+3, L-3)*
-- B: Do not pull — I won't choose my child's death *(H+3, L+3)*
+- A: Pull. 100 lives outweigh one. *(O+3, L-3)*
+- B: Do not pull. I won't choose my child's death. *(H+3, L+3)*
 
 ---
 
@@ -290,23 +290,23 @@ You learn why your parent changed their mind: your sibling hadn't spoken to them
 - You cannot split salary or responsibilities.
 **Question:** You and a colleague are finalists for one promotion, and performance is essentially equal. Your colleague is under heavy financial pressure. What do you do?
 
-- A: Compete fully — let merit decide *(C-1, O+1, H-1)*
-- B: Withdraw — let them have it *(H+3, C+2)*
+- A: Compete fully. Let merit decide. *(C-1, O+1, H-1)*
+- B: Withdraw. Let them have it. *(H+3, C+2)*
 
 **Follow-up A (if compete):** *Illustration: same scene, one figure's background slightly visible — a child's drawing on a desk*
 **Assumptions (follow-up):**
 - You have strong financial security either way.
 - The risk to your colleague is concrete, not speculative.
 You learn they may lose their home without the raise. You'd be fine either way.
-- A: Still compete fully — the best candidate should win *(C-2, O+1, H-1)*
-- B: Withdraw — that changes it *(H+3, C+3)*
+- A: Still compete fully. The best candidate should win. *(C-2, O+1, H-1)*
+- B: Withdraw. That changes it. *(H+3, C+3)*
 
 **Follow-up B (if withdraw):** *Illustration: the same door, a memo with two names, one crossed out*
 **Assumptions (follow-up):**
 - Their financial situation is unchanged.
-- The credit-taking is confirmed and was never acknowledged.
+- You know for sure they took credit, and they never acknowledged it.
 You learn that last year, this colleague quietly took credit for your work.
-- A: I still withdraw — their need is still real *(H+2, C+1)*
+- A: I still withdraw. Their need is still real. *(H+2, C+1)*
 - B: Then I compete fully *(O+1, H-1, L+1)*
 
 ---
@@ -609,7 +609,7 @@ Your friend asks you, "Is there anything I should know before I marry them?"
 **Question:** Your father needs hip surgery. The waiting list is eight months, and he's in pain every day. A friend on the hospital board can move him up this week, ahead of people who've waited longer. It breaks no rules. Do you make the call?
 
 - A: Make the call *(C-2, S-1, L+1)*
-- B: Don't — he waits his turn *(S+2, C+2)*
+- B: Don't. He waits his turn. *(S+2, C+2)*
 
 ---
 

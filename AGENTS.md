@@ -231,3 +231,8 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Context:** Plain-language sweep of the game (2026-09-29). Ken approved these instrument edits.
 **Discovery:** Changes: dashes in Q1, D8 and Q6 answers became periods (same words). B18's question now names "the drowning child" and "$800 to charity", and its follow-up says "as if a faraway child counts the same" instead of "as if that's true". D8's setup is now "It's legal and no one would find out. He's in pain every day, but his life isn't at risk." Q6's credit-taking setup is now "You know for sure they took credit." None change what an answer means, so nudges stay as they are.
 **Action:** `game/content.js`, `docs/QUESTIONS.md` and `docs/QUESTION-BANK.md` match. Older wording in `docs/question-bank-wip/`, `docs/SCORING.md` and `docs/SIMULATIONS.md` is history or already-stale traces; leave it.
+
+### 2026-09 — Answer Summaries Must Stand Alone
+**Context:** Brevity sweep of "Read more about you" (2026-09-29).
+**Discovery:** Answer summaries (`did` in `game/content.js`) show in mixed lists, away from their question. Follow-up summaries written as "You'd turn it down…", "if the one were your mother" or "that year" made no sense there.
+**Action:** Every `did` line names its subject in full ("the $1 million", "the person on the side track", "your colleague"). Never use "it", "that" or "the one" to point back at the question. Labels in the section stay short: "Your answers", "Pointing the other way", "Toward outcomes" / "Toward rules".

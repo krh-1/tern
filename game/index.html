@@ -2873,17 +2873,18 @@
     return `You lean ${m < 0.45 ? 'a little' : m < 0.8 ? 'clearly' : 'strongly'} toward ${side.toLowerCase()}.`;
   }
   function detailHTML() {
-    let h = `<section data-k="detail" class="p-sec detail" id="pDetail"><h3>What your answers show</h3><p class="p-desc">What each line means, and the answers it comes from.</p>`;
+    let h = `<section data-k="detail" class="p-sec detail" id="pDetail"><h3>What your answers show</h3>`;
     h += P.tendencies.slice(0, 6).map(t => `<div class="d-item"><h4>${esc(t.text)}</h4>${t.detail ? `<p>${esc(t.detail)}</p>` : ''}`
-      + factList('From your answers', t.evidence) + factList('Answers that point the other way', t.counter) + '</div>').join('');
+      + factList('Your answers', t.evidence) + factList('Pointing the other way', t.counter) + '</div>').join('');
     if (P.has('compass')) {
       const axes = P.axes.filter(a => P.has('allBars') || a.known);
-      if (axes.length) h += `<h3 class="d-part">How you lean</h3><p class="p-desc">Each pair on your compass, in plain words.</p>` + axes.map(a => {
-        const mid = Math.abs(a.lean) < 0.15, pos = a.lean >= 0;
-        const meaning = mid ? `${a.posLabel}: ${a.posDetail} ${a.negLabel}: ${a.negDetail}` : (pos ? a.posDetail : a.negDetail);
-        return `<div class="d-item"><h4>${esc(a.negLabel)} or ${esc(a.posLabel.toLowerCase())}</h4><p><b>${esc(leanWords(a))}</b> ${esc(meaning || '')}</p>`
-          + factList(mid ? 'Answers that pulled you one way' : 'Answers that pulled you this way', a.toward.slice(0, 3))
-          + factList(mid ? 'And the other way' : 'Answers that pulled the other way', a.away.slice(0, 2)) + '</div>';
+      if (axes.length) h += `<h3 class="d-part">How you lean</h3>` + axes.map(a => {
+        const mid = Math.abs(a.lean) < 0.15, pos = a.score >= 0, side = pos ? a.posLabel : a.negLabel, other = pos ? a.negLabel : a.posLabel;
+        const meaning = mid ? `<p><b>${esc(leanWords(a))}</b></p><p><b>${esc(a.negLabel)}:</b> ${esc(a.negDetail)}</p><p><b>${esc(a.posLabel)}:</b> ${esc(a.posDetail)}</p>`
+          : `<p><b>${esc(leanWords(a))}</b> ${esc(pos ? a.posDetail : a.negDetail)}</p>`;
+        return `<div class="d-item"><h4>${esc(a.negLabel)} or ${esc(a.posLabel.toLowerCase())}</h4>${meaning}`
+          + factList(`Toward ${side.toLowerCase()}`, a.toward.slice(0, 3))
+          + factList(`Toward ${other.toLowerCase()}`, a.away.slice(0, 2)) + '</div>';
       }).join('');
     }
     return h + '</section>';

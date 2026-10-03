@@ -4,6 +4,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tern</title>
 <meta name="description" content="Walk a quiet ink-drawn park, answer hard questions, and watch a portrait of how you decide take shape.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tern">
+<meta property="og:description" content="A game of 12 hard choices about right and wrong. See what yours say about you.">
 <meta name="theme-color" content="#FAFAF8">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
@@ -162,6 +165,8 @@
   .p-kicker { margin: 0; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--graphite); }
   .p-head { margin: 6px 0 0; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 27px; line-height: 1.18; text-wrap: balance; }
   .p-desc { margin: 8px 0 0; font-size: 14px; line-height: 1.5; color: var(--graphite); }
+  .p-head2 { margin: 0 0 4px; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 21px; line-height: 1.22; text-wrap: balance; }
+  .chapter .chips { margin-top: 10px; }
   .p-changed { margin: 8px 0 0; font-size: 12px; letter-spacing: .06em; color: var(--ink); font-style: italic; }
   .p-sec h3 { margin: 0 0 8px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--graphite); font-weight: 700; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -265,6 +270,45 @@
   .letters span.in { opacity: 1; transform: none; }
   .rv .go { font: inherit; font-size: 16px; padding: 12px 22px; background: var(--ink); color: var(--paper); border: 1.5px solid var(--ink); border-radius: 12px; cursor: pointer; }
   .rv svg { width: min(280px, 70vw); height: auto; }
+  .rv-acts { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .rv .go.ghost { background: none; color: var(--ink); border-color: transparent; text-decoration: underline; text-underline-offset: 3px; font-size: 15px; padding: 6px 14px; }
+  .rv .go:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  /* the share screen: what will be sent, before it's sent */
+  .share { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px)); background: rgba(250, 250, 248, .9); opacity: 0; transition: opacity 400ms; overflow: auto; touch-action: pan-y; }
+  .share.on { opacity: 1; }
+  .share[hidden] { display: none; }
+  .sh-panel { width: min(760px, 100%); display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 24px; align-items: start; padding: 24px; background: var(--paper); border: 1.5px solid var(--ink); border-radius: 20px; box-shadow: 0 18px 60px rgba(20, 20, 20, 0.16); }
+  .sh-head { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 4px; }
+  .sh-card { width: 100%; height: auto; aspect-ratio: 1080 / 1350; display: block; border-radius: 12px; border: 1px solid var(--hair); background: var(--paper); }
+  .sh-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .sh-k { margin: 0; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--graphite); }
+  .sh-panel h2 { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 30px; line-height: 1.15; }
+  .sh-lab { margin: 6px 0 0; font-size: 13px; color: var(--graphite); }
+  .sh-lab.warn { color: var(--ink); font-style: italic; }
+  .sh-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sh-chips button { font: inherit; font-size: 14px; line-height: 1.3; text-align: left; padding: 7px 12px; border-radius: 999px; border: 1.5px solid var(--hair); background: var(--paper); color: var(--graphite); cursor: pointer; }
+  .sh-chips button[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); font-weight: 700; }
+  .sh-chips button[aria-pressed="true"]::before { content: "✓ "; }
+  .sh-chips button:focus-visible, .sh-acts button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .sh-msg { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--wash); font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; user-select: text; -webkit-user-select: text; }
+  .sh-acts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  .sh-acts button { flex: 1 1 140px; font: inherit; font-size: 16px; padding: 12px 18px; border-radius: 12px; border: 1.5px solid var(--ink); cursor: pointer; }
+  .sh-acts .primary { background: var(--ink); color: var(--paper); font-weight: 700; }
+  .sh-acts .secondary { background: var(--paper); color: var(--ink); }
+  .sh-note { margin: 2px 0 0; font-size: 12px; line-height: 1.45; color: var(--graphite); }
+  .sh-side .link { align-self: flex-start; }
+  @media (max-width: 640px) {
+    .share { place-items: start center; }
+    .sh-panel { grid-template-columns: 1fr; gap: 14px; padding: 18px; }
+    .sh-card { width: auto; max-width: 100%; max-height: 34vh; margin: 0 auto; }
+    /* the buttons stay in reach while the lines and message scroll past */
+    .sh-acts { position: sticky; bottom: 0; z-index: 1; margin: 6px -18px 0; padding: 12px 18px max(12px, env(safe-area-inset-bottom, 0px)); background: var(--paper); border-top: 1px solid var(--hair); }
+  }
+  /* once every park question is answered, sharing moves to the top of the portrait */
+  .share-cta { border: 1.5px solid var(--ink); border-radius: 14px; padding: 14px 16px 16px; }
+  .share-cta .p-desc { margin: 0 0 12px; color: var(--ink); }
+  .share-cta .p-share { width: 100%; font-weight: 700; }
   @media (prefers-reduced-motion: reduce) { .portrait, .reveal, .rv > *, .letters span, .fresh { transition-duration: 1ms; animation-duration: 1ms; } }
 
   @media (prefers-reduced-motion: reduce) {
@@ -328,9 +372,27 @@
 
 <section class="reveal" id="reveal" hidden aria-live="polite"><div class="rv" id="rv"></div></section>
 
+<section class="share" id="share" hidden role="dialog" aria-modal="true" aria-labelledby="shTitle">
+  <div class="sh-panel">
+    <div class="sh-head"><p class="sh-k">Send to a friend</p><h2 id="shTitle">Share your result</h2></div>
+    <img class="sh-card" id="shCard" alt="The picture your friend will see: your character, the lines you picked, and your code.">
+    <div class="sh-side">
+      <p class="sh-lab" id="shLab">Pick up to 3 lines about you</p>
+      <div class="sh-chips" id="shChips"></div>
+      <p class="sh-lab">Your message</p>
+      <p class="sh-msg" id="shMsg"></p>
+      <div class="sh-acts"><button class="primary" id="shSend" type="button">Share</button><button class="secondary" id="shAlt" type="button">Copy message</button></div>
+      <p class="sh-note">Only what you see here is sent. Your answers stay on this device.</p>
+      <button class="link" id="shClose" type="button">Not now</button>
+    </div>
+  </div>
+</section>
+
 <script src="content.js"></script>
+<script src="content-neighborhood.js"></script>
 <script src="portrait.js"></script>
 <script src="scenes.js"></script>
+<script src="scenes-neighborhood.js"></script>
 <script>
 (() => {
   const INK = '#141414', PAPER = '#FAFAF8', GRAPH = '#6E6E6A', HAIR = '#DCDCD7', TRAIL = '#EDEDE8', SHADOW = 'rgba(20,20,20,0.10)';
@@ -1148,7 +1210,8 @@
 
   // ---------- world data ----------
   const cv = document.getElementById('world'), ctx = cv.getContext('2d');
-  let W = 0, H = 0, DPR = 1, PW = 0, PWt = 0;
+  // W and H are the map's view size in map pixels: the screen size divided by the zoom (Z).
+  let W = 0, H = 0, DPR = 1, PW = 0, PWt = 0, Z = 1, zoomT = 1;
   let seed = 11;
   const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
 
@@ -1170,7 +1233,8 @@
   const stream = catmull([[-4, 5], [4, 8], [8.5, 12], [8, 17], [6, 21.5], [7.5, 27], [5, 32], [6, 38], [3, 48]]);
   const pond = { x: 3, y: 25, r: 2.2 };
   const road = catmull([[-4, 38.5], [9, 37.5], [19, 34.5], [28, 38], [48, 37]]);
-  const rail = [[-4, 16], [48, 16]];
+  const RAIL_END = 82;
+  const rail = [[-4, 16], [RAIL_END, 16]];
   const trails = [
     [[20, 27], [22, 23], [26, 21], [29, 18.4]],
     [[26, 21], [31, 22], [35.3, 24.8]],
@@ -1187,6 +1251,22 @@
     [[13.3, 31.6], [9.5, 31], [7, 30.6], [5.4, 30.2]],
   ].map(p => catmull(p));
   const hills = [{ x: 36, y: 7, r: 4 }, { x: 15, y: 5, r: 3 }, { x: 39.5, y: 31, r: 3 }, { x: 24, y: 40.5, r: 2.4 }];
+
+  // ---------- the Neighborhood (world 2): east of the park, through a gate past the cabin ----------
+  // Streets cross it east-west (main street, the park road continuing as the lower street, an upper lane)
+  // and one street runs north-south over the railway. Houses sit on lots along them.
+  const HOOD = { x0: 44.6, x1: 79, y0: 0.6, y1: 43.4, gate: { x: 44.6, y: 25.6 } };
+  const hoodStreets = [
+    catmull([[44.6, 25.6], [50, 26.1], [56, 25.8], [64, 26.2], [72, 25.9], [82, 26]]),
+    catmull([[60.6, -6], [60.4, 8], [60.7, 16], [60.4, 26], [60.6, 37], [60.5, 46]]),
+    catmull([[43.5, 8.3], [53, 8], [60.5, 8.1], [68, 7.8], [82, 8]]),
+    catmull([[44, 37.1], [48, 37], [62, 37.2], [82, 36.8]]), // the park road, continuing as the lower street
+  ];
+  const gateTrail = catmull([[35.3, 24.8], [38.5, 25.4], [41.5, 25.2], [44.6, 25.6]]); // from the cabin to the gate
+  // The Neighborhood draws from its own random sequence, so the park's layout never shifts.
+  const inHood = (x, y) => x > HOOD.x0 && x < HOOD.x1 && y > HOOD.y0 - 1 && y < HOOD.y1 + 1;
+  // House lots: [x, y, which way the house faces the street (+1: street to its south-east)]
+  const lotRows = [[5.2, 1], [11, -1], [22.9, 1], [29.2, -1], [33.6, 1], [40.4, -1]];
 
   // ---------- scene engine (card canvas, logical 400 × 250) ----------
   const sc = { t: 0, fade: 0, fadeT: 0, v: {}, tg: {}, rate: {}, x: {} };
@@ -1774,8 +1854,12 @@
 
   // ---------- the questions: content.js is the instrument; this file only places them in the park ----------
   const CONTENT = window.TERN_CONTENT;
-  Object.assign(SCENES, window.TERN_SCENES ? window.TERN_SCENES({ sc, V, sset, sto, hopY, sleep, lerp, clamp01, reduce, INK, PAPER, GRAPH, HAIR,
-    ellipse, line, txt, bubble, heart, paper, steam, marks, hourglass, scribble, parkBack, indoor, drawPerson, npcLook, ridgeY }) : {});
+  // Scene packs: scenes.js (the park) and one file per later world, all given the same drawing helpers.
+  const sceneKit = { sc, V, sset, sto, hopY, sleep, lerp, clamp01, reduce, INK, PAPER, GRAPH, HAIR,
+    ellipse, line, txt, bubble, heart, paper, steam, marks, hourglass, scribble, parkBack, indoor, drawPerson, npcLook, ridgeY };
+  [window.TERN_SCENES, ...(window.TERN_SCENE_PACKS || [])].filter(Boolean).forEach(pack => {
+    try { Object.assign(SCENES, pack(sceneKit)); } catch (e) { console.error('[Tern] scene pack', e); }
+  });
   // the two prototype scenes that carry over use their own variant names
   const VARIANTS = { trolley: { trunk: 'trunk', fu: 'mother', fuA: 'mother', fuB: 'child' }, promotion: { trunk: 'door', fu: 'need', fuA: 'need', fuB: 'need' } };
   const LEGACY_ACTS = { // what the two carried-over scenes do for each answer
@@ -1797,12 +1881,31 @@
     D8: { x: 18, y: 14.3, r: 1.9, kind: 'station' },
     B01: { x: 35.6, y: 37.6, r: 1.9, kind: 'car', stand: [35.3, 36.2], flag: [37, 36.4] },
     B18: { x: 4.4, y: 29.6, r: 1.4, kind: 'pond', stand: [5.4, 30.2], flag: [3.7, 30.8] },
+    // The Neighborhood. Lighter stops near the gate; the heavy family questions sit across the railway.
+    B56: { x: 48.6, y: 29, r: 1.4, kind: 'mailbox' },
+    B55: { x: 52.8, y: 22.6, r: 1.7, kind: 'porchgame' },
+    B24: { x: 55.8, y: 30, r: 1.6, kind: 'doghouse' },
+    Q3: { x: 51.6, y: 34, r: 1.8, kind: 'cafe' },
+    B43: { x: 65.4, y: 22.4, r: 1.9, kind: 'yardfence' },
+    B42: { x: 69.8, y: 30.2, r: 1.9, kind: 'lights' },
+    B44: { x: 74.6, y: 22.6, r: 1.8, kind: 'litwindow' },
+    B46: { x: 66.2, y: 34.4, r: 1.5, kind: 'streetbench' },
+    B36: { x: 56.4, y: 40.6, r: 1.7, kind: 'chairs' },
+    B45: { x: 72.8, y: 40.4, r: 1.7, kind: 'stoop' },
+    D7: { x: 51.8, y: 11.8, r: 1.8, kind: 'arch' },
+    B10: { x: 55.6, y: 4.6, r: 1.9, kind: 'swinghouse' },
+    Q5: { x: 66.6, y: 11.6, r: 1.9, kind: 'oldhouse' },
+    D1: { x: 74, y: 4.4, r: 2.1, kind: 'carehome' },
   };
   const QUESTIONS = CONTENT.questions.map(q => Object.assign({}, q, { node: PLACES[q.id] || { x: 20, y: 20, r: 1.6, kind: 'pond' } }));
 
+  // Buildings you can't walk through: [width, depth, y offset] of each building-type stop's footprint, in map units.
+  const FOOT = { cabin: [1.1, 1.1], kitchen: [1.1, 1.1], cottage: [1.1, 1.1], shop: [1.1, 1.1], hall: [1.4, 1.1],
+    cafe: [1.7, 1.3], litwindow: [1.6, 1.4], stoop: [1.5, 1.3], swinghouse: [1.8, 1.4], oldhouse: [1.7, 1.5], carehome: [2.8, 1.3], porchgame: [1.6, 1.1, -0.75], doghouse: [0.6, 0.6] };
   const nodes = QUESTIONS.map(q => {
-    const n = Object.assign({ id: q.id, q, done: false }, q.node);
-    n.stand = n.stand || [n.x + 0.8, n.y + 0.9];
+    const n = Object.assign({ id: q.id, q, done: false, world: q.world || 'park' }, q.node);
+    const ft = FOOT[n.kind];
+    n.stand = n.stand || (ft && n.world !== 'park' ? [n.x + 0.3, n.y + (ft[2] || 0) + ft[1] / 2 + 0.6] : [n.x + 0.8, n.y + 0.9]); // in front of the door
     n.flag = n.flag || [n.x - 0.7, n.y + 1.2];
     return n;
   });
@@ -1815,7 +1918,7 @@
     if (trails.some(t => minDist(x, y, t) < 0.9)) return false;
     if (dist(x, y, pond.x, pond.y) < pond.r + 0.8) return false;
     if (hills.some(h => dist(x, y, h.x, h.y) < h.r + 0.4)) return false;
-    if (nodes.some(n => dist(x, y, n.x, n.y) < n.r + 0.9 || dist(x, y, n.flag[0], n.flag[1]) < 1)) return false;
+    if (nodes.some(n => n.world === 'park' && (dist(x, y, n.x, n.y) < n.r + 0.9 || dist(x, y, n.flag[0], n.flag[1]) < 1))) return false;
     if (dist(x, y, START.x, START.y) < 1.8) return false;
     return true;
   }
@@ -1826,13 +1929,67 @@
     const outside = x < 0 || y < 0 || x > SIZE || y > SIZE;
     if (!isClear(x, y)) continue;
     const f = forest(x, y), r = rnd(), s = 0.75 + rnd() * 0.55, ph = rnd() * 6;
-    if (outside) { if (r < 0.55) decor.push({ x, y, s: s * 1.1, ph, kind: rnd() < 0.8 ? 'pine' : 'tree' }); continue; }
+    if (outside) { if (r < 0.55) { const kind = rnd() < 0.8 ? 'pine' : 'tree'; if (x < SIZE + 1.8) decor.push({ x, y, s: s * 1.1, ph, kind }); } continue; }
     if (f > 1.1 && r < 0.75) decor.push({ x, y, s, ph, kind: rnd() < 0.75 ? 'pine' : 'tree' });
     else if (r < 0.05) decor.push({ x, y, s, ph, kind: rnd() < 0.5 ? 'pine' : 'tree' });
     else if (r < 0.13) decor.push({ x, y, s, ph, kind: 'tuft' });
     else if (r < 0.18) decor.push({ x, y, s, ph, kind: 'flower' });
     else if (r < 0.205) decor.push({ x, y, s, ph, kind: 'rock' });
     else if (r < 0.22) decor.push({ x, y, s, ph, kind: 'bush' });
+  }
+  // Neighborhood decor: houses on lots, a fence or hedge along each front yard, street trees, lamps, garden bits.
+  for (let i = decor.length - 1; i >= 0; i--) if (minDist(decor[i].x, decor[i].y, gateTrail) < 0.9) decor.splice(i, 1);
+  let hseed = 7;
+  const hr = () => { hseed = (hseed * 16807) % 2147483647; return (hseed - 1) / 2147483646; };
+  const houses = [];
+  function hoodClear(x, y, pad) {
+    pad = pad || 0;
+    if (hoodStreets.some((st, i) => minDist(x, y, st) < (i === 3 ? 1.6 : 1.25) + pad) || Math.abs(y - 16) < 1.1 + pad) return false;
+    if (minDist(x, y, gateTrail) < 0.9 + pad) return false;
+    if (nodes.some(n => n.world !== 'park' && (dist(x, y, n.x, n.y) < n.r + 0.9 + pad || dist(x, y, n.flag[0], n.flag[1]) < 0.9 || dist(x, y, n.stand[0], n.stand[1]) < 0.8))) return false;
+    if (houses.some(h => Math.abs(x - h.x) < h.w / 2 + 0.45 + pad && Math.abs(y - h.y) < h.d / 2 + 0.45 + pad)) return false;
+    return x > HOOD.x0 + 0.6 && x < HOOD.x1 && y > HOOD.y0 && y < HOOD.y1;
+  }
+  lotRows.forEach(([ly, face]) => {
+    for (let x = 47.6 + hr() * 1.4; x < 78; x += 3.3 + hr() * 1.2) {
+      const w = 1.35 + hr() * 0.4, d = 1.2 + hr() * 0.3, y = ly + (hr() - 0.5) * 0.4;
+      const pts = [[x, y], [x - w / 2, y - d / 2], [x + w / 2, y - d / 2], [x - w / 2, y + d / 2], [x + w / 2, y + d / 2]];
+      if (!pts.every(([px, py]) => hoodClear(px, py, 0.15))) continue;
+      const h = { kind: 'house', x, y, w, d, face, ridge: hr() < 0.5 ? 'x' : 'y', h: 20 + hr() * 7, chimney: hr() < 0.45, s: 1, ph: hr() * 6 };
+      houses.push(h); decor.push(h);
+      const fy = y + face * (d / 2 + 0.75); // the front yard's edge, toward the street
+      if (hr() < 0.6) { if (hoodClear(x, fy, -0.4)) decor.push({ kind: 'fence', x, y: fy, x0: x - w / 2 - 0.35, x1: x + w / 2 + 0.35, gap: x + (hr() - 0.5) * 0.4, s: 1, ph: 0 }); }
+      else for (let k = -1; k <= 1; k += 2) { const bx = x + k * (w / 2 + 0.1); if (hoodClear(bx, fy, -0.4)) decor.push({ kind: 'bush', x: bx, y: fy, s: 0.8 + hr() * 0.2, ph: 0 }); }
+      if (hr() < 0.5) { const tx = x + (hr() < 0.5 ? -1 : 1) * (w / 2 + 0.9), ty = y - face * 0.3; if (hoodClear(tx, ty, 0)) decor.push({ kind: 'tree', x: tx, y: ty, s: 0.8 + hr() * 0.3, ph: hr() * 6 }); }
+    }
+  });
+  // street trees and lamps along the curbs
+  hoodStreets.forEach(st => {
+    let since = 0;
+    for (let i = 1; i < st.length; i++) {
+      since += dist(st[i][0], st[i][1], st[i - 1][0], st[i - 1][1]);
+      if (since < 3.1) continue;
+      since = 0;
+      const [x, y] = st[i], a = st[Math.max(0, i - 2)], b = st[Math.min(st.length - 1, i + 2)];
+      let nx = -(b[1] - a[1]), ny = b[0] - a[0]; const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l;
+      const side = (i % 2 ? 1 : -1), px = x + nx * 1.45 * side, py = y + ny * 1.45 * side;
+      if (!hoodClear(px, py, -0.6)) continue;
+      decor.push(i % 3 === 0 ? { kind: 'lamp', x: px, y: py, s: 1, ph: 0 } : { kind: 'tree', x: px, y: py, s: 0.75 + hr() * 0.25, ph: hr() * 6 });
+    }
+  });
+  for (let i = 0; i < 900; i++) { // woods all around the Neighborhood's edges, so its streets run off into trees
+    const side = hr(), u = hr(), k = hr() * 5.5;
+    const x = side < 0.5 ? HOOD.x0 + u * (HOOD.x1 + 5 - HOOD.x0) : HOOD.x1 + k, y = side < 0.25 ? HOOD.y0 - 0.6 - k : side < 0.5 ? HOOD.y1 + 0.6 + k : -6 + u * 56;
+    if (hoodStreets.some(st => minDist(x, y, st) < 1.5) || Math.abs(y - 16) < 1.1 || hr() > 0.55) continue;
+    decor.push({ x, y, s: (0.8 + hr() * 0.5) * 1.1, ph: hr() * 6, kind: hr() < 0.7 ? 'pine' : 'tree' });
+  }
+  for (let i = 0; i < 700; i++) { // garden bits in the yards
+    const x = HOOD.x0 - 1 + hr() * (HOOD.x1 - HOOD.x0 + 7), y = -5 + hr() * 54, r = hr(), s = 0.75 + hr() * 0.5, ph = hr() * 6;
+    if (x > HOOD.x1 - 0.5 || y < HOOD.y0 - 0.4 || y > HOOD.y1 + 0.4) { if (x > HOOD.x0 + 0.4 && r < 0.45 && !hoodStreets.some(st => minDist(x, y, st) < 1.4) && minDist(x, y, road) > 1.7) decor.push({ x, y, s: s * 1.1, ph, kind: hr() < 0.6 ? 'pine' : 'tree' }); continue; }
+    if (!hoodClear(x, y, 0.1)) continue;
+    if (r < 0.1) decor.push({ x, y, s, ph, kind: 'tuft' });
+    else if (r < 0.16) decor.push({ x, y, s, ph, kind: 'flower' });
+    else if (r < 0.175) decor.push({ x, y, s, ph, kind: 'bush' });
   }
   const bridges = [];
   [[road, 'road'], [railPts, 'rail'], ...trails.map(t => [t, 'trail'])].forEach(([pts, kind]) => {
@@ -1841,6 +1998,55 @@
       if (minDist(pts[i][0], pts[i][1], stream) < 0.3 && i - lastI > 8) { bridges.push({ pts, i, kind }); lastI = i; }
     }
   });
+
+  decor.push({ kind: 'gate', x: HOOD.gate.x, y: HOOD.gate.y, s: 1, ph: 0 });
+
+  // ---------- solid buildings, and finding a way around them ----------
+  const BODY = 0.25; // how far your character keeps from a wall
+  const solids = [
+    ...houses.map(h => ({ x0: h.x - h.w / 2, x1: h.x + h.w / 2, y0: h.y - h.d / 2, y1: h.y + h.d / 2 })),
+    ...nodes.filter(n => FOOT[n.kind]).map(n => { const [w, d, oy] = FOOT[n.kind], cy = n.y + (oy || 0); return { x0: n.x - w / 2, x1: n.x + w / 2, y0: cy - d / 2, y1: cy + d / 2 }; }),
+  ].map(r => ({ x0: r.x0 - BODY, x1: r.x1 + BODY, y0: r.y0 - BODY, y1: r.y1 + BODY }));
+  const solidAt = (x, y, m) => { m = m || 0; return solids.some(r => x > r.x0 - m && x < r.x1 + m && y > r.y0 - m && y < r.y1 + m); };
+  // a straight walk that stays a little clear of every corner (m), so a route never grazes a wall
+  const clearLine = (ax, ay, bx, by, m) => { const n = Math.ceil(dist(ax, ay, bx, by) / 0.05); for (let i = 1; i <= n; i++) if (solidAt(lerp(ax, bx, i / n), lerp(ay, by, i / n), m)) return false; return true; };
+  // the nearest open spot to (x, y), for a tap that lands on a roof
+  function freeNear(x, y) {
+    if (!solidAt(x, y)) return [x, y];
+    for (let r = 0.25; r < 4; r += 0.25) for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2, px = x + Math.cos(a) * r, py = y + Math.sin(a) * r; if (!solidAt(px, py, 0.1)) return [px, py]; }
+    return [x, y];
+  }
+  // A walk to (x, y): straight there if nothing's in the way, otherwise a short route on a half-unit grid, smoothed.
+  function walkTo(x, y, again) {
+    if (!again) player.replans = 0;
+    [x, y] = freeNear(clampX(x), clampW(y));
+    player.path = null; player.tx = x; player.ty = y; player.goal = [x, y];
+    if (clearLine(player.x, player.y, x, y, 0.04)) return;
+    const S = 0.5, cols = Math.ceil(((hoodOpen ? HOOD.x1 : SIZE) + 1) / S), rows = Math.ceil((SIZE + 1) / S);
+    const cell = (cx, cy) => cy * cols + cx, cxOf = v => Math.max(0, Math.min(cols - 1, Math.round(v / S))), cyOf = v => Math.max(0, Math.min(rows - 1, Math.round(v / S)));
+    const sx = cxOf(player.x), sy = cyOf(player.y), gx = cxOf(x), gy = cyOf(y), goal = cell(gx, gy);
+    const open = [[0, cell(sx, sy)]], gs = new Map([[cell(sx, sy), 0]]), from = new Map(), shut = new Set();
+    const push = it => { open.push(it); let i = open.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (open[p][0] <= it[0]) break; open[i] = open[p]; i = p; } open[i] = it; };
+    const pop = () => { const top = open[0], last = open.pop(); if (open.length) { let i = 0; for (;;) { const l = 2 * i + 1, r = l + 1; let m = i; if (l < open.length && open[l][0] < (m === i ? last[0] : open[m][0])) m = l; if (r < open.length && open[r][0] < (m === i ? last[0] : open[m][0])) m = r; if (m === i) break; open[i] = open[m]; i = m; } open[i] = last; } return top; };
+    let found = false, guard = 0;
+    while (open.length && guard++ < 40000) {
+      const [, c] = pop(); if (shut.has(c)) continue; shut.add(c);
+      if (c === goal) { found = true; break; }
+      const cx = c % cols, cy = (c - cx) / cols;
+      for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+        if (!dx && !dy) continue;
+        const nx = cx + dx, ny = cy + dy; if (nx < 1 || ny < 1 || nx >= cols - 1 || ny >= rows - 1) continue;
+        if (cell(nx, ny) !== goal && solidAt(nx * S, ny * S, 0.12) || (dx && dy && (solidAt(cx * S, ny * S, 0.12) || solidAt(nx * S, cy * S, 0.12)))) continue; // keep clear of walls; no cutting corners
+        const nc = cell(nx, ny), g = gs.get(c) + (dx && dy ? 1.414 : 1);
+        if (g < (gs.has(nc) ? gs.get(nc) : 1e9)) { gs.set(nc, g); from.set(nc, c); push([g + Math.hypot(gx - nx, gy - ny), nc]); }
+      }
+    }
+    if (!found) return; // nowhere to go: walk straight and let the walls stop you
+    const pts = [[x, y]]; for (let c = from.get(goal); c != null && c !== cell(sx, sy); c = from.get(c)) { const cx = c % cols; pts.unshift([cx * S, (c - cx) / cols * S]); }
+    const route = []; let at = [player.x, player.y], i = 0; // keep only the corners you can't see past
+    while (i < pts.length) { let j = pts.length - 1; while (j > i && !clearLine(at[0], at[1], pts[j][0], pts[j][1], 0.08)) j--; route.push(pts[j]); at = pts[j]; i = j + 1; }
+    [player.tx, player.ty] = route.shift(); player.path = route;
+  }
 
   // ---------- animals ----------
   const animals = [];
@@ -1878,16 +2084,23 @@
   const keys = new Set();
 
   function resize() {
-    DPR = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
+    DPR = Math.min(devicePixelRatio || 1, 2);
     PWt = (typeof pEl !== 'undefined' && pEl && !pEl.hidden) ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--pw')) || 0 : 0;
-    if (cv.width !== Math.round(W * DPR) || cv.height !== Math.round(H * DPR)) { cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); }
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (cv.width !== Math.round(innerWidth * DPR) || cv.height !== Math.round(innerHeight * DPR)) { cv.width = Math.round(innerWidth * DPR); cv.height = Math.round(innerHeight * DPR); }
+    applyZoom();
     sizeScene();
   }
   addEventListener('resize', resize);
 
+  // Zoom: pinch on a phone, pinch or scroll on a trackpad, + and - on a keyboard.
+  // The map is drawn at view size W x H and scaled by Z, so it always zooms around the player.
+  const ZMIN = 0.6, ZMAX = 1.8;
+  function applyZoom() { W = innerWidth / Z; H = innerHeight / Z; ctx.setTransform(DPR * Z, 0, 0, DPR * Z, 0, 0); }
+  function zoomTo(z) { zoomT = Math.max(ZMIN, Math.min(ZMAX, z)); }
+
   const clampW = v => Math.max(0.6, Math.min(SIZE - 0.6, v));
-  function origin() { const c = iso(cam.x, cam.y); return { ox: (W - PW) / 2 - c.x, oy: H / 2 + 30 + cam.off - c.y }; }
+  const clampX = v => Math.max(0.6, Math.min((hoodOpen ? HOOD.x1 : SIZE) - 0.6, v)); // where walkers can go east-west
+  function origin() { const c = iso(cam.x, cam.y); return { ox: (W - PW / Z) / 2 - c.x, oy: H / 2 + (30 + cam.off) / Z - c.y }; }
   function toScreen(x, y) { const { ox, oy } = origin(), p = iso(x, y); return { x: p.x + ox, y: p.y + oy }; }
   function toWorld(sx, sy) {
     const { ox, oy } = origin(), a = (sx - ox) / (TW / 2), b = (sy - oy) / (TH / 2);
@@ -1909,9 +2122,17 @@
     const dx = e.tx - e.x, dy = e.ty - e.y, d = Math.hypot(dx, dy);
     if (d < 0.04) { e.tx = e.ty = null; e.moving = false; return true; }
     const step = Math.min(d, speed * dt);
-    const nx = clampW(e.x + dx / d * step), ny = clampW(e.y + dy / d * step);
-    if (blocked && blocked(nx, ny)) { e.tx = e.ty = null; e.moving = false; return true; }
-    e.x = nx; e.y = ny;
+    const nx = e === player ? clampX(e.x + dx / d * step) : clampW(e.x + dx / d * step), ny = clampW(e.y + dy / d * step);
+    let mx = nx, my = ny;
+    if (blocked && blocked(nx, ny)) {
+      if (e !== player) { e.tx = e.ty = null; e.moving = false; return true; }
+      // slide along the wall; if neither slide moves you, you're stuck on a corner
+      if (!blocked(nx, e.y) && Math.abs(nx - e.x) > 1e-4) my = e.y;
+      else if (!blocked(e.x, ny) && Math.abs(ny - e.y) > 1e-4) mx = e.x;
+      else if (e.goal && (e.replans || 0) < 3) { e.replans = (e.replans || 0) + 1; walkTo(e.goal[0], e.goal[1], true); return false; } // find the way again
+      else { e.tx = e.ty = null; e.path = null; e.goal = null; e.moving = false; return true; }
+    }
+    e.x = mx; e.y = my;
     const sdx = dx - dy; if (Math.abs(sdx) > 0.01) e.dir = Math.sign(sdx);
     e.moving = true; e.walk += dt * speed * 3.2;
     return false;
@@ -1929,25 +2150,54 @@
   function nodeAtScreen(sx, sy) {
     const w = toWorld(sx, sy);
     return nodes.find(n => {
+      if (!isOpen(n)) return false;
       if (dist(n.x, n.y, w.x, w.y) < n.r) return true;
       const f = toScreen(n.flag[0], n.flag[1]);
       return sx > f.x - 16 && sx < f.x + 34 && sy > f.y - 112 && sy < f.y + 8; // flag and its "?" bubble
     });
   }
+  // Fingers on the map. One finger walks; a second finger turns it into a pinch and cancels the walk.
+  const fingers = new Map(); let pinch = null;
+  const spread = () => { const [a, b] = [...fingers.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
   cv.addEventListener('pointerdown', ev => {
+    fingers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
     if (cardOpen) return;
+    if (fingers.size >= 2) {
+      if (!pinch) { pinch = { d: spread(), z: zoomT }; player.tx = player.ty = null; player.path = null; marker = null; }
+      return;
+    }
     if (sheet() && pEl.classList.contains('up')) { setSheet(false); return; }
-    const hit = nodeAtScreen(ev.clientX, ev.clientY);
+    const sx = ev.clientX / Z, sy = ev.clientY / Z; // screen pixels to map view pixels
+    const hit = nodeAtScreen(sx, sy);
     if (hit && hit.done) { openReview(hit); return; }
-    { const me = toScreen(player.x, player.y); if (!hit && Math.abs(ev.clientX - me.x) < 18 && ev.clientY < me.y + 4 && ev.clientY > me.y - 46) { changeCharacter(); return; } }
-    if (hit) { player.tx = hit.stand[0]; player.ty = hit.stand[1]; hit.snoozed = false; }
-    else { const w = toWorld(ev.clientX, ev.clientY); player.tx = clampW(w.x); player.ty = clampW(w.y); }
+    { const me = toScreen(player.x, player.y); if (!hit && Math.abs(sx - me.x) < 18 && sy < me.y + 4 && sy > me.y - 46) { changeCharacter(); return; } }
+    if (hit) { walkTo(hit.stand[0], hit.stand[1]); hit.snoozed = false; }
+    else { const w = toWorld(sx, sy); walkTo(w.x, w.y); }
     marker = { x: player.tx, y: player.ty, t: 0 };
     moved();
   });
-  cv.addEventListener('pointermove', ev => { cv.style.cursor = !cardOpen && nodeAtScreen(ev.clientX, ev.clientY) ? 'pointer' : 'crosshair'; });
+  cv.addEventListener('pointermove', ev => {
+    if (fingers.has(ev.pointerId)) fingers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    if (pinch && fingers.size >= 2) { zoomTo(pinch.z * spread() / pinch.d); return; }
+    cv.style.cursor = !cardOpen && nodeAtScreen(ev.clientX / Z, ev.clientY / Z) ? 'pointer' : 'crosshair';
+  });
+  const lift = ev => { fingers.delete(ev.pointerId); if (!fingers.size) { if (pinch) save(); pinch = null; } };
+  cv.addEventListener('pointerup', lift); cv.addEventListener('pointercancel', lift);
+  // Trackpad pinch arrives as a wheel event with ctrlKey; a plain scroll zooms more gently.
+  let zoomSave = null;
+  const zoomed = () => { clearTimeout(zoomSave); zoomSave = setTimeout(save, 400); };
+  cv.addEventListener('wheel', ev => {
+    ev.preventDefault(); if (cardOpen) return;
+    zoomTo(zoomT * Math.exp(-ev.deltaY * (ev.ctrlKey ? 0.01 : 0.0015))); zoomed();
+  }, { passive: false });
+  // Safari on a Mac sends trackpad pinches as gesture events instead.
+  let gz = 1;
+  cv.addEventListener('gesturestart', ev => { ev.preventDefault(); gz = zoomT; });
+  cv.addEventListener('gesturechange', ev => { ev.preventDefault(); if (!cardOpen && !fingers.size) { zoomTo(gz * ev.scale); zoomed(); } });
   addEventListener('keydown', e => {
-    if (cardOpen || selecting) return;
+    if (cardOpen || selecting || !document.getElementById('share').hidden) return;
+    if (e.key === '+' || e.key === '=') { zoomTo(zoomT * 1.2); zoomed(); return; }
+    if (e.key === '-' || e.key === '_') { zoomTo(zoomT / 1.2); zoomed(); return; }
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) { keys.add(e.key); e.preventDefault(); moved(); }
   });
   addEventListener('keyup', e => keys.delete(e.key));
@@ -2026,17 +2276,20 @@
       ctx.beginPath(); ctx.moveTo(x - 5, y); ctx.quadraticCurveTo(x - 2.5, y - 2.5, x, y); ctx.quadraticCurveTo(x + 2.5, y + 2.5, x + 5, y); ctx.stroke();
     }
     ctx.restore();
-    strokePts(ctx, road, 32, INK); strokePts(ctx, road, 29, PAPER);
-    strokePts(ctx, road, 1.4, GRAPH, [10, 10]);
-    trails.forEach(tr => { strokePts(ctx, tr, 14, HAIR); strokePts(ctx, tr, 11.5, TRAIL); strokePts(ctx, tr, 1.6, GRAPH, [1, 7]); });
+    // the park road and the Neighborhood's streets: all the ink edges first, then the paper, so crossings stay open
+    const streetsOn = hoodStreets.filter(st => { const a = toScreen(...st[0]), b = toScreen(...st[st.length - 1]); return Math.max(a.x, b.x) > -60 && Math.min(a.x, b.x) < W + 60; });
+    strokePts(ctx, road, 32, INK); streetsOn.forEach((st, i) => strokePts(ctx, st, st === hoodStreets[3] ? 32 : 27, INK));
+    strokePts(ctx, road, 29, PAPER); streetsOn.forEach(st => strokePts(ctx, st, st === hoodStreets[3] ? 29 : 24, PAPER));
+    strokePts(ctx, road, 1.4, GRAPH, [10, 10]); if (streetsOn.includes(hoodStreets[3])) strokePts(ctx, hoodStreets[3], 1.4, GRAPH, [10, 10]);
+    [...trails, gateTrail].forEach(tr => { strokePts(ctx, tr, 14, HAIR); strokePts(ctx, tr, 11.5, TRAIL); strokePts(ctx, tr, 1.6, GRAPH, [1, 7]); });
     bridges.filter(b => b.kind !== 'rail').forEach(b => drawBridge(ctx, b));
     ctx.save(); ctx.strokeStyle = GRAPH; ctx.lineWidth = 1;
-    for (let x = -4; x <= 48; x += 0.5) {
+    for (let x = -4; x <= RAIL_END; x += 0.5) {
       const q = toScreen(x, 16); if (q.x < -20 || q.x > W + 20 || q.y < -20 || q.y > H + 20) continue;
       line(ctx, q.x - PERP.x * 6, q.y - PERP.y * 6, q.x + PERP.x * 6, q.y + PERP.y * 6);
     }
     ctx.restore();
-    const ra = toScreen(-4, 16), rb = toScreen(48, 16);
+    const ra = toScreen(-4, 16), rb = toScreen(RAIL_END, 16);
     ctx.strokeStyle = INK; ctx.lineWidth = 1.4;
     for (const k of [-3, 3]) line(ctx, ra.x + PERP.x * k, ra.y + PERP.y * k, rb.x + PERP.x * k, rb.y + PERP.y * k);
     bridges.filter(b => b.kind === 'rail').forEach(b => drawBridge(ctx, b));
@@ -2045,6 +2298,7 @@
   function drawStopGround(g, n, t) {
     const p = toScreen(n.x, n.y), rx = n.r * TW * 0.62, ry = rx / 2;
     if (n.done) return; // answered: no disc, no ring. The place melts back into the park; the flag marks it.
+    if (!isOpen(n)) return;
     g.save();
     g.fillStyle = n.done ? 'rgba(20,20,20,0.035)' : 'rgba(20,20,20,0.07)';
     ellipse(g, p.x, p.y, rx, ry); g.fill();
@@ -2115,6 +2369,222 @@
     g.fillStyle = PAPER; g.fill(); g.strokeStyle = INK; g.lineWidth = 1.5; g.stroke();
     g.strokeStyle = GRAPH; g.lineWidth = 1; line(g, p.x + 2 * s, p.y - 7 * s, p.x + 5 * s, p.y - 1 * s);
   }
+  // ---------- the Neighborhood's buildings and street things ----------
+  function poly(g, pts) { g.beginPath(); pts.forEach((q, i) => i ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y)); g.closePath(); }
+  // A house is a box on its footprint with a pitched roof. Only the two walls facing the viewer (+x and +y) show.
+  function drawHouse(g, d, t, o) {
+    o = o || {};
+    const x0 = d.x - d.w / 2, x1 = d.x + d.w / 2, y0 = d.y - d.d / 2, y1 = d.y + d.d / 2, H = d.h, rh = o.roof || H * 0.7;
+    const P = (x, y, z) => { const q = toScreen(x, y); return { x: q.x, y: q.y - (z || 0) }; };
+    const A = P(x0, y0), B = P(x1, y0), C = P(x1, y1), D = P(x0, y1), up = q => ({ x: q.x, y: q.y - H });
+    g.save(); g.lineJoin = 'round'; g.lineCap = 'round';
+    g.fillStyle = SHADOW; poly(g, [A, B, C, D].map(q => ({ x: q.x + 7, y: q.y + 3 }))); g.fill();
+    g.strokeStyle = INK; g.fillStyle = PAPER; g.lineWidth = 1.6;
+    poly(g, [B, C, up(C), up(B)]); g.fill(); g.stroke(); // the +x wall
+    poly(g, [D, C, up(C), up(D)]); g.fill(); g.stroke(); // the +y wall
+    // windows and a door on the walls you can see. wall(f, u, v): f 'x' = the +x wall, 'y' = the +y wall; u along it, v up it.
+    const wall = (f, u, v) => f === 'x' ? P(x1, y0 + u * (y1 - y0), v * H) : P(x0 + u * (x1 - x0), y1, v * H);
+    const pane = (f, u0, u1, v0, v1, fill) => { poly(g, [wall(f, u0, v0), wall(f, u1, v0), wall(f, u1, v1), wall(f, u0, v1)]); g.fillStyle = fill || PAPER; g.fill(); g.lineWidth = 1.2; g.stroke(); };
+    const front = d.face > 0 ? 'y' : 'x', side = front === 'y' ? 'x' : 'y';
+    const stories = o.stories || 1;
+    for (let k = 0; k < stories; k++) {
+      const v0 = (0.3 + k) / stories, v1 = (0.68 + k) / stories;
+      if (k === 0) pane(front, 0.44, 0.6, 0, 0.62 / stories); // door
+      pane(front, 0.12, 0.3, v0, v1, o.lit && o.lit.f === front && o.lit.k === k ? INK : null);
+      pane(front, 0.72, 0.88, v0, v1, o.lit && o.lit.f === front && o.lit.k === k && o.lit.both ? INK : null);
+      pane(side, 0.3, 0.55, v0, v1, o.lit && o.lit.f === side && o.lit.k === k ? INK : null);
+    }
+    g.lineWidth = 1.6; g.fillStyle = PAPER;
+    let R0, R1, gable, back, frontRoof;
+    if (d.ridge === 'x') {
+      R0 = P(x0, d.y, H + rh); R1 = P(x1, d.y, H + rh);
+      back = [up(A), up(B), R1, R0]; gable = [up(B), up(C), R1]; frontRoof = [up(D), up(C), R1, R0];
+    } else {
+      R0 = P(d.x, y0, H + rh); R1 = P(d.x, y1, H + rh);
+      back = [up(A), up(D), R1, R0]; gable = [up(D), up(C), R1]; frontRoof = [up(B), up(C), R1, R0];
+    }
+    poly(g, back); g.fill(); g.stroke();
+    poly(g, gable); g.fill(); g.stroke();
+    if (d.chimney) { // a little chimney behind the ridge
+      const q = { x: lerp(R0.x, R1.x, 0.3), y: lerp(R0.y, R1.y, 0.3) };
+      g.fillRect(q.x - 3.5, q.y - 9, 7, 13); g.strokeRect(q.x - 3.5, q.y - 9, 7, 13);
+      if (o.smoke && !reduce) for (let k = 0; k < 2; k++) { const u = (t * 0.25 + k / 2 + d.ph) % 1; g.save(); g.globalAlpha = 0.8 * (1 - u); ellipse(g, q.x + u * 8, q.y - 13 - u * 18, 2.5 + u * 3, 2.5 + u * 3); g.fillStyle = PAPER; g.fill(); g.strokeStyle = GRAPH; g.lineWidth = 1; g.stroke(); g.restore(); }
+      g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6;
+    }
+    poly(g, frontRoof); g.fill(); g.stroke();
+    g.strokeStyle = GRAPH; g.lineWidth = 1; // a few shingle lines on the front slope
+    const fr = frontRoof, e0 = fr[0], e1 = fr[1];
+    for (let k = 1; k <= 3; k++) { const u = k / 4; line(g, lerp(e0.x, fr[3].x, u), lerp(e0.y, fr[3].y, u), lerp(e1.x, fr[2].x, u), lerp(e1.y, fr[2].y, u)); }
+    g.restore();
+    return { P, wall, A, B, C, D, up, H };
+  }
+  const drawHouseDecor = (g, p, d, t) => drawHouse(g, d, t, { smoke: d.chimney && d.ph < 1.2 });
+  function drawFence(g, p, d) {
+    const a = toScreen(d.x0, d.y), b = toScreen(d.x1, d.y), gp = toScreen(d.gap, d.y);
+    g.save(); g.strokeStyle = INK; g.lineWidth = 1.3; g.lineCap = 'round';
+    const n = Math.max(3, Math.round(dist(a.x, a.y, b.x, b.y) / 7));
+    for (let i = 0; i <= n; i++) {
+      const u = i / n, x = lerp(a.x, b.x, u), y = lerp(a.y, b.y, u);
+      if (Math.abs(x - gp.x) < 6) continue; // the gate in the fence
+      line(g, x, y, x, y - 10); g.fillStyle = INK; g.beginPath(); g.moveTo(x - 1.4, y - 10); g.lineTo(x, y - 12.5); g.lineTo(x + 1.4, y - 10); g.fill();
+    }
+    g.strokeStyle = GRAPH; g.lineWidth = 1;
+    const seg = (u0, u1, h) => line(g, lerp(a.x, b.x, u0), lerp(a.y, b.y, u0) - h, lerp(a.x, b.x, u1), lerp(a.y, b.y, u1) - h);
+    const ug = clamp01((gp.x - a.x) / ((b.x - a.x) || 1)), du = 6 / (dist(a.x, a.y, b.x, b.y) || 1);
+    for (const h of [3.5, 7.5]) { seg(0, ug - du, h); seg(ug + du, 1, h); }
+    g.restore();
+  }
+  function drawLamp(g, p, d, t, glow) {
+    g.save(); g.fillStyle = SHADOW; ellipse(g, p.x, p.y, 4, 1.6); g.fill();
+    g.strokeStyle = INK; g.lineWidth = 1.8; g.lineCap = 'round'; line(g, p.x, p.y, p.x, p.y - 36);
+    g.lineWidth = 1.4; g.fillStyle = PAPER;
+    g.beginPath(); g.moveTo(p.x - 5, p.y - 36); g.lineTo(p.x + 5, p.y - 36); g.lineTo(p.x + 3, p.y - 44); g.lineTo(p.x - 3, p.y - 44); g.closePath(); g.fill(); g.stroke();
+    line(g, p.x - 4, p.y - 45.5, p.x + 4, p.y - 45.5);
+    if (glow) { g.strokeStyle = HAIR; g.lineWidth = 1; for (let k = 1; k <= 2; k++) { ellipse(g, p.x, p.y - 40, 7 + k * 5, 7 + k * 5); g.stroke(); } }
+    g.restore();
+  }
+  // The gate at the park's east edge: two stone posts and a small board with the Neighborhood's name.
+  function drawGate(g, p, d, t) {
+    const open = hoodFog < 0.5;
+    const a = toScreen(d.x - 0.35, d.y - 0.95), b = toScreen(d.x + 0.35, d.y + 0.95);
+    g.save(); g.strokeStyle = INK; g.fillStyle = PAPER; g.lineWidth = 1.5; g.lineJoin = 'round';
+    for (const q of [a, b]) { g.fillStyle = SHADOW; ellipse(g, q.x + 2, q.y, 7, 2.5); g.fill(); g.fillStyle = PAPER; g.beginPath(); g.rect(q.x - 4.5, q.y - 26, 9, 26); g.fill(); g.stroke(); line(g, q.x - 6, q.y - 26, q.x + 6, q.y - 26); }
+    g.lineWidth = 1.3; line(g, a.x, a.y - 22, a.x, a.y - 40); line(g, b.x, b.y - 22, b.x, b.y - 40); line(g, a.x, a.y - 40, b.x, b.y - 40);
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2 - 47;
+    line(g, mx - 16, my + 6, mx - 14, my + 2); line(g, mx + 16, my + 8, mx + 14, my + 4);
+    g.beginPath(); g.roundRect(mx - 34, my - 8, 68, 15, 3); g.fill(); g.stroke();
+    g.fillStyle = INK; g.font = 'italic 500 11px "Cormorant Garamond", Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('The Neighborhood', mx, my);
+    if (!open) { g.strokeStyle = GRAPH; g.lineWidth = 1.2; g.beginPath(); g.moveTo(a.x + 4, a.y - 14); g.quadraticCurveTo(mx, (a.y + b.y) / 2 - 6, b.x - 4, b.y - 14); g.stroke(); } // a rope across, until it opens
+    g.restore();
+  }
+  // Stop props in the Neighborhood (the map-side picture of each question's place).
+  function drawHoodProp(g, n, t, p) {
+    const S = (dx, dy) => toScreen(n.x + dx, n.y + dy);
+    g.strokeStyle = INK; g.fillStyle = PAPER; g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = 1.6;
+    const shadow = (x, y, rx, ry) => { g.fillStyle = SHADOW; ellipse(g, x, y, rx, ry); g.fill(); g.fillStyle = PAPER; };
+    const box = (x, y, w, h) => { g.beginPath(); g.rect(x, y, w, h); g.fill(); g.stroke(); };
+    const house = (o, dd) => drawHouse(g, Object.assign({ x: n.x, y: n.y, w: 1.6, d: 1.4, face: 1, ridge: 'x', h: 24, chimney: false, ph: n.x }, dd), t, o);
+    const chair = (x, y, dir) => { box(x - 5, y - 9, 10, 3); line(g, x - 4, y - 6, x - 4, y); line(g, x + 4, y - 6, x + 4, y); line(g, x + dir * 5, y - 9, x + dir * 5, y - 20); line(g, x + dir * 5, y - 20, x + dir * 1, y - 20); };
+    switch (n.kind) {
+      case 'mailbox': { // a mailbox on a post at a front gate, its little flag up
+        shadow(p.x + 2, p.y, 10, 3.5);
+        g.lineWidth = 2; line(g, p.x, p.y, p.x, p.y - 20); g.lineWidth = 1.5;
+        g.beginPath(); g.moveTo(p.x - 9, p.y - 20); g.lineTo(p.x - 9, p.y - 28); g.quadraticCurveTo(p.x - 1, p.y - 35, p.x + 7, p.y - 28); g.lineTo(p.x + 7, p.y - 20); g.closePath(); g.fill(); g.stroke();
+        line(g, p.x + 7, p.y - 20, p.x + 7, p.y - 28);
+        g.lineWidth = 1.3; line(g, p.x + 9, p.y - 22, p.x + 9, p.y - 34); g.fillStyle = INK; g.fillRect(p.x + 9, p.y - 34, 6, 4);
+        g.fillStyle = PAPER; g.strokeStyle = GRAPH; g.lineWidth = 1; for (let k = 0; k < 4; k++) { const q = S(-0.9 - k * 0.45, -0.6 - k * 0.4); line(g, q.x, q.y, q.x, q.y - 9); }
+        break;
+      }
+      case 'porchgame': { // a house with a low porch deck out front, and a table on the porch with a game board on it
+        house({}, { y: n.y - 0.75, w: 1.6, d: 1.1, ridge: 'x', h: 22 });
+        const a = S(-0.8, -0.2), b = S(0.8, -0.2), c = S(0.8, 0.6), d = S(-0.8, 0.6), lift = q => ({ x: q.x, y: q.y - 5 });
+        g.lineWidth = 1.5; g.fillStyle = PAPER;
+        poly(g, [a, b, c, d].map(lift)); g.fill(); g.stroke();
+        poly(g, [d, c, lift(c), lift(d)]); g.fill(); g.stroke();
+        poly(g, [b, c, lift(c), lift(b)]); g.fill(); g.stroke();
+        g.lineWidth = 1.2; // a rail along the side, open at the front for the steps
+        for (let k = 0; k <= 3; k++) { const q = lift({ x: lerp(b.x, c.x, k / 3), y: lerp(b.y, c.y, k / 3) }); line(g, q.x, q.y, q.x, q.y - 11); }
+        line(g, b.x, b.y - 16, c.x, c.y - 16);
+        const m = S(0, 0.2); g.lineWidth = 1.3;
+        line(g, m.x - 6, m.y - 5, m.x - 6, m.y - 13); line(g, m.x + 6, m.y - 5, m.x + 6, m.y - 13);
+        poly(g, [{ x: m.x - 12, y: m.y - 14 }, { x: m.x, y: m.y - 19 }, { x: m.x + 12, y: m.y - 14 }, { x: m.x, y: m.y - 9 }]); g.fill(); g.stroke();
+        g.fillStyle = INK; [[-6, -14], [0, -16.5], [0, -11.5], [6, -14]].forEach(([dx, dy]) => { g.beginPath(); g.moveTo(m.x + dx - 3, m.y + dy); g.lineTo(m.x + dx, m.y + dy - 1.25); g.lineTo(m.x + dx + 3, m.y + dy); g.lineTo(m.x + dx, m.y + dy + 1.25); g.closePath(); g.fill(); });
+        break;
+      }
+      case 'doghouse': { // a doghouse in the yard, with a bowl
+        shadow(p.x + 3, p.y + 1, 22, 7);
+        g.beginPath(); g.rect(p.x - 13, p.y - 18, 26, 18); g.fill(); g.stroke();
+        g.beginPath(); g.moveTo(p.x - 17, p.y - 16); g.lineTo(p.x, p.y - 32); g.lineTo(p.x + 17, p.y - 16); g.closePath(); g.fill(); g.stroke();
+        g.fillStyle = INK; g.beginPath(); g.moveTo(p.x - 6, p.y); g.lineTo(p.x - 6, p.y - 8); g.arc(p.x, p.y - 8, 6, Math.PI, 0); g.lineTo(p.x + 6, p.y); g.closePath(); g.fill();
+        g.fillStyle = PAPER; g.lineWidth = 1.3; ellipse(g, p.x + 22, p.y + 2, 6, 2.4); g.fill(); g.stroke(); line(g, p.x + 16.5, p.y + 2, p.x + 18, p.y + 5); line(g, p.x + 27.5, p.y + 2, p.x + 26, p.y + 5); line(g, p.x + 18, p.y + 5, p.x + 26, p.y + 5);
+        break;
+      }
+      case 'cafe': { // a small corner café: a big window, a round sign, and two stools at a little table outside
+        house({}, { w: 1.7, d: 1.3, ridge: 'y', h: 26, face: 1 });
+        const q = S(0.2, 1.4); g.lineWidth = 1.4;
+        line(g, q.x, q.y, q.x, q.y - 14); ellipse(g, q.x, q.y - 15, 9, 3.4); g.fillStyle = PAPER; g.fill(); g.stroke();
+        for (const dx of [-14, 14]) { line(g, q.x + dx, q.y + 2, q.x + dx, q.y - 8); ellipse(g, q.x + dx, q.y - 9, 4.5, 1.8); g.fill(); g.stroke(); }
+        break;
+      }
+      case 'yardfence': { // a fence between two neighbors' yards, a bush on each side
+        const a = S(-1.8, 1.2), b = S(1.8, -1.2);
+        shadow(p.x, p.y + 2, 34, 9);
+        drawBush(g, S(-0.6, -1), { s: 0.95 }); 
+        g.lineWidth = 1.5; const k = 9;
+        for (let i = 0; i <= k; i++) { const x = lerp(a.x, b.x, i / k), y = lerp(a.y, b.y, i / k); line(g, x, y, x, y - 18); g.fillStyle = INK; g.beginPath(); g.moveTo(x - 1.6, y - 18); g.lineTo(x, y - 21); g.lineTo(x + 1.6, y - 18); g.fill(); }
+        g.lineWidth = 1.2; line(g, a.x, a.y - 6, b.x, b.y - 6); line(g, a.x, a.y - 13, b.x, b.y - 13);
+        g.fillStyle = PAPER; drawBush(g, S(0.7, 1), { s: 0.95 });
+        break;
+      }
+      case 'lights': { // a backyard table under a string of lights
+        const a = S(-1.4, -0.9), b = S(1.4, 0.9);
+        shadow(p.x, p.y + 2, 32, 9);
+        g.lineWidth = 1.8; line(g, a.x, a.y, a.x, a.y - 44); line(g, b.x, b.y, b.x, b.y - 44);
+        g.lineWidth = 1; g.strokeStyle = GRAPH; g.beginPath(); g.moveTo(a.x, a.y - 42); g.quadraticCurveTo(p.x, p.y - 22, b.x, b.y - 42); g.stroke();
+        g.strokeStyle = INK;
+        for (let i = 1; i < 8; i++) { const u = i / 8, x = (1 - u) * (1 - u) * a.x + 2 * u * (1 - u) * p.x + u * u * b.x, y = (1 - u) * (1 - u) * (a.y - 42) + 2 * u * (1 - u) * (p.y - 22) + u * u * (b.y - 42); ellipse(g, x, y + 3, 2, 2.4); g.fillStyle = PAPER; g.fill(); g.lineWidth = 1; g.stroke(); }
+        g.lineWidth = 1.6; const ta = S(-0.6, -0.1), tb = S(0.6, 0.1);
+        line(g, ta.x, ta.y, ta.x, ta.y - 10); line(g, tb.x, tb.y, tb.x, tb.y - 10);
+        poly(g, [{ x: ta.x - 6, y: ta.y - 10 }, { x: tb.x - 6, y: tb.y - 10 }, { x: tb.x + 6, y: tb.y - 14 }, { x: ta.x + 6, y: ta.y - 14 }]); g.fillStyle = PAPER; g.fill(); g.stroke();
+        for (const o of [-9, 9]) line(g, ta.x, ta.y + o * 0.5, tb.x, tb.y + o * 0.5);
+        break;
+      }
+      case 'litwindow': house({ lit: { f: 'y', k: 0 } }, { ridge: 'y', chimney: true, h: 25 }); break; // a house with one window lit
+      case 'streetbench': { // a bench under a streetlamp
+        shadow(p.x, p.y + 2, 24, 7); g.lineWidth = 1.7;
+        const a = { x: p.x - 16, y: p.y - 8 }, b = { x: p.x + 16, y: p.y + 8 };
+        line(g, a.x, a.y, a.x, a.y - 8); line(g, b.x, b.y, b.x, b.y - 8);
+        poly(g, [{ x: a.x - 3, y: a.y - 8 }, { x: b.x - 3, y: b.y - 8 }, { x: b.x + 3, y: b.y - 11 }, { x: a.x + 3, y: a.y - 11 }]); g.fill(); g.stroke();
+        line(g, a.x + 3, a.y - 11, a.x + 3, a.y - 20); line(g, b.x + 3, b.y - 11, b.x + 3, b.y - 20); line(g, a.x + 3, a.y - 20, b.x + 3, b.y - 20);
+        drawLamp(g, S(-0.9, 0.6), n, t, true);
+        break;
+      }
+      case 'stoop': { // a front stoop: steps up to a door, with a rail
+        house({ stories: 2 }, { w: 1.5, d: 1.3, h: 40, ridge: 'x', face: 1 });
+        const base = S(0, 0.9); g.lineWidth = 1.4;
+        for (let k = 0; k < 3; k++) { const y = base.y - k * 4, w = 11 - k * 1.5; poly(g, [{ x: base.x - w, y }, { x: base.x + w, y }, { x: base.x + w, y: y - 4 }, { x: base.x - w, y: y - 4 }]); g.fillStyle = PAPER; g.fill(); g.stroke(); }
+        line(g, base.x + 12, base.y, base.x + 9, base.y - 18); line(g, base.x + 9, base.y - 18, base.x + 5, base.y - 22);
+        break;
+      }
+      case 'chairs': { // two garden chairs facing each other over a small table, with a flower bed
+        shadow(p.x, p.y + 2, 28, 8); g.lineWidth = 1.5;
+        chair(p.x - 16, p.y + 2, -1); chair(p.x + 16, p.y + 2, 1);
+        line(g, p.x, p.y + 1, p.x, p.y - 9); ellipse(g, p.x, p.y - 10, 6.5, 2.6); g.fillStyle = PAPER; g.fill(); g.stroke();
+        for (let k = 0; k < 4; k++) drawFlower(g, S(-1 + k * 0.5, -1.1), { x: n.x, y: n.y, s: 0.9, ph: k }, t);
+        break;
+      }
+      case 'arch': { // a garden arch with a vine, in a little square
+        shadow(p.x, p.y + 2, 26, 8); g.lineWidth = 1.8;
+        const a = { x: p.x - 15, y: p.y - 5 }, b = { x: p.x + 15, y: p.y + 5 };
+        line(g, a.x, a.y, a.x, a.y - 32); line(g, b.x, b.y, b.x, b.y - 32);
+        g.beginPath(); g.moveTo(a.x, a.y - 32); g.bezierCurveTo(a.x, a.y - 52, b.x, b.y - 52, b.x, b.y - 32); g.stroke();
+        g.lineWidth = 1; g.strokeStyle = GRAPH;
+        for (let i = 0; i < 9; i++) { const u = i / 8, x = lerp(a.x, b.x, u), y = lerp(a.y, b.y, u) - 32 - Math.sin(u * Math.PI) * 15; ellipse(g, x + (i % 2 ? 2 : -2), y + 1, 2.6, 2); g.fillStyle = PAPER; g.fill(); g.stroke(); }
+        for (const q of [a, b]) for (let k = 0; k < 3; k++) { ellipse(g, q.x + (k % 2 ? 2 : -2), q.y - 8 - k * 8, 2.4, 1.8); g.fill(); g.stroke(); }
+        break;
+      }
+      case 'swinghouse': { // the parents' house: a porch with a hanging swing
+        const h = house({ }, { ridge: 'x', h: 26, chimney: true, w: 1.8, d: 1.4 });
+        const q0 = S(-0.2, 1.3), q1 = S(0.8, 1.3); g.lineWidth = 1.3; g.strokeStyle = INK;
+        line(g, q0.x - 4, q0.y, q0.x - 4, q0.y - 30); line(g, q1.x + 4, q1.y, q1.x + 4, q1.y - 30); line(g, q0.x - 4, q0.y - 30, q1.x + 4, q1.y - 30);
+        const sw = reduce ? 0 : Math.sin(t * 0.7) * 1.5;
+        line(g, q0.x + 4, q0.y - 30, q0.x + 4 + sw, q0.y - 12); line(g, q1.x - 4, q1.y - 30, q1.x - 4 + sw, q1.y - 12);
+        g.fillStyle = PAPER; poly(g, [{ x: q0.x + 2 + sw, y: q0.y - 12 }, { x: q1.x - 2 + sw, y: q1.y - 12 }, { x: q1.x - 2 + sw, y: q1.y - 9 }, { x: q0.x + 2 + sw, y: q0.y - 9 }]); g.fill(); g.stroke();
+        void h; break;
+      }
+      case 'oldhouse': house({ stories: 2, lit: { f: 'x', k: 1 } }, { ridge: 'y', h: 42, chimney: true, w: 1.7, d: 1.5 }); break; // the old family house: two stories, one light upstairs
+      case 'carehome': { // a long, low care home with many windows and a bench by the door
+        const h = drawHouse(g, { x: n.x, y: n.y, w: 2.8, d: 1.3, face: 1, ridge: 'x', h: 22, chimney: false, ph: 0 }, t, { roof: 12 });
+        g.lineWidth = 1.2; g.strokeStyle = INK; g.fillStyle = PAPER;
+        [0.08, 0.26, 0.74, 0.92].forEach(u => { const w0 = h.wall('y', u - 0.05, 0.3), w1 = h.wall('y', u + 0.05, 0.3), w2 = h.wall('y', u + 0.05, 0.7), w3 = h.wall('y', u - 0.05, 0.7); poly(g, [w0, w1, w2, w3]); g.fill(); g.stroke(); });
+        const bq = S(-0.3, 1.5); line(g, bq.x - 10, bq.y - 4, bq.x - 10, bq.y); line(g, bq.x + 10, bq.y + 2, bq.x + 10, bq.y - 2);
+        poly(g, [{ x: bq.x - 13, y: bq.y - 4 }, { x: bq.x + 9, y: bq.y - 2 }, { x: bq.x + 12, y: bq.y - 4 }, { x: bq.x - 10, y: bq.y - 6 }]); g.fill(); g.stroke();
+        break;
+      }
+    }
+  }
+
   function drawHill(g, h, t) {
     const p = toScreen(h.x, h.y), base = h.r * TW * 0.62, layers = 4;
     g.fillStyle = SHADOW; ellipse(g, p.x + 6, p.y + 4, base, base / 2); g.fill();
@@ -2149,6 +2619,7 @@
   function drawProp(g, n, t) {
     const p = toScreen(n.x, n.y);
     g.strokeStyle = INK; g.fillStyle = PAPER; g.lineCap = 'round'; g.lineJoin = 'round';
+    if (n.world !== 'park') { g.save(); drawHoodProp(g, n, t, p); g.restore(); return; }
     if (n.kind === 'trolley') {
       const f = toScreen(n.x, n.y), e = toScreen(n.x + 2.4, n.y - 2.2);
       g.lineWidth = 1.4;
@@ -2395,7 +2866,7 @@
     g.restore();
   }
   function drawHorizon() {
-    const shift = cam.off * 1.4, base = Math.max(64, H * 0.13) + shift;
+    const shift = cam.off * 1.4 / Z, base = Math.max(64, H * 0.13) + shift;
     if (base < -80) return;
     const c = iso(cam.x, cam.y);
     const fog = ctx.createLinearGradient(0, base, 0, base + 90);
@@ -2429,7 +2900,7 @@
     nodes.forEach(n => {
       const f = toScreen(n.flag[0], n.flag[1]);
       const onScreen = f.x > -20 && f.x < W + 20 && f.y > 20 && f.y < H + 40;
-      if (!onScreen || n.done) { n.seenAt = null; return; }
+      if (!onScreen || n.done || !isOpen(n)) { n.seenAt = null; return; }
       if (n.seenAt == null) n.seenAt = t;
       if (cardOpen) return;
       const u = reduce ? 1 : Math.min(1, (t - n.seenAt) / 1.1), ease = 1 - Math.pow(1 - u, 3);
@@ -2445,32 +2916,46 @@
     });
   }
 
-  // The Neighborhood: visible from the park's east edge, sketched in fog until all 12 are answered.
-  const HOOD = { x: 50, y: 22 };
+  // The Neighborhood: visible from the park's east edge under fog until all 12 park stops are answered.
+  // When it opens, the fog thins slowly (hoodFog eases from 1 to 0). Beyond it, the City waits in fog once the Neighborhood is mostly done.
+  let hoodFog = 1, hoodFogT = 1, hoodOpen = false;
+  const isOpen = n => n.world === 'park' || (n.world === 'hood' && hoodOpen && hoodFogT < 0.5); // stops wake once the fog starts lifting
+  function fogBand(g, x0, x1, y0, y1, a) {
+    const q = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(([x, y]) => toScreen(x, y));
+    g.globalAlpha = a; g.fillStyle = PAPER; poly(g, q); g.fill();
+  }
   function drawNeighborhood(t) {
-    const c = toScreen(HOOD.x, HOOD.y);
-    if (c.x < -260 || c.x > W + 260 || c.y < -200 || c.y > H + 200) return;
-    const open = P && P.complete, g = ctx;
-    g.save();
-    // little roofs, only an outline, as if sketched and not yet inked
-    g.strokeStyle = open ? INK : GRAPH; g.lineWidth = open ? 1.6 : 1; g.fillStyle = PAPER;
-    if (!open) g.setLineDash([3, 4]);
-    [[-3, -2], [0, -3.2], [2.5, -1.2], [-1.5, 1.4], [1.8, 2.4], [-4, 2.6]].forEach(([dx, dy]) => {
-      const p = toScreen(HOOD.x + dx, HOOD.y + dy), s = 1;
-      g.beginPath(); g.moveTo(p.x - 16 * s, p.y - 4); g.lineTo(p.x - 16 * s, p.y - 22); g.lineTo(p.x, p.y - 36); g.lineTo(p.x + 16 * s, p.y - 22); g.lineTo(p.x + 16 * s, p.y - 4); g.lineTo(p.x, p.y + 4); g.closePath(); g.fill(); g.stroke();
-      line(g, p.x - 16, p.y - 22, p.x, p.y - 12); line(g, p.x, p.y - 12, p.x + 16, p.y - 22); line(g, p.x, p.y - 12, p.x, p.y + 4);
-    });
-    g.setLineDash([]);
-    if (!open) { // fog: soft paper drifts over it (they never move fast)
-      for (let i = 0; i < 7; i++) {
-        const dx = Math.sin(i * 2.1) * 90 + (reduce ? 0 : Math.sin(t * 0.05 + i) * 8), dy = Math.cos(i * 1.7) * 40;
-        g.fillStyle = 'rgba(250,250,248,0.55)'; ellipse(g, c.x + dx, c.y - 10 + dy, 90, 34); g.fill();
+    const g = ctx, c = toScreen(HOOD.x0 + 6, HOOD.gate.y - 3);
+    if (hoodFog > 0.005) {
+      const a = 0.9 * hoodFog;
+      g.save();
+      for (let k = 0; k < 6; k++) fogBand(g, HOOD.x0 - 1.2 + k * 0.25, HOOD.x0 - 0.95 + k * 0.25, -8, 52, a * (k + 1) / 7); // a soft western edge
+      fogBand(g, HOOD.x0 + 0.3, 92, -8, 52, a);
+      g.globalAlpha = Math.min(1, hoodFog * 1.2);
+      for (let i = 0; i < 9; i++) { // soft paper drifts at the edge (they never move fast)
+        const q = toScreen(HOOD.x0 + 1 + (i % 3) * 2.2, 6 + i * 4.4), dx = reduce ? 0 : Math.sin(t * 0.05 + i) * 8;
+        g.fillStyle = 'rgba(250,250,248,0.5)'; ellipse(g, q.x + dx, q.y - 10, 90, 30); g.fill();
       }
+      if (c.x > -260 && c.x < W + 260 && c.y > -200 && c.y < H + 200) {
+        g.globalAlpha = hoodFog; g.fillStyle = GRAPH; g.textAlign = 'center';
+        g.font = '500 20px "Cormorant Garamond", Georgia, serif'; g.fillText('The Neighborhood', c.x, c.y - 70);
+        g.font = '12px "Quattrocento Sans", sans-serif'; g.fillText('answer every stop in the park', c.x, c.y - 52);
+      }
+      g.restore();
     }
-    g.fillStyle = open ? INK : GRAPH; g.font = '500 20px "Cormorant Garamond", Georgia, serif'; g.textAlign = 'center';
-    g.fillText('The Neighborhood', c.x, c.y - 70);
-    g.font = '12px "Quattrocento Sans", sans-serif';
-    g.fillText(open ? 'opening soon' : 'answer every stop in the park', c.x, c.y - 52);
+  }
+  // The City: a faint sketch in fog past the Neighborhood's eastern woods, once you're most of the way through the Neighborhood.
+  const CITY = { x: 90, y: 23 };
+  const cityReady = () => { const c = P && P.worlds && P.worlds.find(w => w.id === 'city'); return !!(c && c.ready && hoodOpen); };
+  function drawCity(g, t) {
+    const q = toScreen(CITY.x, CITY.y);
+    if (q.x < -220 || q.x > W + 220 || q.y < -60 || q.y > H + 200) return;
+    g.save(); g.strokeStyle = GRAPH; g.fillStyle = PAPER; g.lineWidth = 1; g.setLineDash([3, 4]);
+    [[-70, 40, 26], [-40, 70, 22], [-14, 52, 24], [14, 88, 18], [36, 46, 28], [66, 60, 20]].forEach(([dx, hgt, w]) => { g.beginPath(); g.rect(q.x + dx, q.y - hgt, w, hgt); g.fill(); g.stroke(); });
+    g.setLineDash([]);
+    for (let i = 0; i < 5; i++) { g.fillStyle = 'rgba(250,250,248,0.6)'; ellipse(g, q.x + Math.sin(i * 2.3) * 60, q.y - 10 + Math.cos(i * 1.4) * 14, 70, 20); g.fill(); }
+    g.fillStyle = GRAPH; g.textAlign = 'center'; g.font = '500 20px "Cormorant Garamond", Georgia, serif'; g.fillText('The City', q.x + 10, q.y - 106);
+    g.font = '12px "Quattrocento Sans", sans-serif'; g.fillText('opening soon', q.x + 10, q.y - 88);
     g.restore();
   }
 
@@ -2493,7 +2978,7 @@
     decor.forEach(d => {
       const p = toScreen(d.x, d.y); if (!vis(p)) return;
       if (d.kind === 'tree') visTrees.push(d);
-      const f = { pine: drawPine, tree: drawTree, bush: drawBush, tuft: drawTuft, flower: drawFlower, rock: drawRock }[d.kind];
+      const f = { pine: drawPine, tree: drawTree, bush: drawBush, tuft: drawTuft, flower: drawFlower, rock: drawRock, house: drawHouseDecor, fence: drawFence, lamp: drawLamp, gate: drawGate }[d.kind];
       items.push({ z: d.x + d.y, f: () => f(ctx, p, d, t) });
     });
     hills.forEach(h => items.push({ z: h.x + h.y, f: () => drawHill(ctx, h, t) }));
@@ -2501,6 +2986,7 @@
       items.push({ z: n.x + n.y - 0.5, f: () => drawProp(ctx, n, t) });
       items.push({ z: n.flag[0] + n.flag[1], f: () => drawFlag(ctx, n, t) });
     });
+    if (cityReady()) items.push({ z: CITY.x + CITY.y, f: () => drawCity(ctx, t) });
     const drawAnimal = { deer: drawDeer, rabbit: drawRabbit, squirrel: drawSquirrel, mouse: drawMouse };
     animals.forEach(a => items.push({ z: a.x + a.y, f: () => drawAnimal[a.kind](ctx, a, t) }));
     ducks.forEach(d => { const q = duckPos(d, t); items.push({ z: q.x + q.y, f: () => drawDuck(ctx, d, t) }); });
@@ -2588,8 +3074,8 @@
     if (keys.has('ArrowDown') || keys.has('s')) { kx += 1; ky += 1; }
     if (keys.has('ArrowLeft') || keys.has('a')) { kx -= 1; ky += 1; }
     if (keys.has('ArrowRight') || keys.has('d')) { kx += 1; ky -= 1; }
-    if ((kx || ky) && !cardOpen) { const d = Math.hypot(kx, ky); player.tx = clampW(player.x + kx / d * 0.5); player.ty = clampW(player.y + ky / d * 0.5); }
-    steer(player, dt, 3.8);
+    if ((kx || ky) && !cardOpen) { const d = Math.hypot(kx, ky); player.path = null; player.tx = clampX(player.x + kx / d * 0.5); player.ty = clampW(player.y + ky / d * 0.5); }
+    if (steer(player, dt, 3.8, solidAt) && player.path && player.path.length && !cardOpen && !selecting) [player.tx, player.ty] = player.path.shift(); // next corner of the route
     if (player.point > 0) player.point = Math.max(0, player.point - dt);
     PW = lerp(PW, PWt, reduce ? 1 : 1 - Math.exp(-dt * 5));
     updateAnimals(dt);
@@ -2597,14 +3083,16 @@
 
     cam.x = lerp(cam.x, player.x, 1 - Math.exp(-dt * 4));
     cam.y = lerp(cam.y, player.y, 1 - Math.exp(-dt * 4));
-    const offTarget = cardOpen ? -Math.min(H * 0.3, 280) : 0;
+    const offTarget = cardOpen ? -Math.min(innerHeight * 0.3, 280) : 0;
     cam.off = lerp(cam.off, offTarget, 1 - Math.exp(-dt * 3));
+    if (Z !== zoomT) { Z = Math.abs(Z - zoomT) < 0.002 || reduce ? zoomT : lerp(Z, zoomT, 1 - Math.exp(-dt * 12)); applyZoom(); }
     if (marker && (marker.t += dt) > 0.7) marker = null;
+    if (hoodFog !== hoodFogT) hoodFog = reduce || Math.abs(hoodFog - hoodFogT) < 0.003 ? hoodFogT : lerp(hoodFog, hoodFogT, 1 - Math.exp(-dt * 0.6)); // the fog lifts slowly
 
     for (const n of nodes) {
       const d = dist(player.x, player.y, n.stand[0], n.stand[1]);
       if (d > 2.5) { n.snoozed = false; continue; }
-      if (!n.done && !n.snoozed && !cardOpen && !selecting && !pending && d < 0.8) {
+      if (!n.done && !n.snoozed && !cardOpen && !selecting && !pending && d < 0.8 && isOpen(n)) {
         pending = setTimeout(() => { pending = null; if (dist(player.x, player.y, n.stand[0], n.stand[1]) < 1.1 && !cardOpen) openCard(n); }, 350);
       }
     }
@@ -2646,7 +3134,7 @@
     const my = ++flow;
     activeNode = n; activeQ = n.q; scene = SCENES[activeQ.scene] || SCENES.trolley;
     cardOpen = true; step = 'trunk'; picks = {}; reviewing = false; setSheet(false);
-    player.tx = player.ty = null; keys.clear();
+    player.tx = player.ty = null; player.path = null; keys.clear();
     Object.assign(sc, { t: 0, fade: 0, fadeT: 0 });
     resetScene('trunk');
     renderText('trunk'); textEl.classList.add('out'); awayBtn.textContent = 'Step away';
@@ -2661,7 +3149,7 @@
   function openReview(n) {
     ++flow;
     activeNode = n; activeQ = n.q; scene = SCENES[activeQ.scene] || SCENES.trolley;
-    cardOpen = true; reviewing = true; setSheet(false); player.tx = player.ty = null; keys.clear();
+    cardOpen = true; reviewing = true; setSheet(false); player.tx = player.ty = null; player.path = null; keys.clear();
     const rec = state.answers[activeQ.id], keysDone = Object.keys(rec.picks), lastKey = keysDone[keysDone.length - 1];
     Object.assign(sc, { t: 0, fade: 0, fadeT: 0 });
     resetScene(lastKey);
@@ -2702,7 +3190,7 @@
     if (!activeNode) return;
     if (reviewing) { activeNode.snoozed = true; closeCard(); return; }
     activeNode.snoozed = true; closeCard();
-    player.tx = clampW(player.x - 1.4); player.ty = clampW(player.y + 1.4);
+    walkTo(player.x - 1.4, player.y + 1.4);
   });
   async function choose(a, btn) {
     const my = flow, gone = () => my !== flow;
@@ -2738,7 +3226,7 @@
   const SAVE_KEY = 'tern.v1';
   const state = { char: 0, answers: {}, headline: null, seen: [], pos: null };
   function save() {
-    state.pos = { x: player.x, y: player.y };
+    state.pos = { x: player.x, y: player.y }; state.zoom = zoomT;
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) { /* private window: play on, just unsaved */ }
   }
   function load() {
@@ -2746,7 +3234,10 @@
     const ids = new Set(QUESTIONS.map(q => q.id));
     Object.keys(state.answers).forEach(id => { if (!ids.has(id)) delete state.answers[id]; });
     nodes.forEach(n => { n.done = !!state.answers[n.id]; });
+    hoodOpen = openedWorlds().includes('hood'); hoodFog = hoodFogT = hoodOpen ? 0 : 1;
   }
+  const openedWorlds = () => (state.seen || []).filter(k => k.startsWith('world:')).map(k => k.slice(6));
+  const portraitNow = () => TernPortrait.compute(CONTENT, state.answers, { opened: openedWorlds() });
   let resetting = false;
   addEventListener('pagehide', () => { if (!selecting && !resetting) save(); });
 
@@ -2813,7 +3304,8 @@
   }
 
   function renderPortrait(fresh) {
-    P = TernPortrait.compute(CONTENT, state.answers);
+    P = portraitNow();
+    hoodOpen = P.openWorlds.includes('hood');
     const f = k => fresh && fresh.includes(k) ? ' fresh' : '';
     const so = P.complete ? '' : 'So far';
     let h = '';
@@ -2827,6 +3319,8 @@
       h += `<section data-k="headline" class="p-sec"><p class="p-kicker">You, so far</p><h2 class="p-head" style="color:var(--graphite)">${P.count ? 'Keep going. Your summary appears after a few answers.' : 'Answer a question to begin.'}</h2></section>`;
     }
     if (P.has('code')) h += `<section data-k="code" class="p-sec${f('code')}"><h3>Your code</h3><p class="code">${P.code}</p><p class="p-desc">${esc(CONTENT.codeLine || 'One letter for each line of your compass.')}</p></section>`;
+    if (P.complete) h += `<section data-k="share" class="p-sec share-cta${f('code')}"><h3>Share your result</h3><p class="p-desc">Send a friend your code and a few lines about you. When they play, compare codes.</p><button class="p-share" id="pShare" type="button">Send to a friend</button></section>`;
+    h += chaptersHTML(f);
     const tl = P.tendencies.slice(P.has('headline') ? 1 : 0, 6);
     if (P.has('headline') && tl.length) h += `<section data-k="tend" class="p-sec${f('tend')}"><h3>More about you</h3><div class="chips">${tl.map(t => `<span class="chip">${esc(t.text)}</span>`).join('')}</div></section>`;
     if (P.has('protect') && (P.protect.length || P.trade.length)) {
@@ -2842,18 +3336,31 @@
     if (P.has('tension') && P.tensions.length) h += `<section data-k="tension" class="p-sec torn${f('tension')}"><h3>Where you’re torn</h3>${P.tensions.slice(0, 3).map(t => `<p>${esc(t.text)}</p>`).join('')}</section>`;
     if (P.notes.length) h += `<section data-k="notes" class="p-sec notes${f('notes')}"><h3>Notes on each answer</h3>${P.notes.slice().reverse().map((n, i) =>
       `<details${i === 0 ? ' open' : ''}><summary>${esc(n.title)}</summary>${n.lines.map(l => `<p class="n"><i>${esc(String(l.answer).replace(/[.!?…]+$/, ''))}.</i> ${esc(l.note)}</p>`).join('')}</details>`).join('')}</section>`;
-    h += `<section data-k="tools" class="p-tools">${P.count ? '<button class="p-share" id="pShare" type="button">Share my portrait</button><button class="link" id="pCopy" type="button">Copy as text</button>' : ''}<button class="link" id="pChar" type="button">Change character</button><button class="link" id="pReset" type="button">Start over</button><button class="link" id="pPrivacy" type="button">Privacy</button></section>`;
+    h += `<section data-k="tools" class="p-tools">${P.count && !P.complete ? '<button class="link" id="pShareSoFar" type="button">Share what you have so far</button>' : ''}<button class="link" id="pChar" type="button">Change character</button><button class="link" id="pReset" type="button">Start over</button><button class="link" id="pPrivacy" type="button">Privacy</button></section>`;
     const changed = morph(h, !!fresh);
     // what's next: the next unlock, as dots
-    if (P.next) {
+    if (P.next && P.next.dots) {
       const dots = '●'.repeat(P.next.filled) + '○'.repeat(P.next.dots - P.next.filled);
       pNext.innerHTML = `<span>Next: ${esc(P.next.name)}</span><span class="dots" aria-label="${P.next.dots - P.next.filled} more to go">${dots}</span>`;
-    } else pNext.innerHTML = `<span>Next: the Neighborhood</span><span class="dots">opening soon</span>`;
+    } else if (P.next) pNext.innerHTML = `<span>Next: ${esc(P.next.name)}</span><span class="dots">${P.next.soon ? 'opening soon' : ''}</span>`;
+    else pNext.innerHTML = '';
     pHandleText.textContent = P.has('headline') && P.headline ? P.headline : P.count ? 'You, so far' : 'You, so far';
     bindTools();
     nodes.forEach(n => { n.calling = n.id === P.calling; });
     void so;
     return changed;
+  }
+  // A chapter per later world, built up by that world's own unlocks: how you change there, what you do there, and its summary.
+  function chaptersHTML(f) {
+    return P.worlds.slice(1).filter(w => w.unlocked.length).map(w => {
+      const has = k => w.unlocked.includes(w.id + ':' + k), key = 'ch-' + w.id;
+      let h = `<section data-k="${key}" class="p-sec chapter${f(key)}"><h3>${esc(w.name)}</h3>`;
+      if (has('chapter') && w.headline) h += `<p class="p-head2">${esc(w.headline)}</p>`;
+      if (has('shift') && w.shift) h += `<p class="p-desc">${esc(w.shift.text)}</p>`;
+      const tl = (w.tendencies || []).filter(t => t.text !== w.headline || !has('chapter')).slice(0, 4);
+      if (has('tend') && tl.length) h += `<div class="chips">${tl.map(t => `<span class="chip">${esc(t.text)}</span>`).join('')}</div>`;
+      return h + '</section>';
+    }).join('');
   }
   // "Read more about you": what each line means, and the answers it comes from. Plain facts, no verdicts.
   function toggleDetail() {
@@ -2891,8 +3398,8 @@
   }
   function bindTools() {
     document.getElementById('pMore')?.addEventListener('click', toggleDetail);
-    document.getElementById('pCopy')?.addEventListener('click', copyPortrait);
-    document.getElementById('pShare')?.addEventListener('click', sharePortrait);
+    document.getElementById('pShare')?.addEventListener('click', openShare);
+    document.getElementById('pShareSoFar')?.addEventListener('click', openShare);
     document.getElementById('pReset')?.addEventListener('click', startOver);
     document.getElementById('pChar')?.addEventListener('click', () => changeCharacter());
     document.getElementById('pPrivacy')?.addEventListener('click', showPrivacy);
@@ -2922,84 +3429,156 @@
       + `<button class="go" type="button">Close</button>`);
   }
   document.getElementById('selPrivacy').addEventListener('click', e => { e.stopPropagation(); showPrivacy(); });
-  // ---------- share: a portrait card image (1080 × 1350, ink on paper) ----------
+  // ---------- share: a note for a friend, plus a card image (1080 × 1350, ink on paper) ----------
+  // The friend has seen none of the questions, so the note says what Tern is, in the sender's own voice.
+  // Only lines written to be shared (a tendency's `share`) can go out, and the sender sees and picks them before anything is sent.
+  const SHARE_MAX = 3, SC = CONTENT.shareCopy;
+  const shEl = document.getElementById('share'), shCard = document.getElementById('shCard'), shChips = document.getElementById('shChips');
+  const shMsg = document.getElementById('shMsg'), shLab = document.getElementById('shLab'), shSend = document.getElementById('shSend'), shAlt = document.getElementById('shAlt');
+  const SH_LAB = `Pick up to ${SHARE_MAX} lines about you`;
+  let shSel = null, shBlob = null, shDrawing = null, shImg = null, shDraw = 0, shCanShare = false, shWarn = null, shFrom = null;
+  const shareLink = () => location.origin + location.pathname.replace(/index\.html$/, '');
+  const shareSite = () => (location.host + location.pathname).replace(/index\.html$/, '').replace(/\/$/, '');
+  const shareCands = () => P.tendencies.filter(t => t.share).slice(0, 6);
+  const shareLines = () => shareCands().filter(t => shSel.has(t.id)).map(t => t.share);
+  function shareMessage(lines) {
+    const out = [P.complete ? (lines.length ? SC.intro : SC.introBare) : (lines.length ? SC.introSoFar : SC.introSoFarBare)];
+    if (lines.length) out.push('', ...lines.map(l => '• ' + l));
+    out.push('', P.has('code') ? SC.code.replace('{code}', P.code) : SC.invite, shareLink());
+    return out.join('\n');
+  }
   function wrapText(g, text, maxW) {
     const words = String(text).split(' '), lines = []; let cur = '';
     words.forEach(w => { const t = cur ? cur + ' ' + w : w; if (g.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; });
     if (cur) lines.push(cur); return lines;
   }
-  async function portraitCard() {
+  const SERIF = '"Cormorant Garamond", Georgia, serif', SANS = '"Quattrocento Sans", sans-serif';
+  function spaced(g, text, x, y, px) { g.letterSpacing = px + 'px'; g.fillText(text, x + px / 2, y); g.letterSpacing = '0px'; }
+  async function shareCard(lines) {
     try { await document.fonts.ready; await Promise.all(['500 64px "Cormorant Garamond"', '400 30px "Quattrocento Sans"', '700 22px "Quattrocento Sans"'].map(f => document.fonts.load(f))); } catch (e) {}
     const Wc = 1080, Hc = 1350, c = document.createElement('canvas'); c.width = Wc; c.height = Hc;
     const g = c.getContext('2d');
     g.fillStyle = PAPER; g.fillRect(0, 0, Wc, Hc);
     g.strokeStyle = INK; g.lineWidth = 4; g.beginPath(); g.roundRect(48, 48, Wc - 96, Hc - 96, 36); g.stroke();
-    g.textAlign = 'center'; g.fillStyle = GRAPH; g.font = '700 22px "Quattrocento Sans", sans-serif';
-    g.letterSpacing = '6px'; g.fillText(P.complete ? 'YOU, IN FULL' : 'YOU, SO FAR', Wc / 2, 130); g.letterSpacing = '0px';
-    // measure the words first, so the whole card can sit centred
-    const head = P.has('headline') && P.headline ? P.headline : 'Just getting started.';
-    g.font = '500 66px "Cormorant Garamond", Georgia, serif';
-    const headLines = wrapText(g, head, Wc - 220).slice(0, 4);
-    g.font = '400 30px "Quattrocento Sans", sans-serif';
-    const chipSets = P.tendencies.slice(P.has('headline') ? 1 : 0, 5).map(t => wrapText(g, t.text, Wc - 300));
-    const figH = 260, gap = 70;
-    let total = figH + gap + headLines.length * 76 + (P.has('code') ? 160 : 0);
-    const chipsFit = []; chipSets.forEach(ls => { const h = 34 * ls.length + 28 + 18; if (total + h + 40 < Hc - 420) { chipsFit.push(ls); total += h; } });
-    if (chipsFit.length) total += 40;
-    const top = Math.max(170, 170 + (Hc - 170 - 150 - total) / 2);
+    g.textAlign = 'center'; g.fillStyle = GRAPH; g.font = `700 22px ${SANS}`;
+    spaced(g, (P.complete ? SC.cardKicker : SC.cardKickerSoFar).toUpperCase(), Wc / 2, 130, 6);
+    // measure first, so everything between the kicker and the footer sits centred
+    g.font = `500 64px ${SERIF}`;
+    const leadLines = lines.length ? wrapText(g, lines[0], Wc - 220).slice(0, 3) : [];
+    g.font = `400 30px ${SANS}`;
+    const chipSets = lines.slice(1).map(t => wrapText(g, t, Wc - 300));
+    const top0 = 170, bottom = Hc - 230, figH = lines.length ? 240 : 300, gap = 56, codeH = P.has('code') ? 200 : 0;
+    let total = figH + (leadLines.length ? gap + leadLines.length * 74 : 0) + codeH;
+    const chipsFit = []; chipSets.forEach(ls => { const h = 34 * ls.length + 28 + 18; if (total + h + 36 < bottom - top0) { chipsFit.push(ls); total += h; } });
+    if (chipsFit.length) total += 36;
+    const top = top0 + Math.max(0, (bottom - top0 - total) / 2);
     // your character, standing on a little patch of ground
     const ch = CHARACTERS[state.char || 0] || CHARACTERS[0], fs = Math.min(5.2, (figH - 30) / ((ch.top || 44) * 1.05)), gy = top + figH;
     g.fillStyle = 'rgba(20,20,20,0.06)'; ellipse(g, Wc / 2, gy + 6, 150, 30); g.fill();
     g.strokeStyle = GRAPH; g.lineWidth = 3;
     [[-120, gy - 6], [110, gy + 2]].forEach(([dx, y]) => { const x = Wc / 2 + dx; line(g, x - 10, y, x - 16, y - 22); line(g, x, y, x, y - 28); line(g, x + 10, y, x + 16, y - 22); });
     drawPerson(g, Wc / 2, gy, { me: true, scale: fs, t: 0, dir: 0 });
-    let y = gy + gap + 50;
-    g.fillStyle = INK; g.font = '500 66px "Cormorant Garamond", Georgia, serif';
-    headLines.forEach(l => { g.fillText(l, Wc / 2, y); y += 76; });
-    if (P.has('code')) { y += 30; g.font = '500 110px "Cormorant Garamond", Georgia, serif'; g.letterSpacing = '24px'; g.fillText(P.code, Wc / 2 + 12, y + 70); g.letterSpacing = '0px'; y += 130; }
-    // tendency chips
-    y += 40; g.font = '400 30px "Quattrocento Sans", sans-serif';
-    chipsFit.forEach(lines => {
-      const h = 34 * lines.length + 28, w = Math.max(...lines.map(l => g.measureText(l).width)) + 60;
-      g.strokeStyle = INK; g.lineWidth = 3; g.beginPath(); g.roundRect(Wc / 2 - w / 2, y, w, h, Math.min(h / 2, 34)); g.stroke();
-      g.fillStyle = INK; lines.forEach((l, i) => g.fillText(l, Wc / 2, y + 44 + i * 34));
-      y += h + 18;
-    });
-    g.fillStyle = GRAPH; g.font = '700 22px "Quattrocento Sans", sans-serif'; g.letterSpacing = '6px';
-    g.fillText('TERN', Wc / 2, Hc - 100); g.letterSpacing = '0px';
+    let y = gy + (leadLines.length ? gap : 0);
+    g.fillStyle = INK; g.font = `500 64px ${SERIF}`;
+    leadLines.forEach(l => { g.fillText(l, Wc / 2, y + 52); y += 74; });
+    if (chipsFit.length) {
+      y += 36; g.font = `400 30px ${SANS}`;
+      chipsFit.forEach(ls => {
+        const h = 34 * ls.length + 28, w = Math.max(...ls.map(l => g.measureText(l).width)) + 60;
+        g.strokeStyle = INK; g.lineWidth = 3; g.beginPath(); g.roundRect(Wc / 2 - w / 2, y, w, h, Math.min(h / 2, 34)); g.stroke();
+        g.fillStyle = INK; ls.forEach((l, i) => g.fillText(l, Wc / 2, y + 44 + i * 34));
+        y += h + 18;
+      });
+    }
+    if (P.has('code')) {
+      y += 50; g.fillStyle = GRAPH; g.font = `700 20px ${SANS}`; spaced(g, 'MY CODE', Wc / 2, y + 20, 6);
+      y += 40; g.fillStyle = INK; g.font = `500 104px ${SERIF}`; spaced(g, P.code, Wc / 2, y + 84, 24);
+    }
+    // the footer tells whoever sees the picture, even without the message, what this is and where to find it
+    g.fillStyle = INK; g.font = `700 24px ${SANS}`; spaced(g, 'TERN', Wc / 2, Hc - 150, 8);
+    g.fillStyle = GRAPH; g.font = `400 26px ${SANS}`;
+    g.fillText(SC.cardTagline, Wc / 2, Hc - 110);
+    g.fillText(shareSite(), Wc / 2, Hc - 76);
     return new Promise(r => c.toBlob(r, 'image/png'));
   }
-  async function sharePortrait() {
-    const text = portraitText();
-    let blob = null;
-    try { blob = await portraitCard(); } catch (e) { console.error('[Tern] share card', e); }
-    const file = blob && new File([blob], 'tern-portrait.png', { type: 'image/png' });
+  function openShare() {
+    P = portraitNow();
+    const ids = shareCands().map(t => t.id);
+    shSel = new Set(shSel ? [...shSel].filter(id => ids.includes(id)) : []);
+    if (!shSel.size) ids.slice(0, SHARE_MAX).forEach(id => shSel.add(id));
+    try { shCanShare = !!navigator.share; } catch (e) { shCanShare = false; }
+    label(shSend, shCanShare ? 'Share' : 'Copy message');
+    label(shAlt, shCanShare ? 'Copy message' : 'Save picture');
+    document.getElementById('shTitle').textContent = P.complete ? 'Share your result' : 'Share what you have so far';
+    shLab.textContent = SH_LAB; shLab.classList.remove('warn');
+    shFrom = document.activeElement;
+    renderShare();
+    shEl.hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => shEl.classList.add('on')));
+    shEl.scrollTop = 0;
+    setTimeout(() => shSend.focus({ preventScroll: true }), 60);
+  }
+  function closeShare() {
+    shEl.classList.remove('on');
+    setTimeout(() => { shEl.hidden = true; }, reduce ? 0 : 400);
+    if (shFrom && shFrom.isConnected) shFrom.focus({ preventScroll: true });
+  }
+  function renderShare() {
+    const c = shareCands();
+    shLab.hidden = shChips.hidden = !c.length;
+    shChips.innerHTML = c.map(t => `<button type="button" data-id="${t.id}" aria-pressed="${shSel.has(t.id)}">${esc(t.share)}</button>`).join('');
+    const lines = shareLines();
+    shMsg.textContent = shareMessage(lines);
+    const n = ++shDraw; shBlob = null;
+    shDrawing = shareCard(lines).then(b => {
+      if (n !== shDraw || !b) return;
+      shBlob = b; if (shImg) URL.revokeObjectURL(shImg); shImg = URL.createObjectURL(b); shCard.src = shImg;
+    }).catch(e => console.error('[Tern] share card', e));
+  }
+  // a button says what just happened, then goes back to its label
+  function label(b, t) { clearTimeout(b._t); b.dataset.base = t; b.textContent = t; }
+  function flash(b, t) { clearTimeout(b._t); b.textContent = t; b._t = setTimeout(() => { b.textContent = b.dataset.base; }, 2000); }
+  shChips.addEventListener('click', e => {
+    const b = e.target.closest('button[data-id]'); if (!b) return;
+    const id = b.dataset.id;
+    if (shSel.has(id)) shSel.delete(id);
+    else if (shSel.size >= SHARE_MAX) {
+      shLab.textContent = `Up to ${SHARE_MAX}. Tap a checked line to remove it first.`; shLab.classList.add('warn');
+      clearTimeout(shWarn); shWarn = setTimeout(() => { shLab.textContent = SH_LAB; shLab.classList.remove('warn'); }, 2600);
+      return;
+    } else shSel.add(id);
+    renderShare();
+    shChips.querySelector(`[data-id="${id}"]`)?.focus({ preventScroll: true });
+  });
+  async function sendShare() {
+    const text = shareMessage(shareLines());
+    if (!shCanShare) return copyShare(shSend);
+    if (!shBlob) await shDrawing;
+    const file = shBlob && new File([shBlob], 'tern.png', { type: 'image/png' });
     try {
-      if (file && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text, title: 'My Tern portrait' }); return; }
-      if (navigator.share) { await navigator.share({ text, title: 'My Tern portrait' }); return; }
-    } catch (e) { if (e && e.name === 'AbortError') return; }
-    // no share sheet (most desktops): save the card and copy the words
-    if (blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tern-portrait.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
-    try { await navigator.clipboard.writeText(text); say('Saved the image and copied the words.', 2600); } catch (e) { say('Saved the image.', 2200); }
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file], text });
+      else await navigator.share({ text });
+      closeShare();
+    } catch (e) { if (!e || e.name !== 'AbortError') copyShare(shAlt); }
   }
-  function portraitText() {
-    const lines = [];
-    if (P.headline && P.has('headline')) lines.push((P.complete ? '' : 'So far: ') + P.headline);
-    P.tendencies.slice(1, 5).forEach(t => lines.push('· ' + t.text));
-    if (P.has('code')) lines.push('My Tern code: ' + P.code);
-    if (!lines.length) lines.push('I’m walking through Tern.');
-    return lines.join('\n');
+  async function copyShare(btn) {
+    try { await navigator.clipboard.writeText(shareMessage(shareLines())); flash(btn, 'Copied. Paste it in a message.'); }
+    catch (e) { // no clipboard: select the message so it can be copied by hand
+      const r = document.createRange(); r.selectNodeContents(shMsg); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      flash(btn, 'Copy the message above');
+    }
   }
-  function copyPortrait() {
-    const lines = [];
-    if (P.headline && P.has('headline')) lines.push((P.complete ? '' : 'So far: ') + P.headline);
-    P.tendencies.slice(1, 5).forEach(t => lines.push('· ' + t.text));
-    if (P.has('code')) lines.push('My Tern code: ' + P.code);
-    if (!lines.length) lines.push('I’m walking through Tern.');
-    const text = lines.join('\n');
-    const done = () => say('Copied.', 1800);
-    try { navigator.clipboard.writeText(text).then(done, () => say(text, 6000)); } catch (e) { say(text, 6000); }
+  async function savePicture() {
+    if (!shBlob) await shDrawing;
+    if (!shBlob) return;
+    const a = document.createElement('a'); a.href = URL.createObjectURL(shBlob); a.download = 'tern.png'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    flash(shAlt, 'Saved');
   }
+  shSend.addEventListener('click', sendShare);
+  shAlt.addEventListener('click', () => shCanShare ? copyShare(shAlt) : savePicture());
+  document.getElementById('shClose').addEventListener('click', closeShare);
+  shEl.addEventListener('click', e => { if (e.target === shEl) closeShare(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && !shEl.hidden) { e.stopPropagation(); closeShare(); } });
   function startOver() {
     if (!confirm('Start over? Your answers on this device will be cleared.')) return;
     resetting = true;
@@ -3010,16 +3589,18 @@
   // After every answer: the portrait grows. Big moments (headline at 4, code at 12) get an arrival screen.
   async function afterAnswer() {
     const before = P;
-    P = TernPortrait.compute(CONTENT, state.answers);
+    P = portraitNow();
     const fresh = [];
-    const newly = TernPortrait.LADDER.filter(u => P.count >= u.at && !state.seen.includes(u.key)).map(u => u.key);
+    const newly = TernPortrait.LADDER.filter(u => P.count >= u.at).map(u => u.key).concat(...P.worlds.map(w => w.unlocked)).filter(k => !state.seen.includes(k));
+    const opening = P.openWorlds.filter(id => id !== P.worlds[0].id && !state.seen.includes('world:' + id));
     fresh.push(...newly, 'notes');
+    P.worlds.forEach(w => { if (newly.some(k => k.startsWith(w.id + ':'))) fresh.push('ch-' + w.id); });
     if (before && P.tendencies.length > before.tendencies.length) fresh.push('tend');
     headlineChanged = !!(state.headline && P.has('headline') && P.headline && P.headline !== state.headline);
     if (headlineChanged && !fresh.includes('headline')) fresh.push('headline');
     if (P.has('headline') && P.headline) state.headline = P.headline;
     // "where you're torn" waits until a real tension exists
-    state.seen.push(...newly.filter(k => k !== 'tension' || P.tensions.length));
+    state.seen.push(...newly.filter(k => k !== 'tension' || P.tensions.length), ...opening.map(id => 'world:' + id));
     save();
     showPanel();
     const changed = renderPortrait(fresh);
@@ -3030,6 +3611,8 @@
     }
     if (newly.includes('headline') && P.headline) await revealHeadline();
     if (newly.includes('code')) await revealCode();
+    if (opening.includes('hood')) { hoodFogT = 0; say('The fog is lifting at the edge of the park.', 5000); }
+    if (newly.includes('hood:chapter')) await revealChapter(P.worlds.find(w => w.id === 'hood'));
   }
   function showPanel() {
     if (!pEl.hidden) return;
@@ -3043,9 +3626,11 @@
       requestAnimationFrame(() => requestAnimationFrame(() => rvEl.classList.add('on')));
       const kids = [...rv.children];
       kids.forEach((k, i) => setTimeout(() => k.classList.add('in'), (reduce ? 0 : 900) + i * (reduce ? 0 : 500)));
-      rv.querySelector('.go').addEventListener('click', () => {
+      // a [data-share] button closes the screen and opens sharing
+      rv.querySelectorAll('.go').forEach(b => b.addEventListener('click', () => {
         rvEl.classList.remove('on'); setTimeout(() => { rvEl.hidden = true; res(); }, reduce ? 0 : 800);
-      });
+        if (b.hasAttribute('data-share')) setTimeout(openShare, reduce ? 0 : 500);
+      }));
       setTimeout(() => rv.querySelector('.go').focus({ preventScroll: true }), 1500);
     });
   }
@@ -3063,13 +3648,19 @@
     const p = arrive(`<p class="k">You answered every question in the park</p><div class="letters" id="letters">${P.code.split('').map(ch => `<span>${ch}</span>`).join('')}</div>`
       + `<h2 style="font-size:clamp(22px,4.4vw,30px)">${esc(P.headline || '')}</h2>${radarSVG()}`
       + `<p>${P.axes.map(a => `<b>${a.letter}</b> ${esc(a.letter === a.pos ? a.posLabel : a.negLabel)}`).join(' · ')}</p>`
-      + `<p>The fog is lifting at the edge of the park. Next is the Neighborhood, with questions about the people closest to you. It opens soon.</p><button class="go" type="button">Back to the park</button>`);
+      + `<p>The Neighborhood is open, with questions about the people closest to you. Your code won't change there. It comes from the park, where everyone answers the same questions.</p>`
+      + `<div class="rv-acts"><button class="go" type="button" data-share>Send your code to a friend</button><button class="go ghost" type="button">Keep walking</button></div>`);
     // letters arrive one at a time, left to right: ~300ms each, ~200ms apart
     await sleep(1300);
     const spans = [...document.querySelectorAll('#letters span')];
     for (const sp of spans) { sp.classList.add('in'); await sleep(500); }
     await p;
-    say('The Neighborhood opens soon.', 5000);
+  }
+  function revealChapter(w) {
+    const lead = w.headline || (w.shift && w.shift.text) || '';
+    return arrive(`<p class="k">${esc(w.chapter || w.name)}</p><h2>${esc(lead)}</h2>`
+      + (w.headline && w.shift ? `<p>${esc(w.shift.text)}</p>` : '')
+      + `<p>Your portrait has a new chapter. Past the Neighborhood, the City waits in the fog. It opens soon.</p><div class="rv-acts"><button class="go" type="button" data-share>Send to a friend</button><button class="go ghost" type="button">Keep walking</button></div>`);
   }
 
   // ---------- scene loop ----------
@@ -3164,7 +3755,7 @@
   let changing = false;
   function changeCharacter() {
     if (selecting || cardOpen) return;
-    changing = true; selecting = true; keys.clear(); player.tx = player.ty = null;
+    changing = true; selecting = true; keys.clear(); player.tx = player.ty = null; player.path = null;
     document.getElementById('selGo').textContent = 'Keep walking';
     pickChar(state.char || 0);
     selEl.hidden = false; selEl.classList.add('gone');
@@ -3220,14 +3811,14 @@
     if (!selEl.hidden) drawSelect(T);
     if (!titleEl.hidden) drawTitle(T);
     updateWorld(dt);
-    const behind = cardOpen && sheet() && Math.abs(cam.off + Math.min(H * 0.3, 280)) < 1;
+    const behind = cardOpen && sheet() && Math.abs(cam.off + Math.min(innerHeight * 0.3, 280)) < 1;
     if (!behind || (skip = !skip)) drawWorld(T);
     if (scene && (cardOpen || sc.fade < 0.99)) { updateScene(dt); if (scv.width) drawScene(); }
     requestAnimationFrame(frame);
   }
   // Dev hook for checking scenes: __tern.open('B09')
-  window.__tern = { state, review: id => openReview(nodes.find(n => n.id === id)),
-    card: async (answers) => { const keep = P; if (answers) P = TernPortrait.compute(CONTENT, answers); const b = await portraitCard(); P = keep; return await new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(b); }); },
+  window.__tern = { state, review: id => openReview(nodes.find(n => n.id === id)), go: (x, y) => { player.x = cam.x = x; player.y = cam.y = y; player.tx = player.ty = null; player.path = null; }, walk: (x, y) => walkTo(x, y), where: () => ({ x: player.x, y: player.y, tx: player.tx, ty: player.ty, route: player.path, path: player.path && player.path.length, inWall: solidAt(player.x, player.y) }),
+    card: async (answers, lines) => { const keep = P; if (answers) P = TernPortrait.compute(CONTENT, answers); const b = await shareCard(lines || P.tendencies.filter(t => t.share).slice(0, SHARE_MAX).map(t => t.share)); P = keep; return await new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(b); }); },
     icon: (size, round, div) => { // Mof, the neutral one, as the app icon
       const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d');
       g.fillStyle = PAPER; if (round) { g.beginPath(); g.arc(size / 2, size / 2, size / 2, 0, 7); g.fill(); } else g.fillRect(0, 0, size, size);
@@ -3241,7 +3832,8 @@
   if (state.started) {
     selIdx = Math.min(state.char || 0, CHARACTERS.length - 1); pickChar(selIdx); myLook = CHARACTERS[selIdx].look;
     selecting = false; selEl.hidden = true;
-    if (state.pos) { player.x = cam.x = clampW(state.pos.x); player.y = cam.y = clampW(state.pos.y); }
+    if (state.pos) { [player.x, player.y] = freeNear(clampX(state.pos.x), clampW(state.pos.y)); cam.x = player.x; cam.y = player.y; }
+    if (state.zoom) { zoomTo(state.zoom); Z = zoomT; }
     setTimeout(() => say('Welcome back.', 2500), 600);
   }
   renderPortrait();

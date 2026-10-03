@@ -390,9 +390,11 @@
 
 <script src="content.js"></script>
 <script src="content-neighborhood.js"></script>
+<script src="content-city.js"></script>
 <script src="portrait.js"></script>
 <script src="scenes.js"></script>
 <script src="scenes-neighborhood.js"></script>
+<script src="scenes-city.js"></script>
 <script>
 (() => {
   const INK = '#141414', PAPER = '#FAFAF8', GRAPH = '#6E6E6A', HAIR = '#DCDCD7', TRAIL = '#EDEDE8', SHADOW = 'rgba(20,20,20,0.10)';
@@ -1233,7 +1235,7 @@
   const stream = catmull([[-4, 5], [4, 8], [8.5, 12], [8, 17], [6, 21.5], [7.5, 27], [5, 32], [6, 38], [3, 48]]);
   const pond = { x: 3, y: 25, r: 2.2 };
   const road = catmull([[-4, 38.5], [9, 37.5], [19, 34.5], [28, 38], [48, 37]]);
-  const RAIL_END = 82;
+  const RAIL_END = 124;
   const rail = [[-4, 16], [RAIL_END, 16]];
   const trails = [
     [[20, 27], [22, 23], [26, 21], [29, 18.4]],
@@ -1264,7 +1266,24 @@
   ];
   const gateTrail = catmull([[35.3, 24.8], [38.5, 25.4], [41.5, 25.2], [44.6, 25.6]]); // from the cabin to the gate
   // The Neighborhood draws from its own random sequence, so the park's layout never shifts.
-  const inHood = (x, y) => x > HOOD.x0 && x < HOOD.x1 && y > HOOD.y0 - 1 && y < HOOD.y1 + 1;
+  const CITYR = { x0: 84.6, x1: 120, y0: 0.6, y1: 43.4, gate: { x: 83.6, y: 26 } };
+  // Every world past the park is a region further east, opening in this order. Each has its own fog.
+  const REGIONS = [
+    { id: 'hood', name: 'The Neighborhood', x0: HOOD.x0, x1: HOOD.x1, label: [50.6, 22.6], hint: 'answer every stop in the park', lifting: 'The fog is lifting at the edge of the park.' },
+    { id: 'city', name: 'The City', x0: CITYR.x0, x1: CITYR.x1, label: [90.6, 22.6], hint: 'answer most of the Neighborhood', lifting: 'The fog is lifting past the Neighborhood.' },
+  ];
+  const SOON_AT = { x: CITYR.x1 + 8, y: 22 }; // where the next world waits, sketched in fog, before it's built
+  // The City's streets: the Neighborhood's three east-west streets carry on through the woods, and three avenues cross them.
+  const cityStreets = [
+    catmull([[82, 26], [84, 26.05], [93, 25.95], [102, 26.05], [112, 25.95], [123, 26]]), // the main avenue
+    catmull([[82, 36.8], [86, 36.9], [96, 37.1], [110, 36.9], [123, 37]]),
+    catmull([[82, 8], [86, 8.05], [100, 8.1], [123, 8]]),
+    catmull([[92, -6], [92.1, 16], [91.9, 30], [92, 50]]),
+    catmull([[102.5, -6], [102.4, 16], [102.6, 30], [102.5, 50]]),
+    catmull([[112, -6], [112.1, 16], [111.9, 30], [112, 50]]),
+  ];
+  const WIDE = new Set([hoodStreets[3], cityStreets[0], cityStreets[1], cityStreets[3], cityStreets[4], cityStreets[5]]); // wider streets, with a dashed middle line
+  const allStreets = [...hoodStreets, ...cityStreets];
   // House lots: [x, y, which way the house faces the street (+1: street to its south-east)]
   const lotRows = [[5.2, 1], [11, -1], [22.9, 1], [29.2, -1], [33.6, 1], [40.4, -1]];
 
@@ -1896,17 +1915,39 @@
     B10: { x: 55.6, y: 4.6, r: 1.9, kind: 'swinghouse' },
     Q5: { x: 66.6, y: 11.6, r: 1.9, kind: 'oldhouse' },
     D1: { x: 74, y: 4.4, r: 2.1, kind: 'carehome' },
+    // The City. Quick, light stops near the western entrance; the heaviest institutions sit deeper in.
+    B32: { x: 87, y: 29.6, r: 1.3, kind: 'noticeboard' },
+    Q10: { x: 89.4, y: 33.6, r: 1.5, kind: 'subway' },
+    B03: { x: 87.2, y: 22.8, r: 1.2, kind: 'phonebooth' },
+    B35: { x: 89.8, y: 19.2, r: 1.4, kind: 'newsstand' },
+    B30: { x: 88.2, y: 11.4, r: 1.9, kind: 'permit' },
+    Q11: { x: 88.6, y: 4.2, r: 1.6, kind: 'crosswalk' },
+    B12: { x: 88, y: 40.2, r: 1.9, kind: 'bar' },
+    D6: { x: 97.4, y: 3.6, r: 2.1, kind: 'hq' },
+    B05: { x: 95.4, y: 11.4, r: 1.8, kind: 'office' },
+    D5: { x: 99.6, y: 11.4, r: 1.8, kind: 'hiring' },
+    Q9: { x: 97.2, y: 20.4, r: 2.4, kind: 'government' },
+    Q8: { x: 95, y: 29.8, r: 1.7, kind: 'smalloffice' },
+    B41: { x: 99.8, y: 30.4, r: 1.8, kind: 'glasstower' },
+    B04: { x: 97.2, y: 40.2, r: 2, kind: 'warehouse' },
+    D11: { x: 107.2, y: 3.4, r: 2.2, kind: 'courthouse' },
+    B34: { x: 107.2, y: 11.2, r: 2.1, kind: 'prison' },
+    B33: { x: 107.2, y: 20.6, r: 2.1, kind: 'school' },
+    D10: { x: 107.2, y: 30.2, r: 2, kind: 'apartments' },
+    D3: { x: 107.4, y: 40.2, r: 2.1, kind: 'factory' },
   };
   const QUESTIONS = CONTENT.questions.map(q => Object.assign({}, q, { node: PLACES[q.id] || { x: 20, y: 20, r: 1.6, kind: 'pond' } }));
 
   // Buildings you can't walk through: [width, depth, y offset] of each building-type stop's footprint, in map units.
   const FOOT = { cabin: [1.1, 1.1], kitchen: [1.1, 1.1], cottage: [1.1, 1.1], shop: [1.1, 1.1], hall: [1.4, 1.1],
-    cafe: [1.7, 1.3], litwindow: [1.6, 1.4], stoop: [1.5, 1.3], swinghouse: [1.8, 1.4], oldhouse: [1.7, 1.5], carehome: [2.8, 1.3], porchgame: [1.6, 1.1, -0.75], doghouse: [0.6, 0.6] };
+    cafe: [1.7, 1.3], litwindow: [1.6, 1.4], stoop: [1.5, 1.3], swinghouse: [1.8, 1.4], oldhouse: [1.7, 1.5], carehome: [2.8, 1.3], porchgame: [1.6, 1.1, -0.75], doghouse: [0.6, 0.6],
+    phonebooth: [0.5, 0.5], newsstand: [0.9, 0.7], subway: [1.1, 0.9], permit: [2, 1.4], bar: [1.8, 1.4], hq: [2.2, 2], office: [1.8, 1.5], hiring: [1.7, 1.4],
+    government: [3.2, 2.2], smalloffice: [1.5, 1.3], glasstower: [1.8, 1.6], warehouse: [2.6, 1.6], courthouse: [3, 2], prison: [2.6, 1.8], school: [2.6, 1.6], apartments: [2.4, 1.8], factory: [2.8, 1.8] };
   const nodes = QUESTIONS.map(q => {
     const n = Object.assign({ id: q.id, q, done: false, world: q.world || 'park' }, q.node);
     const ft = FOOT[n.kind];
     n.stand = n.stand || (ft && n.world !== 'park' ? [n.x + 0.3, n.y + (ft[2] || 0) + ft[1] / 2 + 0.6] : [n.x + 0.8, n.y + 0.9]); // in front of the door
-    n.flag = n.flag || [n.x - 0.7, n.y + 1.2];
+    n.flag = n.flag || (ft && n.world === 'city' ? [n.x - ft[0] / 2 - 0.25, n.y + (ft[2] || 0) + ft[1] / 2 + 0.45] : [n.x - 0.7, n.y + 1.2]); // a City flag stands clear of its building
     return n;
   });
 
@@ -1946,7 +1987,7 @@
     pad = pad || 0;
     if (hoodStreets.some((st, i) => minDist(x, y, st) < (i === 3 ? 1.6 : 1.25) + pad) || Math.abs(y - 16) < 1.1 + pad) return false;
     if (minDist(x, y, gateTrail) < 0.9 + pad) return false;
-    if (nodes.some(n => n.world !== 'park' && (dist(x, y, n.x, n.y) < n.r + 0.9 + pad || dist(x, y, n.flag[0], n.flag[1]) < 0.9 || dist(x, y, n.stand[0], n.stand[1]) < 0.8))) return false;
+    if (nodes.some(n => n.world === 'hood' && (dist(x, y, n.x, n.y) < n.r + 0.9 + pad || dist(x, y, n.flag[0], n.flag[1]) < 0.9 || dist(x, y, n.stand[0], n.stand[1]) < 0.8))) return false;
     if (houses.some(h => Math.abs(x - h.x) < h.w / 2 + 0.45 + pad && Math.abs(y - h.y) < h.d / 2 + 0.45 + pad)) return false;
     return x > HOOD.x0 + 0.6 && x < HOOD.x1 && y > HOOD.y0 && y < HOOD.y1;
   }
@@ -1991,6 +2032,55 @@
     else if (r < 0.16) decor.push({ x, y, s, ph, kind: 'flower' });
     else if (r < 0.175) decor.push({ x, y, s, ph, kind: 'bush' });
   }
+  // The City's decor, from its own random sequence: blocks of flat-roofed buildings, street trees, lamps, benches, one small square.
+  for (let i = decor.length - 1; i >= 0; i--) if (decor[i].x > 77 && cityStreets.some(st => minDist(decor[i].x, decor[i].y, st) < 1.6)) decor.splice(i, 1); // the Neighborhood's woods make way for the City's streets
+  let cseed = 13;
+  const cr = () => { cseed = (cseed * 16807) % 2147483647; return (cseed - 1) / 2147483646; };
+  const towers = [];
+  function cityClear(x, y, pad) {
+    pad = pad || 0;
+    if (cityStreets.some((st, i) => minDist(x, y, st) < (WIDE.has(st) ? 1.5 : 1.3) + pad) || Math.abs(y - 16) < 1.2 + pad) return false;
+    if (nodes.some(n => n.world === 'city' && (dist(x, y, n.x, n.y) < n.r + 0.7 + pad || dist(x, y, n.flag[0], n.flag[1]) < 0.9 || dist(x, y, n.stand[0], n.stand[1]) < 0.9))) return false;
+    if (towers.some(h => Math.abs(x - h.x) < h.w / 2 + 0.35 + pad && Math.abs(y - h.y) < h.d / 2 + 0.35 + pad)) return false;
+    return x > CITYR.x0 + 0.4 && x < CITYR.x1 && y > CITYR.y0 && y < CITYR.y1;
+  }
+  const blockXs = [CITYR.x0, 92, 102.5, 112, CITYR.x1], blockYs = [CITYR.y0, 8, 16, 26, 37, CITYR.y1];
+  for (let bx = 0; bx < blockXs.length - 1; bx++) for (let by = 0; by < blockYs.length - 1; by++) {
+    const x0 = blockXs[bx] + 1.6, x1 = blockXs[bx + 1] - 1.6, y0 = blockYs[by] + 1.6, y1 = blockYs[by + 1] - 1.6;
+    const rows = y1 - y0 > 4.6 ? [y0 + 1, y1 - 1] : [(y0 + y1) / 2];
+    rows.forEach((ry, k) => {
+      for (let x = x0 + 1 + cr() * 0.4; x < x1 - 0.8; x += 2.5 + cr() * 0.6) {
+        const w = 1.7 + cr() * 0.6, d = 1.4 + cr() * 0.5, y = ry + (cr() - 0.5) * 0.3;
+        const pts = [[x, y], [x - w / 2, y - d / 2], [x + w / 2, y - d / 2], [x - w / 2, y + d / 2], [x + w / 2, y + d / 2]];
+        if (!pts.every(([px, py]) => cityClear(px, py, 0.1))) continue;
+        const t = { kind: 'tower', x, y, w, d, face: k === 0 && rows.length > 1 ? -1 : 1, h: 34 + Math.floor(cr() * 4) * 12, tank: cr() < 0.25, awning: cr() < 0.35, s: 1, ph: cr() * 6 };
+        towers.push(t); decor.push(t);
+      }
+    });
+  }
+  { const sq = [97.2, 32.6]; if (cityClear(sq[0], sq[1], 0.6)) decor.push({ kind: 'fountain', x: sq[0], y: sq[1], s: 1, ph: 0 }); } // a small square
+  cityStreets.forEach(st => {
+    let since = 0;
+    for (let i = 1; i < st.length; i++) {
+      since += dist(st[i][0], st[i][1], st[i - 1][0], st[i - 1][1]);
+      if (since < 2.6) continue;
+      since = 0;
+      const [x, y] = st[i], a = st[Math.max(0, i - 2)], b = st[Math.min(st.length - 1, i + 2)];
+      let nx = -(b[1] - a[1]), ny = b[0] - a[0]; const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l;
+      const side = (i % 2 ? 1 : -1), px = x + nx * 1.7 * side, py = y + ny * 1.7 * side;
+      if (!cityClear(px, py, -0.6) || px < CITYR.x0) continue;
+      const r = cr();
+      decor.push(r < 0.3 ? { kind: 'lamp', x: px, y: py, s: 1, ph: 0 } : r < 0.42 ? { kind: 'cbench', x: px, y: py, s: 1, ph: 0 } : { kind: 'tree', x: px, y: py, s: 0.7 + cr() * 0.2, ph: cr() * 6 });
+    }
+  });
+  for (let i = 0; i < 900; i++) { // woods around the City's north, south and east edges
+    const side = cr(), u = cr(), k = cr() * 5.5;
+    const x = side < 0.5 ? CITYR.x0 + u * (CITYR.x1 + 5 - CITYR.x0) : CITYR.x1 + k, y = side < 0.25 ? CITYR.y0 - 0.6 - k : side < 0.5 ? CITYR.y1 + 0.6 + k : -6 + u * 56;
+    if (cityStreets.some(st => minDist(x, y, st) < 1.6) || Math.abs(y - 16) < 1.2 || cr() > 0.55) continue;
+    if (Math.abs(x - SOON_AT.x) < 6 && Math.abs(y - SOON_AT.y) < 6) continue; // leave room for the next world's sketch
+    decor.push({ x, y, s: (0.8 + cr() * 0.5) * 1.1, ph: cr() * 6, kind: cr() < 0.7 ? 'pine' : 'tree' });
+  }
+  decor.push({ kind: 'gate', x: CITYR.gate.x, y: CITYR.gate.y, s: 1, ph: 0, region: 'city', label: 'The City' });
   const bridges = [];
   [[road, 'road'], [railPts, 'rail'], ...trails.map(t => [t, 'trail'])].forEach(([pts, kind]) => {
     let lastI = -99;
@@ -1999,12 +2089,12 @@
     }
   });
 
-  decor.push({ kind: 'gate', x: HOOD.gate.x, y: HOOD.gate.y, s: 1, ph: 0 });
+  decor.push({ kind: 'gate', x: HOOD.gate.x, y: HOOD.gate.y, s: 1, ph: 0, region: 'hood', label: 'The Neighborhood' });
 
   // ---------- solid buildings, and finding a way around them ----------
   const BODY = 0.25; // how far your character keeps from a wall
   const solids = [
-    ...houses.map(h => ({ x0: h.x - h.w / 2, x1: h.x + h.w / 2, y0: h.y - h.d / 2, y1: h.y + h.d / 2 })),
+    ...[...houses, ...towers].map(h => ({ x0: h.x - h.w / 2, x1: h.x + h.w / 2, y0: h.y - h.d / 2, y1: h.y + h.d / 2 })),
     ...nodes.filter(n => FOOT[n.kind]).map(n => { const [w, d, oy] = FOOT[n.kind], cy = n.y + (oy || 0); return { x0: n.x - w / 2, x1: n.x + w / 2, y0: cy - d / 2, y1: cy + d / 2 }; }),
   ].map(r => ({ x0: r.x0 - BODY, x1: r.x1 + BODY, y0: r.y0 - BODY, y1: r.y1 + BODY }));
   const solidAt = (x, y, m) => { m = m || 0; return solids.some(r => x > r.x0 - m && x < r.x1 + m && y > r.y0 - m && y < r.y1 + m); };
@@ -2022,7 +2112,7 @@
     [x, y] = freeNear(clampX(x), clampW(y));
     player.path = null; player.tx = x; player.ty = y; player.goal = [x, y];
     if (clearLine(player.x, player.y, x, y, 0.04)) return;
-    const S = 0.5, cols = Math.ceil(((hoodOpen ? HOOD.x1 : SIZE) + 1) / S), rows = Math.ceil((SIZE + 1) / S);
+    const S = 0.5, cols = Math.ceil((eastLimit() + 1) / S), rows = Math.ceil((SIZE + 1) / S);
     const cell = (cx, cy) => cy * cols + cx, cxOf = v => Math.max(0, Math.min(cols - 1, Math.round(v / S))), cyOf = v => Math.max(0, Math.min(rows - 1, Math.round(v / S)));
     const sx = cxOf(player.x), sy = cyOf(player.y), gx = cxOf(x), gy = cyOf(y), goal = cell(gx, gy);
     const open = [[0, cell(sx, sy)]], gs = new Map([[cell(sx, sy), 0]]), from = new Map(), shut = new Set();
@@ -2099,7 +2189,7 @@
   function zoomTo(z) { zoomT = Math.max(ZMIN, Math.min(ZMAX, z)); }
 
   const clampW = v => Math.max(0.6, Math.min(SIZE - 0.6, v));
-  const clampX = v => Math.max(0.6, Math.min((hoodOpen ? HOOD.x1 : SIZE) - 0.6, v)); // where walkers can go east-west
+  const clampX = v => Math.max(0.6, Math.min(eastLimit() - 0.6, v)); // where walkers can go east-west
   function origin() { const c = iso(cam.x, cam.y); return { ox: (W - PW / Z) / 2 - c.x, oy: H / 2 + (30 + cam.off) / Z - c.y }; }
   function toScreen(x, y) { const { ox, oy } = origin(), p = iso(x, y); return { x: p.x + ox, y: p.y + oy }; }
   function toWorld(sx, sy) {
@@ -2161,6 +2251,7 @@
   const spread = () => { const [a, b] = [...fingers.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
   cv.addEventListener('pointerdown', ev => {
     fingers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    if (look) { skipLook(); return; } // a tap during a look-over skips it
     if (cardOpen) return;
     if (fingers.size >= 2) {
       if (!pinch) { pinch = { d: spread(), z: zoomT }; player.tx = player.ty = null; player.path = null; marker = null; }
@@ -2196,6 +2287,7 @@
   cv.addEventListener('gesturechange', ev => { ev.preventDefault(); if (!cardOpen && !fingers.size) { zoomTo(gz * ev.scale); zoomed(); } });
   addEventListener('keydown', e => {
     if (cardOpen || selecting || !document.getElementById('share').hidden) return;
+    if (look) { skipLook(); return; }
     if (e.key === '+' || e.key === '=') { zoomTo(zoomT * 1.2); zoomed(); return; }
     if (e.key === '-' || e.key === '_') { zoomTo(zoomT / 1.2); zoomed(); return; }
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) { keys.add(e.key); e.preventDefault(); moved(); }
@@ -2277,10 +2369,10 @@
     }
     ctx.restore();
     // the park road and the Neighborhood's streets: all the ink edges first, then the paper, so crossings stay open
-    const streetsOn = hoodStreets.filter(st => { const a = toScreen(...st[0]), b = toScreen(...st[st.length - 1]); return Math.max(a.x, b.x) > -60 && Math.min(a.x, b.x) < W + 60; });
-    strokePts(ctx, road, 32, INK); streetsOn.forEach((st, i) => strokePts(ctx, st, st === hoodStreets[3] ? 32 : 27, INK));
-    strokePts(ctx, road, 29, PAPER); streetsOn.forEach(st => strokePts(ctx, st, st === hoodStreets[3] ? 29 : 24, PAPER));
-    strokePts(ctx, road, 1.4, GRAPH, [10, 10]); if (streetsOn.includes(hoodStreets[3])) strokePts(ctx, hoodStreets[3], 1.4, GRAPH, [10, 10]);
+    const streetsOn = allStreets;
+    strokePts(ctx, road, 32, INK); streetsOn.forEach(st => strokePts(ctx, st, WIDE.has(st) ? 32 : 27, INK));
+    strokePts(ctx, road, 29, PAPER); streetsOn.forEach(st => strokePts(ctx, st, WIDE.has(st) ? 29 : 24, PAPER));
+    strokePts(ctx, road, 1.4, GRAPH, [10, 10]); streetsOn.forEach(st => { if (WIDE.has(st)) strokePts(ctx, st, 1.4, GRAPH, [10, 10]); });
     [...trails, gateTrail].forEach(tr => { strokePts(ctx, tr, 14, HAIR); strokePts(ctx, tr, 11.5, TRAIL); strokePts(ctx, tr, 1.6, GRAPH, [1, 7]); });
     bridges.filter(b => b.kind !== 'rail').forEach(b => drawBridge(ctx, b));
     ctx.save(); ctx.strokeStyle = GRAPH; ctx.lineWidth = 1;
@@ -2445,7 +2537,7 @@
   }
   // The gate at the park's east edge: two stone posts and a small board with the Neighborhood's name.
   function drawGate(g, p, d, t) {
-    const open = hoodFog < 0.5;
+    const open = (fog[d.region || 'hood'] || 0) < 0.5;
     const a = toScreen(d.x - 0.35, d.y - 0.95), b = toScreen(d.x + 0.35, d.y + 0.95);
     g.save(); g.strokeStyle = INK; g.fillStyle = PAPER; g.lineWidth = 1.5; g.lineJoin = 'round';
     for (const q of [a, b]) { g.fillStyle = SHADOW; ellipse(g, q.x + 2, q.y, 7, 2.5); g.fill(); g.fillStyle = PAPER; g.beginPath(); g.rect(q.x - 4.5, q.y - 26, 9, 26); g.fill(); g.stroke(); line(g, q.x - 6, q.y - 26, q.x + 6, q.y - 26); }
@@ -2454,10 +2546,176 @@
     line(g, mx - 16, my + 6, mx - 14, my + 2); line(g, mx + 16, my + 8, mx + 14, my + 4);
     g.beginPath(); g.roundRect(mx - 34, my - 8, 68, 15, 3); g.fill(); g.stroke();
     g.fillStyle = INK; g.font = 'italic 500 11px "Cormorant Garamond", Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText('The Neighborhood', mx, my);
+    g.fillText(d.label || 'The Neighborhood', mx, my);
     if (!open) { g.strokeStyle = GRAPH; g.lineWidth = 1.2; g.beginPath(); g.moveTo(a.x + 4, a.y - 14); g.quadraticCurveTo(mx, (a.y + b.y) / 2 - 6, b.x - 4, b.y - 14); g.stroke(); } // a rope across, until it opens
     g.restore();
   }
+  // ---------- the City's buildings ----------
+  // A flat-roofed building: a box with a window grid on the two walls you can see, a parapet, and optional extras.
+  function drawTower(g, d, t, o) {
+    o = o || {};
+    const x0 = d.x - d.w / 2, x1 = d.x + d.w / 2, y0 = d.y - d.d / 2, y1 = d.y + d.d / 2, H = d.h;
+    const P = (x, y, z) => { const q = toScreen(x, y); return { x: q.x, y: q.y - (z || 0) }; };
+    const A = P(x0, y0), B = P(x1, y0), C = P(x1, y1), D = P(x0, y1), up = (q, z) => ({ x: q.x, y: q.y - (z == null ? H : z) });
+    const wall = (f, u, v) => f === 'x' ? P(x1, y0 + u * (y1 - y0), v * H) : P(x0 + u * (x1 - x0), y1, v * H);
+    const quad = (f, u0, u1, v0, v1) => poly(g, [wall(f, u0, v0), wall(f, u1, v0), wall(f, u1, v1), wall(f, u0, v1)]);
+    const front = d.face > 0 ? 'y' : 'x', floors = Math.max(1, Math.round(H / 12));
+    g.save(); g.lineJoin = 'round'; g.lineCap = 'round';
+    g.fillStyle = SHADOW; poly(g, [A, B, C, D].map(q => ({ x: q.x + 9, y: q.y + 4 }))); g.fill();
+    g.strokeStyle = INK; g.fillStyle = PAPER; g.lineWidth = 1.6;
+    poly(g, [B, C, up(C), up(B)]); g.fill(); g.stroke();
+    poly(g, [D, C, up(C), up(D)]); g.fill(); g.stroke();
+    ['x', 'y'].forEach(f => {
+      const len = f === 'x' ? d.d : d.w, cols = Math.max(2, Math.round(len * 2.2));
+      g.lineWidth = 1;
+      if (o.glass) { // glass: long bands of window between thin floor lines
+        g.strokeStyle = GRAPH;
+        for (let k = 0; k < floors; k++) { quad(f, 0.06, 0.94, (k + 0.18) / floors, (k + 0.82) / floors); g.stroke(); }
+        for (let c = 1; c < cols; c++) { const u = c / cols; const a = wall(f, u, 0.04), b = wall(f, u, 0.98); line(g, a.x, a.y, b.x, b.y); }
+        g.strokeStyle = INK; return;
+      }
+      for (let k = 0; k < floors; k++) for (let c = 0; c < cols; c++) {
+        if (k === 0 && f === front && (o.door !== false) && Math.abs((c + 0.5) / cols - 0.5) < 0.2) continue; // the door goes here
+        if (k === 0 && f === front && o.awning) continue;
+        quad(f, (c + 0.28) / cols, (c + 0.72) / cols, (k + 0.3) / floors, (k + 0.74) / floors); g.fillStyle = PAPER; g.fill(); g.stroke();
+        if (o.bars) for (let b = 1; b <= 2; b++) { const u = (c + 0.28 + b * 0.147) / cols, a = wall(f, u, (k + 0.3) / floors), e = wall(f, u, (k + 0.74) / floors); line(g, a.x, a.y, e.x, e.y); }
+        if (o.balconies && f === front && k > 0) { const a = wall(f, (c + 0.18) / cols, (k + 0.05) / floors), e = wall(f, (c + 0.82) / cols, (k + 0.05) / floors); g.lineWidth = 1.3; line(g, a.x, a.y, e.x, e.y); line(g, a.x, a.y, a.x, a.y - 5); line(g, e.x, e.y, e.x, e.y - 5); line(g, a.x, a.y - 5, e.x, e.y - 5); g.lineWidth = 1; }
+      }
+    });
+    g.lineWidth = 1.4; g.fillStyle = PAPER;
+    const doorTop = Math.min(0.9, 12 / H);
+    if (o.door !== false) { quad(front, 0.43, 0.57, 0, doorTop); g.fill(); g.stroke(); if (o.revolving) { const m = wall(front, 0.5, doorTop * 0.5); ellipse(g, m.x, m.y, 3.5, 4); g.stroke(); } }
+    if (o.awning) { // a striped awning along the ground floor
+      const a0 = wall(front, 0.05, doorTop + 0.02), a1 = wall(front, 0.95, doorTop + 0.02), fx = front === 'y' ? 5 : 8, fy = front === 'y' ? 6 : 3;
+      poly(g, [a0, a1, { x: a1.x - fx, y: a1.y + fy }, { x: a0.x - fx, y: a0.y + fy }]); g.fill(); g.stroke();
+      g.lineWidth = 1; for (let k = 1; k < 8; k++) { const u = k / 8; line(g, lerp(a0.x, a1.x, u), lerp(a0.y, a1.y, u), lerp(a0.x, a1.x, u) - fx, lerp(a0.y, a1.y, u) + fy); }
+      g.lineWidth = 1.4;
+    }
+    if (o.columns) { // columns across the front, a pediment above
+      g.lineWidth = 1.5; for (let k = 0; k < 6; k++) { const u = 0.1 + k * 0.16, a = wall(front, u, 0.02), b = wall(front, u, 0.8); line(g, a.x, a.y, b.x, b.y); }
+      const f0 = up(front === 'y' ? D : B), f1 = up(C), apex = front === 'y' ? P(d.x, y1, H + 14) : P(x1, d.y, H + 14);
+      poly(g, [f0, f1, apex]); g.fillStyle = PAPER; g.fill(); g.stroke();
+    }
+    if (o.steps) for (let k = 0; k < 3; k++) { // steps up to the front
+      const s0 = front === 'y' ? P(x0 + 0.1, y1 + 0.55 - k * 0.18, 0) : P(x1 + 0.55 - k * 0.18, y0 + 0.1, 0), s1 = front === 'y' ? P(x1 - 0.1, y1 + 0.55 - k * 0.18, 0) : P(x1 + 0.55 - k * 0.18, y1 - 0.1, 0);
+      g.lineWidth = 1.2; poly(g, [s0, s1, { x: s1.x, y: s1.y - 3 - k * 3 }, { x: s0.x, y: s0.y - 3 - k * 3 }]); g.fillStyle = PAPER; g.fill(); g.stroke();
+    }
+    // the roof, and a parapet just inside its edge
+    g.lineWidth = 1.6; g.fillStyle = PAPER; g.strokeStyle = INK;
+    const roof = [up(A), up(B), up(C), up(D)], cx = (roof[0].x + roof[2].x) / 2, cy = (roof[0].y + roof[2].y) / 2;
+    poly(g, roof); g.fill(); g.stroke();
+    g.strokeStyle = GRAPH; g.lineWidth = 1; poly(g, roof.map(q => ({ x: lerp(q.x, cx, 0.12), y: lerp(q.y, cy, 0.12) }))); g.stroke(); g.strokeStyle = INK;
+    if (o.sawtooth) { // a factory roof: a row of teeth
+      g.lineWidth = 1.4; for (let k = 0; k < 4; k++) { const u0 = 0.06 + k * 0.22, u1 = u0 + 0.2, a = P(lerp(x0, x1, u0), y0 + 0.1, H), b = P(lerp(x0, x1, u0), y1 - 0.1, H), a2 = P(lerp(x0, x1, u1), y0 + 0.1, H), b2 = P(lerp(x0, x1, u1), y1 - 0.1, H);
+        poly(g, [a, b, { x: b2.x, y: b2.y - 10 }, { x: a2.x, y: a2.y - 10 }]); g.fillStyle = PAPER; g.fill(); g.stroke(); poly(g, [b, { x: b2.x, y: b2.y - 10 }, b2]); g.fill(); g.stroke(); }
+    }
+    if (o.dome) { g.lineWidth = 1.5; g.fillStyle = PAPER; g.beginPath(); g.ellipse(cx, cy, 16, 6, 0, 0, Math.PI * 2); g.fill(); g.stroke(); g.beginPath(); g.moveTo(cx - 16, cy); g.bezierCurveTo(cx - 16, cy - 22, cx + 16, cy - 22, cx + 16, cy); g.fill(); g.stroke(); line(g, cx, cy - 17, cx, cy - 25); ellipse(g, cx, cy - 26, 2, 2); g.fillStyle = INK; g.fill(); }
+    if (o.bell) { g.lineWidth = 1.4; g.fillStyle = PAPER; g.beginPath(); g.rect(cx - 5, cy - 16, 10, 12); g.fill(); g.stroke(); g.beginPath(); g.moveTo(cx - 7, cy - 16); g.lineTo(cx, cy - 24); g.lineTo(cx + 7, cy - 16); g.closePath(); g.fill(); g.stroke(); g.beginPath(); g.arc(cx, cy - 8, 2.6, Math.PI, 0); g.stroke(); }
+    if (d.tank || o.tank) { // a water tank on legs
+      const tx = lerp(roof[0].x, roof[2].x, 0.35), ty = lerp(roof[0].y, roof[2].y, 0.3);
+      g.lineWidth = 1.2; line(g, tx - 5, ty, tx - 4, ty - 8); line(g, tx + 5, ty, tx + 4, ty - 8);
+      g.fillStyle = PAPER; g.beginPath(); g.rect(tx - 6, ty - 18, 12, 10); g.fill(); g.stroke(); g.beginPath(); g.moveTo(tx - 7, ty - 18); g.lineTo(tx, ty - 23); g.lineTo(tx + 7, ty - 18); g.closePath(); g.fill(); g.stroke();
+    }
+    if (o.stack) { // a chimney stack with one slow wisp
+      const sx = lerp(roof[1].x, roof[2].x, 0.5) - 6, sy = lerp(roof[1].y, roof[2].y, 0.5);
+      g.lineWidth = 1.4; g.fillStyle = PAPER; g.beginPath(); g.rect(sx - 4, sy - 34, 8, 34); g.fill(); g.stroke(); line(g, sx - 5, sy - 34, sx + 5, sy - 34);
+      if (!reduce) { const u = (t * 0.2) % 1; g.save(); g.globalAlpha = 0.7 * (1 - u); ellipse(g, sx + u * 10, sy - 40 - u * 22, 3 + u * 4, 3 + u * 4); g.stroke(); g.restore(); }
+    }
+    g.restore();
+    return { P, wall, front, A, B, C, D, up, H };
+  }
+  const drawTowerDecor = (g, p, d, t) => drawTower(g, d, t, { awning: d.awning });
+  function drawFountain(g, p) { // a still round basin in a small square
+    g.save(); g.strokeStyle = INK; g.fillStyle = PAPER; g.lineWidth = 1.6;
+    g.fillStyle = SHADOW; ellipse(g, p.x + 3, p.y + 2, 34, 13); g.fill(); g.fillStyle = PAPER;
+    ellipse(g, p.x, p.y - 4, 30, 12); g.fill(); g.stroke(); ellipse(g, p.x, p.y - 7, 24, 9); g.stroke();
+    g.strokeStyle = GRAPH; g.lineWidth = 1; ellipse(g, p.x, p.y - 7, 14, 5); g.stroke();
+    g.strokeStyle = INK; g.lineWidth = 1.6; line(g, p.x, p.y - 7, p.x, p.y - 22); ellipse(g, p.x, p.y - 22, 6, 2.4); g.fill(); g.stroke();
+    g.restore();
+  }
+  function drawCBench(g, p) {
+    g.save(); g.strokeStyle = INK; g.fillStyle = PAPER; g.lineWidth = 1.4;
+    line(g, p.x - 8, p.y, p.x - 8, p.y - 5); line(g, p.x + 8, p.y + 2, p.x + 8, p.y - 3);
+    poly(g, [{ x: p.x - 10, y: p.y - 5 }, { x: p.x + 7, y: p.y - 3 }, { x: p.x + 10, y: p.y - 5 }, { x: p.x - 7, y: p.y - 7 }]); g.fill(); g.stroke();
+    line(g, p.x - 7, p.y - 7, p.x - 7, p.y - 12); line(g, p.x + 10, p.y - 5, p.x + 10, p.y - 10); line(g, p.x - 7, p.y - 12, p.x + 10, p.y - 10);
+    g.restore();
+  }
+  function smallCar(g, x, y, dir) {
+    g.save(); g.translate(x, y); g.scale(dir || 1, 1); g.strokeStyle = INK; g.fillStyle = PAPER; g.lineWidth = 1.4;
+    g.fillStyle = SHADOW; ellipse(g, 0, 2, 18, 5); g.fill(); g.fillStyle = PAPER;
+    g.beginPath(); g.roundRect(-16, -12, 32, 10, 4); g.fill(); g.stroke();
+    g.beginPath(); g.roundRect(-9, -19, 18, 8, 3); g.fill(); g.stroke(); line(g, 0, -19, 0, -11);
+    for (const wx of [-9, 9]) { ellipse(g, wx, -2, 3.4, 3.4); g.fillStyle = INK; g.fill(); }
+    g.restore();
+  }
+  // Stop props in the City.
+  function drawCityProp(g, n, t, p) {
+    const S = (dx, dy) => toScreen(n.x + dx, n.y + dy), ft = FOOT[n.kind] || [1.6, 1.4];
+    const tw = (o, dd) => drawTower(g, Object.assign({ x: n.x, y: n.y + (ft[2] || 0), w: ft[0], d: ft[1], face: 1, h: 40 }, dd), t, o);
+    g.strokeStyle = INK; g.fillStyle = PAPER; g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = 1.6;
+    const shadow = (x, y, rx, ry) => { g.fillStyle = SHADOW; ellipse(g, x, y, rx, ry); g.fill(); g.fillStyle = PAPER; };
+    switch (n.kind) {
+      case 'noticeboard': { // a notice board on two posts, a few papers pinned up
+        shadow(p.x + 2, p.y + 1, 16, 4); g.lineWidth = 1.8; line(g, p.x - 11, p.y, p.x - 11, p.y - 34); line(g, p.x + 11, p.y, p.x + 11, p.y - 34);
+        g.lineWidth = 1.5; g.beginPath(); g.rect(p.x - 15, p.y - 38, 30, 22); g.fill(); g.stroke();
+        paper(g, p.x - 7, p.y - 28, 9, 12, -0.06, 1); paper(g, p.x + 5, p.y - 27, 8, 10, 0.08, 1);
+        break;
+      }
+      case 'subway': { // a subway entrance: stairs going down between two rails, and a round sign on a post
+        const a = S(-0.55, -0.45), b = S(0.55, -0.45), c = S(0.55, 0.45), d = S(-0.55, 0.45);
+        shadow(p.x, p.y + 2, 30, 10);
+        poly(g, [a, b, c, d]); g.fillStyle = INK; g.fill(); g.fillStyle = PAPER;
+        g.strokeStyle = PAPER; g.lineWidth = 1; for (let k = 1; k < 5; k++) { const u = k / 5; line(g, lerp(a.x, d.x, u), lerp(a.y, d.y, u), lerp(b.x, c.x, u), lerp(b.y, c.y, u)); }
+        g.strokeStyle = INK; g.lineWidth = 1.5;
+        for (const [e0, e1] of [[a, d], [b, c]]) { line(g, e0.x, e0.y, e0.x, e0.y - 12); line(g, e1.x, e1.y, e1.x, e1.y - 12); line(g, e0.x, e0.y - 12, e1.x, e1.y - 12); }
+        const q = S(0.9, 0.6); line(g, q.x, q.y, q.x, q.y - 34); ellipse(g, q.x, q.y - 38, 6, 6); g.fill(); g.stroke(); ellipse(g, q.x, q.y - 38, 2.2, 2.2); g.fillStyle = INK; g.fill();
+        break;
+      }
+      case 'phonebooth': { // a phone booth: a tall narrow glass box
+        shadow(p.x + 3, p.y + 1, 12, 4);
+        g.beginPath(); g.rect(p.x - 7, p.y - 40, 14, 40); g.fill(); g.stroke();
+        g.lineWidth = 1; g.strokeStyle = GRAPH; for (let k = 1; k < 4; k++) line(g, p.x - 7, p.y - 40 + k * 10, p.x + 7, p.y - 40 + k * 10); line(g, p.x, p.y - 36, p.x, p.y - 2);
+        g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.rect(p.x - 9, p.y - 45, 18, 5); g.fill(); g.stroke();
+        break;
+      }
+      case 'newsstand': { // a kiosk with an awning and stacked papers
+        shadow(p.x + 3, p.y + 2, 22, 7);
+        g.beginPath(); g.rect(p.x - 15, p.y - 24, 30, 24); g.fill(); g.stroke();
+        g.beginPath(); g.moveTo(p.x - 19, p.y - 24); g.lineTo(p.x + 19, p.y - 24); g.lineTo(p.x + 15, p.y - 31); g.lineTo(p.x - 15, p.y - 31); g.closePath(); g.fill(); g.stroke();
+        for (let k = 0; k < 3; k++) paper(g, p.x - 9 + k * 9, p.y - 12, 7, 9, (k - 1) * 0.05, 1);
+        break;
+      }
+      case 'permit': { const h = tw({ awning: false }, { h: 34 }); const q = S(-0.6, ft[1] / 2 + 0.7), r = S(0.4, ft[1] / 2 + 0.7); g.lineWidth = 1.5;
+        for (const o of [q, r]) { line(g, o.x, o.y, o.x, o.y - 12); ellipse(g, o.x, o.y - 13, 2, 2); g.fillStyle = INK; g.fill(); }
+        g.strokeStyle = GRAPH; g.beginPath(); g.moveTo(q.x, q.y - 11); g.quadraticCurveTo((q.x + r.x) / 2, (q.y + r.y) / 2 - 6, r.x, r.y - 11); g.stroke(); void h; break; } // a service window, and a queue rope
+      case 'crosswalk': { // a zebra crossing, and a small car waiting at it
+        const a = S(-1.1, 0.4), b = S(1.1, 0.4); g.fillStyle = PAPER; g.lineWidth = 1.2;
+        for (let k = 0; k < 6; k++) { const u0 = k / 6, u1 = u0 + 0.09, e0 = { x: lerp(a.x, b.x, u0), y: lerp(a.y, b.y, u0) }, e1 = { x: lerp(a.x, b.x, u1), y: lerp(a.y, b.y, u1) };
+          poly(g, [e0, e1, { x: e1.x - 20, y: e1.y + 10 }, { x: e0.x - 20, y: e0.y + 10 }]); g.fillStyle = INK; g.fill(); }
+        const c = S(-0.2, -0.9); smallCar(g, c.x, c.y, 1); break;
+      }
+      case 'bar': { tw({ awning: true }, { h: 28 }); const c1 = S(-0.6, 1.4), c2 = S(0.8, 1.4); smallCar(g, c1.x, c1.y, 1); smallCar(g, c2.x, c2.y, -1); break; } // a bar, two cars parked outside
+      case 'hq': tw({ glass: true, revolving: true, tank: false }, { h: 96 }); break;
+      case 'office': tw({ revolving: true }, { h: 58, tank: true }); break;
+      case 'hiring': { tw({}, { h: 40 }); const c = S(0.1, 1.2); g.lineWidth = 1.4; [-9, 9].forEach(dx => { const x = c.x + dx, y = c.y; poly(g, [{ x: x - 4, y: y - 7 }, { x: x + 4, y: y - 7 }, { x: x + 4, y: y - 9 }, { x: x - 4, y: y - 9 }]); g.fill(); g.stroke(); line(g, x - 3, y - 7, x - 3, y); line(g, x + 3, y - 7, x + 3, y); line(g, x + (dx > 0 ? 4 : -4), y - 9, x + (dx > 0 ? 4 : -4), y - 18); }); break; } // two chairs outside
+      case 'government': tw({ columns: true, steps: true, dome: true, door: false }, { h: 40 }); break;
+      case 'smalloffice': { tw({}, { h: 30 }); const c = S(0.6, ft[1] / 2 + 0.35); g.lineWidth = 1.4; g.beginPath(); g.rect(c.x - 5, c.y - 18, 10, 18); g.fill(); g.stroke(); for (let k = 1; k < 3; k++) { line(g, c.x - 5, c.y - 18 + k * 6, c.x + 5, c.y - 18 + k * 6); line(g, c.x - 1.5, c.y - 15 + (k - 1) * 6, c.x + 1.5, c.y - 15 + (k - 1) * 6); } break; } // a filing cabinet by the door
+      case 'glasstower': tw({ glass: true }, { h: 72 }); break;
+      case 'warehouse': { const h = tw({ door: false }, { h: 30 }); g.lineWidth = 1; g.fillStyle = PAPER;
+        const q0 = h.wall('y', 0.3, 0), q1 = h.wall('y', 0.7, 0), q2 = h.wall('y', 0.7, 0.7), q3 = h.wall('y', 0.3, 0.7); poly(g, [q0, q1, q2, q3]); g.fill(); g.lineWidth = 1.4; g.stroke();
+        g.lineWidth = 1; g.strokeStyle = GRAPH; for (let k = 1; k < 6; k++) { const u = k / 6; line(g, lerp(q0.x, q3.x, u), lerp(q0.y, q3.y, u), lerp(q1.x, q2.x, u), lerp(q1.y, q2.y, u)); }
+        g.strokeStyle = INK; g.lineWidth = 1.4; [[-1.2, 1.2], [-0.8, 1.35], [1.1, 1.25]].forEach(([dx, dy], k) => { const c = S(dx, dy), z = k === 1 ? 10 : 0; g.fillStyle = PAPER; g.beginPath(); g.rect(c.x - 6, c.y - 10 - z, 12, 10); g.fill(); g.stroke(); line(g, c.x - 6, c.y - 10 - z, c.x + 6, c.y - z); });
+        break; } // a rolling door and a few crates
+      case 'courthouse': tw({ columns: true, steps: true, door: false }, { h: 44 }); break;
+      case 'prison': { tw({ bars: true }, { h: 34 }); const a = S(-ft[0] / 2 - 0.2, ft[1] / 2 + 0.55), b = S(ft[0] / 2 + 0.2, ft[1] / 2 + 0.55); g.lineWidth = 1.3;
+        const k = 10; for (let i = 0; i <= k; i++) { const x = lerp(a.x, b.x, i / k), y = lerp(a.y, b.y, i / k); line(g, x, y, x, y - 16); }
+        g.strokeStyle = GRAPH; g.lineWidth = 1; for (const hh of [5, 10, 15]) line(g, a.x, a.y - hh, b.x, b.y - hh); break; } // barred windows behind a fence
+      case 'school': tw({ bell: true }, { h: 30 }); break;
+      case 'apartments': tw({ balconies: true }, { h: 64 }); break;
+      case 'factory': tw({ sawtooth: true, stack: true }, { h: 30 }); break;
+    }
+  }
+
   // Stop props in the Neighborhood (the map-side picture of each question's place).
   function drawHoodProp(g, n, t, p) {
     const S = (dx, dy) => toScreen(n.x + dx, n.y + dy);
@@ -2619,7 +2877,7 @@
   function drawProp(g, n, t) {
     const p = toScreen(n.x, n.y);
     g.strokeStyle = INK; g.fillStyle = PAPER; g.lineCap = 'round'; g.lineJoin = 'round';
-    if (n.world !== 'park') { g.save(); drawHoodProp(g, n, t, p); g.restore(); return; }
+    if (n.world !== 'park') { g.save(); (n.world === 'city' ? drawCityProp : drawHoodProp)(g, n, t, p); g.restore(); return; }
     if (n.kind === 'trolley') {
       const f = toScreen(n.x, n.y), e = toScreen(n.x + 2.4, n.y - 2.2);
       g.lineWidth = 1.4;
@@ -2903,7 +3161,7 @@
       if (!onScreen || n.done || !isOpen(n)) { n.seenAt = null; return; }
       if (n.seenAt == null) n.seenAt = t;
       if (cardOpen) return;
-      const u = reduce ? 1 : Math.min(1, (t - n.seenAt) / 1.1), ease = 1 - Math.pow(1 - u, 3);
+      const u = reduce ? 1 : Math.max(0, Math.min(1, (t - n.seenAt) / 1.1)), ease = 1 - Math.pow(1 - u, 3); // seenAt can be set ahead, to stagger a new place's bubbles
       const bob = reduce ? 0 : Math.sin(t * 1.2 + n.x) * 1.8;
       const x = f.x + 14, y = f.y - 92 + bob + (1 - ease) * 10;
       ctx.save(); ctx.translate(x, y); ctx.globalAlpha = ease;
@@ -2916,46 +3174,51 @@
     });
   }
 
-  // The Neighborhood: visible from the park's east edge under fog until all 12 park stops are answered.
-  // When it opens, the fog thins slowly (hoodFog eases from 1 to 0). Beyond it, the City waits in fog once the Neighborhood is mostly done.
-  let hoodFog = 1, hoodFogT = 1, hoodOpen = false;
-  const isOpen = n => n.world === 'park' || (n.world === 'hood' && hoodOpen && hoodFogT < 0.5); // stops wake once the fog starts lifting
+  // Later worlds: each region sits under fog until it opens, then the fog thins slowly (fog[id] eases from 1 to 0).
+  // Past the last built region, the next world waits as a faint sketch once you're most of the way through.
+  const wopen = {}, fog = {}, fogT = {};
+  REGIONS.forEach(r => { wopen[r.id] = false; fog[r.id] = fogT[r.id] = 1; });
+  const isOpen = n => n.world === 'park' || (wopen[n.world] && fogT[n.world] < 0.5); // stops wake once the fog starts lifting
+  const eastLimit = () => REGIONS.reduce((m, r) => wopen[r.id] ? Math.max(m, r.x1) : m, SIZE);
   function fogBand(g, x0, x1, y0, y1, a) {
     const q = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(([x, y]) => toScreen(x, y));
     g.globalAlpha = a; g.fillStyle = PAPER; poly(g, q); g.fill();
   }
-  function drawNeighborhood(t) {
-    const g = ctx, c = toScreen(HOOD.x0 + 6, HOOD.gate.y - 3);
-    if (hoodFog > 0.005) {
-      const a = 0.9 * hoodFog;
+  function drawFogs(t) {
+    const g = ctx;
+    REGIONS.forEach((r, i) => {
+      const f = fog[r.id]; if (f <= 0.005) return;
+      if (i > 0 && fog[REGIONS[i - 1].id] > 0.5) return; // the region before it is still fogged and already covers this one
+      const a = 0.9 * f, c = toScreen(r.label[0], r.label[1]);
       g.save();
-      for (let k = 0; k < 6; k++) fogBand(g, HOOD.x0 - 1.2 + k * 0.25, HOOD.x0 - 0.95 + k * 0.25, -8, 52, a * (k + 1) / 7); // a soft western edge
-      fogBand(g, HOOD.x0 + 0.3, 92, -8, 52, a);
-      g.globalAlpha = Math.min(1, hoodFog * 1.2);
-      for (let i = 0; i < 9; i++) { // soft paper drifts at the edge (they never move fast)
-        const q = toScreen(HOOD.x0 + 1 + (i % 3) * 2.2, 6 + i * 4.4), dx = reduce ? 0 : Math.sin(t * 0.05 + i) * 8;
+      for (let k = 0; k < 6; k++) fogBand(g, r.x0 - 1.2 + k * 0.25, r.x0 - 0.95 + k * 0.25, -8, 52, a * (k + 1) / 7); // a soft western edge
+      fogBand(g, r.x0 + 0.3, SOON_AT.x + 12, -8, 52, a);
+      g.globalAlpha = Math.min(1, f * 1.2);
+      for (let k = 0; k < 9; k++) { // soft paper drifts at the edge (they never move fast)
+        const q = toScreen(r.x0 + 1 + (k % 3) * 2.2, 6 + k * 4.4), dx = reduce ? 0 : Math.sin(t * 0.05 + k) * 8;
         g.fillStyle = 'rgba(250,250,248,0.5)'; ellipse(g, q.x + dx, q.y - 10, 90, 30); g.fill();
       }
       if (c.x > -260 && c.x < W + 260 && c.y > -200 && c.y < H + 200) {
-        g.globalAlpha = hoodFog; g.fillStyle = GRAPH; g.textAlign = 'center';
-        g.font = '500 20px "Cormorant Garamond", Georgia, serif'; g.fillText('The Neighborhood', c.x, c.y - 70);
-        g.font = '12px "Quattrocento Sans", sans-serif'; g.fillText('answer every stop in the park', c.x, c.y - 52);
+        g.globalAlpha = f; g.fillStyle = GRAPH; g.textAlign = 'center';
+        g.font = '500 20px "Cormorant Garamond", Georgia, serif'; g.fillText(r.name, c.x, c.y - 70);
+        g.font = '12px "Quattrocento Sans", sans-serif'; g.fillText(r.hint, c.x, c.y - 52);
       }
       g.restore();
-    }
+    });
   }
-  // The City: a faint sketch in fog past the Neighborhood's eastern woods, once you're most of the way through the Neighborhood.
-  const CITY = { x: 90, y: 23 };
-  const cityReady = () => { const c = P && P.worlds && P.worlds.find(w => w.id === 'city'); return !!(c && c.ready && hoodOpen); };
-  function drawCity(g, t) {
-    const q = toScreen(CITY.x, CITY.y);
+  const soonWorld = () => { const w = P && P.worlds && P.worlds.find(x => x.soon && x.ready); return w && wopen[REGIONS[REGIONS.length - 1].id] ? w : null; };
+  function drawSoon(g, w, t) {
+    const q = toScreen(SOON_AT.x, SOON_AT.y);
     if (q.x < -220 || q.x > W + 220 || q.y < -60 || q.y > H + 200) return;
     g.save(); g.strokeStyle = GRAPH; g.fillStyle = PAPER; g.lineWidth = 1; g.setLineDash([3, 4]);
-    [[-70, 40, 26], [-40, 70, 22], [-14, 52, 24], [14, 88, 18], [36, 46, 28], [66, 60, 20]].forEach(([dx, hgt, w]) => { g.beginPath(); g.rect(q.x + dx, q.y - hgt, w, hgt); g.fill(); g.stroke(); });
+    // a few dashed shapes: whatever the next world is, it's only sketched in so far
+    g.lineWidth = 1.3;
+    for (let k = 0; k < 6; k++) { const dx = -100 + k * 40, hh = 18 + ((k * 7) % 5) * 7; g.beginPath(); g.moveTo(q.x + dx - 28, q.y); g.quadraticCurveTo(q.x + dx, q.y - hh * 2, q.x + dx + 28, q.y); g.stroke(); }
+    g.beginPath(); g.moveTo(q.x - 140, q.y + 2); g.lineTo(q.x + 140, q.y + 2); g.stroke();
     g.setLineDash([]);
-    for (let i = 0; i < 5; i++) { g.fillStyle = 'rgba(250,250,248,0.6)'; ellipse(g, q.x + Math.sin(i * 2.3) * 60, q.y - 10 + Math.cos(i * 1.4) * 14, 70, 20); g.fill(); }
-    g.fillStyle = GRAPH; g.textAlign = 'center'; g.font = '500 20px "Cormorant Garamond", Georgia, serif'; g.fillText('The City', q.x + 10, q.y - 106);
-    g.font = '12px "Quattrocento Sans", sans-serif'; g.fillText('opening soon', q.x + 10, q.y - 88);
+    for (let i = 0; i < 5; i++) { g.fillStyle = 'rgba(250,250,248,0.45)'; ellipse(g, q.x + Math.sin(i * 2.3) * 80, q.y - 14 + Math.cos(i * 1.4) * 14, 70, 18); g.fill(); }
+    g.fillStyle = GRAPH; g.textAlign = 'center'; g.font = '500 22px "Cormorant Garamond", Georgia, serif'; g.fillText(w.name, q.x, q.y - 92);
+    g.font = '12px "Quattrocento Sans", sans-serif'; g.fillText('opening soon', q.x, q.y - 74);
     g.restore();
   }
 
@@ -2978,7 +3241,7 @@
     decor.forEach(d => {
       const p = toScreen(d.x, d.y); if (!vis(p)) return;
       if (d.kind === 'tree') visTrees.push(d);
-      const f = { pine: drawPine, tree: drawTree, bush: drawBush, tuft: drawTuft, flower: drawFlower, rock: drawRock, house: drawHouseDecor, fence: drawFence, lamp: drawLamp, gate: drawGate }[d.kind];
+      const f = { pine: drawPine, tree: drawTree, bush: drawBush, tuft: drawTuft, flower: drawFlower, rock: drawRock, house: drawHouseDecor, fence: drawFence, lamp: drawLamp, gate: drawGate, tower: drawTowerDecor, fountain: drawFountain, cbench: drawCBench }[d.kind];
       items.push({ z: d.x + d.y, f: () => f(ctx, p, d, t) });
     });
     hills.forEach(h => items.push({ z: h.x + h.y, f: () => drawHill(ctx, h, t) }));
@@ -2986,7 +3249,7 @@
       items.push({ z: n.x + n.y - 0.5, f: () => drawProp(ctx, n, t) });
       items.push({ z: n.flag[0] + n.flag[1], f: () => drawFlag(ctx, n, t) });
     });
-    if (cityReady()) items.push({ z: CITY.x + CITY.y, f: () => drawCity(ctx, t) });
+    { const w = soonWorld(); if (w) items.push({ z: SOON_AT.x + SOON_AT.y, f: () => drawSoon(ctx, w, t) }); }
     const drawAnimal = { deer: drawDeer, rabbit: drawRabbit, squirrel: drawSquirrel, mouse: drawMouse };
     animals.forEach(a => items.push({ z: a.x + a.y, f: () => drawAnimal[a.kind](ctx, a, t) }));
     ducks.forEach(d => { const q = duckPos(d, t); items.push({ z: q.x + q.y, f: () => drawDuck(ctx, d, t) }); });
@@ -3008,7 +3271,7 @@
     butterflies.forEach(b => drawButterfly(ctx, b, t));
     birds.forEach(b => drawBird(ctx, b, t));
     drawHorizon();
-    drawNeighborhood(t);
+    drawFogs(t);
     drawBeacons(t);
   }
 
@@ -3081,13 +3344,16 @@
     updateAnimals(dt);
     updateAmbient(dt, T);
 
-    cam.x = lerp(cam.x, player.x, 1 - Math.exp(-dt * 4));
-    cam.y = lerp(cam.y, player.y, 1 - Math.exp(-dt * 4));
+    const ct = look || player; // during a look-over the camera stays on the place that just opened
+    cam.x = lerp(cam.x, ct.x, 1 - Math.exp(-dt * 4));
+    cam.y = lerp(cam.y, ct.y, 1 - Math.exp(-dt * 4));
     const offTarget = cardOpen ? -Math.min(innerHeight * 0.3, 280) : 0;
     cam.off = lerp(cam.off, offTarget, 1 - Math.exp(-dt * 3));
-    if (Z !== zoomT) { Z = Math.abs(Z - zoomT) < 0.002 || reduce ? zoomT : lerp(Z, zoomT, 1 - Math.exp(-dt * 12)); applyZoom(); }
+    const zt = look ? look.z : zoomT;
+    if (Z !== zt) { Z = Math.abs(Z - zt) < 0.002 || reduce ? zt : lerp(Z, zt, 1 - Math.exp(-dt * 12)); applyZoom(); }
+    if (veil !== veilT) veil = reduce ? veilT : veilT > veil ? Math.min(veilT, veil + dt / 0.7) : Math.max(veilT, veil - dt / 0.9);
     if (marker && (marker.t += dt) > 0.7) marker = null;
-    if (hoodFog !== hoodFogT) hoodFog = reduce || Math.abs(hoodFog - hoodFogT) < 0.003 ? hoodFogT : lerp(hoodFog, hoodFogT, 1 - Math.exp(-dt * 0.6)); // the fog lifts slowly
+    REGIONS.forEach(r => { const id = r.id; if (fog[id] !== fogT[id]) fog[id] = reduce || Math.abs(fog[id] - fogT[id]) < 0.003 ? fogT[id] : lerp(fog[id], fogT[id], 1 - Math.exp(-dt * 0.6)); }); // the fog lifts slowly
 
     for (const n of nodes) {
       const d = dist(player.x, player.y, n.stand[0], n.stand[1]);
@@ -3234,7 +3500,7 @@
     const ids = new Set(QUESTIONS.map(q => q.id));
     Object.keys(state.answers).forEach(id => { if (!ids.has(id)) delete state.answers[id]; });
     nodes.forEach(n => { n.done = !!state.answers[n.id]; });
-    hoodOpen = openedWorlds().includes('hood'); hoodFog = hoodFogT = hoodOpen ? 0 : 1;
+    REGIONS.forEach(r => { wopen[r.id] = openedWorlds().includes(r.id); fog[r.id] = fogT[r.id] = wopen[r.id] ? 0 : 1; });
   }
   const openedWorlds = () => (state.seen || []).filter(k => k.startsWith('world:')).map(k => k.slice(6));
   const portraitNow = () => TernPortrait.compute(CONTENT, state.answers, { opened: openedWorlds() });
@@ -3243,6 +3509,7 @@
 
   // ---------- the portrait panel ----------
   const pEl = document.getElementById('portrait'), pBody = document.getElementById('pBody'), pNext = document.getElementById('pNext');
+  pNext.addEventListener('click', e => { const b = e.target.closest('[data-look]'); if (b) lookOver(REGIONS.find(r => r.id === b.dataset.look)); }); // "Show me" replays the look-over
   const pHandle = document.getElementById('pHandle'), pHandleText = document.getElementById('pHandleText');
   let P = null, headlineChanged = false, detailOpen = false;
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -3305,7 +3572,7 @@
 
   function renderPortrait(fresh) {
     P = portraitNow();
-    hoodOpen = P.openWorlds.includes('hood');
+    REGIONS.forEach(r => { wopen[r.id] = P.openWorlds.includes(r.id); });
     const f = k => fresh && fresh.includes(k) ? ' fresh' : '';
     const so = P.complete ? '' : 'So far';
     let h = '';
@@ -3338,8 +3605,10 @@
       `<details${i === 0 ? ' open' : ''}><summary>${esc(n.title)}</summary>${n.lines.map(l => `<p class="n"><i>${esc(String(l.answer).replace(/[.!?…]+$/, ''))}.</i> ${esc(l.note)}</p>`).join('')}</details>`).join('')}</section>`;
     h += `<section data-k="tools" class="p-tools">${P.count && !P.complete ? '<button class="link" id="pShareSoFar" type="button">Share what you have so far</button>' : ''}<button class="link" id="pChar" type="button">Change character</button><button class="link" id="pReset" type="button">Start over</button><button class="link" id="pPrivacy" type="button">Privacy</button></section>`;
     const changed = morph(h, !!fresh);
-    // what's next: the next unlock, as dots
-    if (P.next && P.next.dots) {
+    // what's next: a place that has opened but you haven't answered in yet, then the next unlock, as dots
+    const fresh1 = REGIONS.filter(r => wopen[r.id] && !nodes.some(n => n.world === r.id && n.done)).pop();
+    if (fresh1) pNext.innerHTML = `<span>${esc(fresh1.name)} is open</span><button class="link" type="button" data-look="${fresh1.id}">Show me</button>`;
+    else if (P.next && P.next.dots) {
       const dots = '●'.repeat(P.next.filled) + '○'.repeat(P.next.dots - P.next.filled);
       pNext.innerHTML = `<span>Next: ${esc(P.next.name)}</span><span class="dots" aria-label="${P.next.dots - P.next.filled} more to go">${dots}</span>`;
     } else if (P.next) pNext.innerHTML = `<span>Next: ${esc(P.next.name)}</span><span class="dots">${P.next.soon ? 'opening soon' : ''}</span>`;
@@ -3611,8 +3880,40 @@
     }
     if (newly.includes('headline') && P.headline) await revealHeadline();
     if (newly.includes('code')) await revealCode();
-    if (opening.includes('hood')) { hoodFogT = 0; say('The fog is lifting at the edge of the park.', 5000); }
-    if (newly.includes('hood:chapter')) await revealChapter(P.worlds.find(w => w.id === 'hood'));
+    for (const w of P.worlds) if (newly.includes(w.id + ':chapter')) await revealChapter(w);
+    for (const r of REGIONS.filter(r => opening.includes(r.id))) await lookOver(r); // after the reveal screens, we look over at the place that just opened
+  }
+
+  // The look-over: once a new place opens, the map fades to paper, comes back on that place while its fog lifts
+  // and its stops announce themselves, then fades back to you. No arrow points the way; you see the place once.
+  const LOOKS = {
+    hood: { at: [45, 24.5], w: 720, line: 'The Neighborhood is open, past the cabin and through the gate.' }, // framed so the cabin is in view
+    city: { at: [84.5, 25], w: 720, line: 'The City is open, where the main street leaves the Neighborhood.' }, // framed on the City's sign, with the Neighborhood's last houses in view
+  };
+  let look = null, veil = 0, veilT = 0, lookDone = null;
+  const veilTo = v => new Promise(res => { veilT = v; const chk = () => Math.abs(veil - v) < 0.005 ? res() : requestAnimationFrame(chk); chk(); });
+  function skipLook() { if (look && !look.skip) { look.skip = true; if (lookDone) lookDone(); } }
+  async function lookOver(r) {
+    if (look) return;
+    const L = LOOKS[r.id] || { at: [r.x0 + 3, r.label[1]], w: 720, line: `${r.name} is open.` };
+    player.tx = player.ty = null; player.path = null; keys.clear(); if (sheet()) setSheet(false);
+    look = { x: L.at[0], y: L.at[1], z: Z, skip: false };
+    await veilTo(1);
+    look.z = Math.max(ZMIN, Math.min(zoomT, (innerWidth - PWt) / L.w)); // pull back far enough to see the landmark you know
+    Z = look.z; applyZoom(); cam.x = look.x; cam.y = look.y;
+    fogT[r.id] = 0; wopen[r.id] = true;
+    // its "?" bubbles rise one after another, west to east, as the paper clears
+    nodes.filter(n => n.world === r.id && !n.done).sort((a, b) => a.flag[0] - b.flag[0]).forEach((n, i) => { n.seenAt = T + (reduce ? 0 : 0.9 + i * 0.35); });
+    veilTo(0); say(L.line, 7000);
+    await new Promise(res => { lookDone = res; if (look.skip) res(); else setTimeout(res, 4200); });
+    lookDone = null;
+    await veilTo(1);
+    look = null; Z = zoomT; applyZoom(); cam.x = player.x; cam.y = player.y;
+    await veilTo(0);
+  }
+  function drawVeil() {
+    if (veil < 0.002) return;
+    ctx.save(); ctx.globalAlpha = veil * veil * (3 - 2 * veil); ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H); ctx.restore();
   }
   function showPanel() {
     if (!pEl.hidden) return;
@@ -3656,11 +3957,17 @@
     for (const sp of spans) { sp.classList.add('in'); await sleep(500); }
     await p;
   }
+  // "Past the Neighborhood, the fog is lifting over the City." or "…the Coast waits in the fog. It opens soon."
+  function nextWorldLine(w) {
+    const i = P.worlds.findIndex(x => x.id === w.id), nx = P.worlds[i + 1], mid = s => s.replace(/^The /, 'the ');
+    if (!nx) return '';
+    return nx.soon || !nx.open ? `Past ${mid(w.name)}, ${mid(nx.name)} waits in the fog. It opens soon.` : `Past ${mid(w.name)}, the fog is lifting over ${mid(nx.name)}.`;
+  }
   function revealChapter(w) {
     const lead = w.headline || (w.shift && w.shift.text) || '';
     return arrive(`<p class="k">${esc(w.chapter || w.name)}</p><h2>${esc(lead)}</h2>`
       + (w.headline && w.shift ? `<p>${esc(w.shift.text)}</p>` : '')
-      + `<p>Your portrait has a new chapter. Past the Neighborhood, the City waits in the fog. It opens soon.</p><div class="rv-acts"><button class="go" type="button" data-share>Send to a friend</button><button class="go ghost" type="button">Keep walking</button></div>`);
+      + `<p>Your portrait has a new chapter. ${esc(nextWorldLine(w))}</p><div class="rv-acts"><button class="go" type="button" data-share>Send to a friend</button><button class="go ghost" type="button">Keep walking</button></div>`);
   }
 
   // ---------- scene loop ----------
@@ -3812,7 +4119,7 @@
     if (!titleEl.hidden) drawTitle(T);
     updateWorld(dt);
     const behind = cardOpen && sheet() && Math.abs(cam.off + Math.min(innerHeight * 0.3, 280)) < 1;
-    if (!behind || (skip = !skip)) drawWorld(T);
+    if (!behind || (skip = !skip)) { drawWorld(T); drawVeil(); }
     if (scene && (cardOpen || sc.fade < 0.99)) { updateScene(dt); if (scv.width) drawScene(); }
     requestAnimationFrame(frame);
   }

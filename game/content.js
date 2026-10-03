@@ -620,7 +620,14 @@ window.TERN_CONTENT = {
         { at: 6, key: 'tend', name: `What you do close to home` },
         { at: 10, key: 'chapter', name: `Your Neighborhood chapter` },
       ] },
-    { id: 'city', name: `The City`, soon: true, opens: 'most' },
+    { id: 'city', name: `The City`, chapter: `At work and under the law`, closeTo: `at work and under the law`,
+      opens: 'most',
+      ladder: [
+        { at: 4, key: 'shift', name: `How you change at work and under the law` },
+        { at: 8, key: 'tend', name: `What you do at work and under the law` },
+        { at: 13, key: 'chapter', name: `Your City chapter` },
+      ] },
+    { id: 'coast', name: `The Coast`, soon: true, opens: 'most' },
   ],
 
   // What a player sends a friend (index.html → share). The friend has seen none of the questions, so say what Tern is.

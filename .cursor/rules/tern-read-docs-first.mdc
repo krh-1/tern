@@ -1,23 +1,16 @@
 ---
-description: Tern — read docs before coding and keep docs in sync
+description: Tern — read the rulings and docs before changing anything
 alwaysApply: true
 ---
 
-# Tern: Read Docs First
+# Tern: Read First
 
-Before writing any code, read in order:
-1. `docs/ARCHITECTURE.md` — system structure, two-phase model, data schemas
-2. `docs/SCORING.md` — five axes, code generation, distinction logic
-3. `docs/DESIGN.md` — visual system, screen states, animation specs
-4. `AGENTS.md` — patterns and gotchas from prior sessions
+Before changing anything, read:
+1. `AGENTS.md` — every entry is a ruling or a hard-won lesson. Where a doc disagrees with AGENTS.md, AGENTS.md wins.
+2. `docs/ARCHITECTURE.md` — how the game in `game/` is built (engine, content files, scenes, portrait, map regions).
+3. `docs/SCORING.md` — how answers become the portrait and the code (mirrors `game/portrait.js`).
+4. `docs/DESIGN.md` — §0 is the ratified ink-on-paper visual spec; the rest is the built experience.
+5. `docs/NEXT-STEPS.md` — what's done, what's open, what needs Ken.
 
-If modifying questions, depth graph, or follow-up logic: also read `docs/QUESTIONS.md`.
-For any visual, UI, map, character or animation work: read `docs/DESIGN.md` §0 and `prototypes/PLAN.md`. The experience direction (map, portrait, unlocks, worlds) is `docs/PLAN-progression.md`.
-
-**Doc sync (non-negotiable):**
-- Scoring/axis/convergence/distinction changes → update `docs/SCORING.md` before merging.
-- Question wording, nudges, or triggers → update `docs/QUESTIONS.md`.
-- Visual or animation changes → update `docs/DESIGN.md` first.
-- After every session → append learnings to `AGENTS.md`.
-
-No routing. State-driven rendering only. No backend in V1.
+The game is static files with no build step. Run it with `python3 -m http.server 8123 --directory game`.
+Plans for substantial work go on disk (`game/plan-*.md`) before the work starts.

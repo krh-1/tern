@@ -24,6 +24,17 @@
         "game"
       ],
       "port": 8124
+    },
+    {
+      "name": "storychart-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/kenhamada/Projects/hamada-world",
+        "run",
+        "dev"
+      ],
+      "port": 4173
     }
   ]
 }

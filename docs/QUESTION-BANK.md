@@ -1,6 +1,18 @@
 # Question Bank — Tern (Ethics Domain, draft)
 
-> **Status: DRAFT, not canonical.** This is a pool of candidate questions awaiting Ken's ruling. `docs/QUESTIONS.md` remains the source of truth. Nothing here is wired into scoring yet — no axis nudges, by design. Once a question is ratified, it moves into `QUESTIONS.md` with assumptions and nudges.
+> **Status (2026-10-05): every active bank question is now in the game.** The game's content files are canonical for them: wording, follow-ups and nudges there may differ from the drafts below (judge fixes and Ken's clarity edits were applied in the game, not here). See `docs/QUESTIONS.md`, generated from `game/content*.js`, for the current text. The entries below are kept as the drafting record; no bank item is waiting as a candidate right now. New drafts added here are candidates until Ken ratifies them into a world.
+>
+> | World | Bank questions in the game |
+> |---|---|
+> | The Park | B01, B02, B09, B13, B18, B21, B29, B37, B40 |
+> | The Neighborhood | B10, B24, B36, B42, B43, B44, B45, B46, B55, B56 (and B07, which became D1) |
+> | The City | B03, B04, B05, B12, B30, B32, B33, B34, B35, B41 |
+> | The Coast | B15, B19, B20, B22, B23, B25 |
+> | The Observatory | B06, B08, B11, B14, B16, B17, B26, B27, B38, B39, B47, B48, B49, B50, B51, B52, B54, B57 |
+>
+> Cut and never in the game: B28, B31, B53, B58. From the old core set, Q7 (The White Lie) is not in the game either. The "Session rules" section below predates the map: with free roam, players choose their own order, so its "keep apart" and "heavy cap" rules can't be enforced as a sequence. The map instead places lighter stops near each world's entrance and heavier ones deeper in.
+>
+> **Original status (2026-09, kept for history):** DRAFT, not canonical. This is a pool of candidate questions awaiting Ken's ruling. `docs/QUESTIONS.md` remains the source of truth. Nothing here is wired into scoring yet — no axis nudges, by design. Once a question is ratified, it moves into `QUESTIONS.md` with assumptions and nudges.
 >
 > **How it was made (2026-09):** 62 drafts → judge pass 1 (28 keep / 17 rewrite / 17 cut, plus 8 judge-written gap-fillers) → judge pass 2, a separate skeptic (29 pass / 23 fix / 1 cut) → 5 more gap-fillers for balance, vetted by judge 2 (2 pass / 3 fix) → judge pass 3 under Ken's no-escape rule, across the bank *and* the existing set (27 pass / 49 fix / 3 cut). **53 active questions.** IDs are stable; B31, B28, B53 and B58 were cut; B07 was promoted to D1. Working files and the full verdict trail: `docs/question-bank-wip/`.
 

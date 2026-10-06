@@ -1,17 +1,15 @@
 ---
-description: Tern — game-feel, no progress numbers, animation order
-globs: src/components/**/*.jsx, src/components/**/*.tsx, src/styles/**/*
+description: Tern — calm game feel, ink-on-paper look, card and scene rules
+globs: game/index.html, game/scenes*.js
 alwaysApply: false
 ---
 
-# Tern: Game-Feel and UI
+# Tern: Game Feel and UI
 
-**Visual direction (ratified 2026-09, `docs/DESIGN.md` §0):** pure black and white on paper, code-drawn isometric park, calm low-intensity motion (wind only via trees and leaves, nothing that churns or slides, one soft ripple per stop), no wayfinding arrows, question card with an animated code-drawn scene, Puff characters (own silhouette each, abstract decorations only, name and look only). Reference: `prototypes/trolley-walk.html`.
-
-**Game-feel:** Evaluate decisions by: does this feel like something you're moving through, or does it flatten that? No loading states. No progress numbers or step counts—ever. Code letters reveal one at a time, left to right (~300ms per letter, ~200ms pause). Phase transitions use slower timing (600ms out, 1000ms in); question transitions 400ms/800ms.
-
-**Follow-up transition (critical):** The scene changes first, then the question text updates. Never update text and scene at once. The scene leads.
-
-**Components:** Display only. State and sequencing live in `useAssessment` and engine. No routing—render by phase in `App.jsx`.
-
-**Design system:** Use `docs/DESIGN.md` §0 for palette (paper, ink, graphite, hairline; no accent), type (Cormorant Garamond + Quattrocento Sans), characters and motion. §5–6 (dark background, orange accent, sepia illustrations) are superseded.
+- **Look:** pure black and white on paper, code-drawn isometric map (`docs/DESIGN.md` §0). No colour accents, dark mode, raster illustrations or AI image generation.
+- **Calm is a rule:** less motion by default; wind only through trees and leaves; water and paths never move; one slow ripple per stop; respect reduced motion.
+- **No wayfinding:** no arrows or pointers to unseen stops. A newly opened world is shown once by the look-over, never pointed at.
+- **Scenes change before the words** on every follow-up. Answer-to-follow-up time stays near 3.5 s.
+- **Characters:** the Puff family (Mof, Nib, Sumi, Ro, Zig, Zo, Tri, Duo), name and look only. People inside scenes are plain puffs that never share the player's shape. Nothing in a scene may make one answer look right.
+- **Phone feel:** sheets follow the finger; cards glide to new heights, never snap.
+- No progress numbers, ever. The code reveals letter by letter.

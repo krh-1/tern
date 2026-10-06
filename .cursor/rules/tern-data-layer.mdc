@@ -1,15 +1,14 @@
 ---
-description: Tern — data layer: questions and depth graph as single source of truth
-globs: src/data/**/*.js
+description: Tern — content files are the assessment instrument
+globs: game/content*.js, docs/QUESTIONS.md, game/*-proposals.md
 alwaysApply: false
 ---
 
-# Tern: Data Layer
+# Tern: Content (the instrument)
 
-**Single source of truth:** Core content lives in `src/data/questions.js`; depth nodes in `src/data/depthGraph.js`. Do not hardcode question text, nudges, follow-up triggers, or illustration filenames in components or engine.
-
-**questions.js:** Core question schema includes `id`, `title`, `illustration`, `setup`, `assumptions`, `question`, `phase: 'core'`, `answers` (with `id`, `text`, `nudges`), optional `followUp` (trigger, illustration, weight, same answer shape). Nudge keys: O, C, H, L, S; positive = first pole, negative = second.
-
-**depthGraph.js:** Node schema includes `probesAxes`, `probeTension`, `isClarifying`; same answer/nudge shape. No archetypes file.
-
-**Axis keys:** O/R, C/I, H/T, L/P, S/D. Use these in all nudge definitions.
+- Questions, answers, nudges, notes, `did` lines, tendencies and tensions live only in `game/content.js` (park, axes, worlds, tendency library) and `game/content-<world>.js`. All 75 questions are ratified by Ken: change wording or nudges only with his say-so.
+- Step keys follow the trunk answer: `trunk`, then `fu`, or `fuA`/`fuB`/`fuC`. Answer ids: `B09-A`, `B09-FUA-B`. A replaced follow-up keeps its key and gets new ids with a "2" (`Q11-FUA2-A`).
+- No escape answers; a thoughtful person must hesitate; follow-ups put pressure on both sides where possible.
+- Every new answer gets nudges, a `note` and a `did` line; every new tendency gets `detail`, `protect`/`trade` and a `share` line (or a deliberate decision to leave it out).
+- A separate skeptic judge reviews every content pass before Ken ratifies it.
+- `docs/QUESTIONS.md` is generated: after any content change run `npm run export:questions`. Never edit it by hand.

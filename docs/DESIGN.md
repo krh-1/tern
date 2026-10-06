@@ -1,18 +1,18 @@
-# Tern — UX/UI Design Document
+# Tern: UX and Design
 
-**Version:** 1.3
-**Last updated:** September 2026
-**Status:** V1 — Ethics Domain. **§0 (Visual Direction) is ratified and authoritative.** Sections 5 and 6 below describe the earlier dark, orange-accent, sepia-illustration look and are kept for history only. The screen architecture in §7 still describes the old test-then-result flow; it will be rewritten when Ken approves `docs/PLAN-progression.md`.
+**Version:** 2.0
+**Last updated:** October 2026
+**Status:** describes the game as built in `game/` and ratified by Ken through 2026-10-04. **§0 (Visual Direction) is ratified and authoritative.** Rulings live in `AGENTS.md`; where this doc and `AGENTS.md` disagree, `AGENTS.md` wins. The earlier dark, orange-accent, sepia-illustration design and its result screens are retired; see §12.
 
-> This document defines the visual system for the Ethics domain and establishes the core design language for Tern. Future domains may introduce domain-specific visual variations. Those should be documented as addendum sections within this file, not as separate documents.
+> This document defines the visual and interaction system for the Ethics domain. Future domains may add their own settings; document them as addendum sections here, not as separate documents.
 
 ---
 
-## 0. Visual Direction — the Ink-on-Paper Park (ratified by Ken, 2026-09)
+## 0. Visual Direction: the Ink-on-Paper Park (ratified by Ken, 2026-09)
 
 **Why:** Tern should feel like a calm, cozy game you wander through, not a test you sit. The world is a place; the questions are stops in it; you are a small, soft character walking between them. Everything is drawn in code, in black ink on paper, so the whole world shares one hand and one mood.
 
-**Reference implementation:** `prototypes/trolley-walk.html` (published as a private artifact; see `prototypes/PLAN.md`). It is a throwaway prototype, but it is the visual reference for everything in this section. When this section and the prototype disagree, this section wins and the prototype gets fixed.
+**Reference implementation:** `game/index.html` (the game, forked from the park prototype `prototypes/trolley-walk.html`). When this section and the game disagree, this section wins and the game gets fixed.
 
 ### 0.1 Palette and type
 - **Pure black and white. No accent colour.** One look only (no dark mode variant).
@@ -32,8 +32,8 @@
 - **Isometric 2.5D national park**, drawn in canvas code. No image files and no image generation: the Gemini/Imagen pipeline (`docs/ILLUSTRATION-GENERATION.md`) is on hold.
 - **What's in it:** winding trails with a dotted centre line (like a park map), a road, an old rail line, a stream with irregular wavy banks and a pond, bridges wherever paths cross water, hills drawn as stacked contour rings, pine and round-tree forests, wildflowers, rocks, a mountain ridge on the horizon, and one old windmill on the far ridge.
 - **Life:** animals only (deer, rabbits, squirrels, mice, ducks, butterflies, terns overhead, the occasional fish jump). The only people in the world are the player and the characters inside question scenes.
-- **Movement:** free roam, tap or click to walk (arrow keys on desktop). Nothing blocks walking except the world's edge; you can walk over hills.
-- **Each world** (Park, Neighborhood, City, Coast, Observatory in `docs/PLAN-progression.md`) is drawn in this same style, with its own setting.
+- **Movement:** free roam, tap or click to walk (arrow keys on desktop). You can walk over hills. Buildings are solid: you can't walk through them, and taps route around them (Ken's ruling, 2026-10-03). Otherwise only the edge of the open map stops you.
+- **Each world** is drawn in this same style, with its own setting: the Park; the Neighborhood (houses on lots, fences, hedges, a gate past the cabin); the City (flat-roofed buildings with window grids, avenues, a station); the Coast (a still sea, sand and dunes, a boardwalk, a pier, a lighthouse, moored boats); the Observatory (a high plateau with contour lines, trails, sparse pines, and a domed observatory).
 
 ### 0.3 Calm is a rule, not a mood
 Low intensity everywhere. The overall feel is a calm, cozy game.
@@ -47,7 +47,7 @@ Low intensity everywhere. The overall feel is a calm, cozy game.
 ### 0.4 Stops and discovery
 - **No wayfinding.** No arrows toward off-screen stops. Discovery is part of the game.
 - A stop announces itself only once it is on screen: a tall pennant flag, a pale ground disc with one soft ripple, and a black **"?"** speech bubble that fades up gently and floats. No bursts or bounces.
-- When a stop is done, its pennant lowers and shows a tick. (Map markers for the progression model, such as ✓ ○ ◆ ✦ and locked regions, are specified in `docs/PLAN-progression.md` §3 and will be drawn in this style.)
+- When a stop is done, its pennant turns to paper with a bold check, and its ground disc goes away. The full set of map markers is in §5.
 
 ### 0.5 The question card
 - The card rises from the bottom over the map (the map stays visible above it). It carries its own **animated, code-drawn scene** above the question.
@@ -57,7 +57,7 @@ Low intensity everywhere. The overall feel is a calm, cozy game.
 - "Step away" closes the card without answering.
 
 ### 0.6 Characters: the Puff family
-The main character direction is **Puff**: small, puffy, abstract folk. Binding rules for any character, now or later:
+The character style is **the Puff family**: small, puffy, abstract folk. The neutral main character is **Mof** (named Puff until 2026-09-27). Binding rules for any character, now or later:
 1. **One body grammar:** a soft puffy outline, tiny stick legs, floating round puff hands, a gentle float when walking.
 2. **Every character has its own silhouette.** Never reuse a body shape.
 3. **Abstract, not symbolic.** Nothing that stands for something. Decorations are allowed but must be abstract marks and patterns (stripes, a band, a split, a zigzag). Never known objects: no hats, bows, ties, flowers, ears, props. Watch for accidental look-alikes; a rounded triangle with a dark base read as an onigiri, and a dark pear with a curl on top read as the poop emoji.
@@ -66,650 +66,317 @@ The main character direction is **Puff**: small, puffy, abstract folk. Binding r
 6. **Name and look only.** No descriptions, traits, stats or "carries" lines. They could prime how someone answers (AGENTS.md "Avatars Must Not Prime Answers"). Names are short, made-up sounds.
 7. **Everyone in the question scenes is a puff too,** but plain and undecorated. Each keeps one shape for the whole scene and never shares the player's shape, so "you" always stands out. The player's chosen character is "you" inside every scene.
 
-**Current roster (v21):** Mof (classic puff, sleepy, the neutral one; named Puff until 2026-09-27) · Nib (round, glasses, striped lower half) · Sumi (small, all ink, shy side-glance) · Ro (soft rounded square, one big roving eye, curious) · Zig (tall stack, low zigzag band) · Zo (smooth oval, ink band across the eyes) · Tri (soft rounded triangle, arched brows, grin, periodic hop) · Duo (lopsided, split half ink / half paper, mismatched eyes, sway). Nib's glasses are the one known object, kept by Ken's choice.
+**Current roster:** Mof (classic puff, sleepy, the neutral one, and the app icon) · Nib (round, glasses, striped lower half) · Sumi (small, all ink, shy side-glance) · Ro (soft rounded square, one big roving eye, curious) · Zig (tall stack, low zigzag band) · Zo (smooth oval, ink band across the eyes) · Tri (soft rounded triangle, arched brows, grin, periodic hop) · Duo (lopsided, split half ink / half paper, mismatched eyes, sway). Nib's glasses are the one known object, kept by Ken's choice.
 
 ### 0.7 Character select
-- Shown first, as a **modal over the live park**: the map animates behind a light veil as a clue to what's ahead, and your figure in the park previews the character you're browsing.
+- Shown as a **modal over the live park**, after the title screen (§4.1): the map animates behind a light veil as a clue to what's ahead, and your figure in the park previews the character you're browsing.
 - Heading: **"Choose One"**. A large animated profile of the selected character plus the grid: **2×4 grid to the right in landscape; 4×2 grid below in portrait.** The selected tile is marked with the park's pennant. Hover previews on desktop; arrow keys and Enter work.
 - Buttons: **Start walking** and **Surprise me** (random pick). Starting fades the modal away into the park.
+- **Changing character later** (from the panel's "Change character" link, or by tapping your own figure) reopens the same modal with **Keep walking**. It never touches answers ("Same answers, new look.").
 
 ---
 
-## 1. Design Philosophy
-
-Three principles govern every decision in Tern. They operate together — remove any one and the experience degrades.
+## 1. Design philosophy
 
 ### It is a mirror, not a quiz
-
-The visual language must feel weighty enough to earn trust and warm enough that users actually feel something when they answer. Clinical, bright, or gamified aesthetics undermine this. Every screen should feel like it's revealing something that was already there — not extracting data or scoring performance.
+Every screen should feel like it's revealing something already there, not extracting data or grading performance. No right answers, no score.
 
 ### It has gravity and warmth
+Serious enough to be taken seriously, warm enough to enjoy. A question that makes you sit for a moment before answering is both.
 
-Serious enough to be taken seriously. Warm enough to be enjoyed. These are not in tension — they're the same thing at different registers. A question that makes you sit for a moment before answering is both. An answer button that lights up in amber when selected is both. The balance must be maintained everywhere.
+### It feels like a game, a calm one
+Game-feel is intrinsic: pacing, anticipation, the satisfaction of a reveal, the sense of building toward something. It is not extrinsic reward: no points, badges, streaks or leaderboards. Unlocks are allowed because the reward is information about you and new places to walk (Ken: "if it comes off like a game, so be it").
 
-### It feels like a game
+What carries it:
+- A well-written dilemma with a hard choice creates engagement the moment it's read.
+- The scene shifting before the follow-up's words is a mechanic that rewards attention.
+- The portrait growing after each answer makes every answer pay off.
+- Arrival moments (your summary, your code, each chapter, a new world) are slower and centred, not page loads.
+- Everything stays calm (§0.3).
 
-Not gamified — a game. The distinction is precise: gamification is extrinsic reward layered on top of content (points, badges, streaks). Game-feel is intrinsic to the experience design itself — pacing, anticipation, the satisfaction of a reveal, the sense that something is being built toward.
-
-Tern has this structurally if it's built right:
-- A well-written dilemma with a genuinely hard choice creates engagement the moment it's read
-- The follow-up illustration swap — the world shifting before the question changes — is a mechanic that rewards attention
-- The convergence offer is a reveal moment: the system signals that it found something
-- The code reveal is the payoff of the core experience
-- The distinction paragraph is the deeper payoff for those who kept going
-
-None of these require extrinsic reward. The engagement is intrinsic to the content and pacing. Every design decision should protect and amplify this quality — never flatten it.
-
-**Specific implications of game-feel:**
-- Questions should feel like they were chosen for you, not like the next item on a list
-- Transitions create anticipation, not just movement between screens
-- The depth graph feels like going deeper into something interesting, not answering more questions
-- The code reveal feels like a moment, not a result page
-- The distinction paragraph feels like something a perceptive person said about you, not generated output
-
-> **The one thing users should remember:** The moment the image shifted — when the wallet moved from the Upper East Side to South Central, and they felt something change in their chest before they changed their answer.
+> **The one thing players should remember:** the moment the scene shifted, and they felt something change before they read why.
 
 ---
 
-## 2. Brand Identity
+## 2. Voice and tone
 
-### Name
-**Tern**
+- Warm but not cheerful. Curious but not academic. Playful but never flippant.
+- Direct. No hedging, no filler.
+- Speaks like a smart, kind friend who has read a lot of philosophy but never mentions it.
 
-### Tagline options
-- *You already know who you are.*
-- *Your instincts have always known.*
-- *Some things you don't decide. They decide you.*
-
-### Voice & Tone
-- Warm but not cheerful
-- Curious but not academic
-- Playful but never flippant
-- Direct. No hedging. No filler.
-- Speaks like a smart, kind friend who has read a lot of philosophy but never mentions it
-
-**Examples:**
-
-| ❌ Don't | ✅ Do |
+| Don't | Do |
 |---|---|
 | "Please select your answer from the options below." | "What do you do?" |
-| "Question 4 of 11" | A quiet progress bar. No numbers. |
-| "Your results are ready!" | "Here's what we found." |
-| "You are a Utilitarian thinker." | "You trust the math, even when it hurts." |
-| "You are The Iron Idealist." | "You tend to defer to principle even when it costs the people you care about." |
+| "Question 4 of 11" | Dots for the next unlock (●●○). Never a count. |
+| "You are a Utilitarian thinker." | "You aim for the greater good." |
+| "You are The Iron Idealist." | "You keep your word." |
 | "Processing your responses..." | No loading state. Transition directly. |
+| "Tendencies", "Your headline" | "More about you", "Your summary" |
 
 ---
 
-## 3. Result Copy Principles
+## 3. Copy rules
 
-The distinction paragraph is the most important piece of copy in the product. It must feel like something a thoughtful person observed — not a personality quiz result, not a generated summary.
+Ken's rulings (2026-09-29 and 2026-10-03). The bar: **every line must make sense to a stranger who sees it on its own, with no context.**
 
-**What this rules out:**
-- Fantasy or mythological vocabulary: Guardian, Warrior, Oracle, Shadow, Sage
-- Character-class compound nouns: The Iron Idealist, The Silent Architect
-- Results everyone would want — honest results occasionally sit slightly uncomfortably
-- Vague generalizations: "You are empathetic and value fairness" — this describes almost everyone
+### Portrait lines (tendencies, the summary)
+- Plain second-person behavior, starting with "You". Say the behavior, not a metaphor for it.
+- As few words as stay clear: aim for 3 to 8. Ken's example: "You aim for the greater good," not "You go with whatever does the most good overall," and not "You count the numbers."
+- Passes the friend test: would a real person say this about a friend?
+- No archetype names, no type labels, no fantasy vocabulary.
+- The explanation lives in "Read more about you" (the tendency's `detail`), not in the line.
+- Honest results: some sit slightly uncomfortably.
 
-**The test:** would a real person say this about themselves in a conversation, or to describe someone they know well? If not, rewrite it.
+### Answer notes
+- One or two sentences after an answer about what that choice suggests. Plain words; no coined phrases ("your family exception", "the fight has to have a face").
 
-**Register:** second person, direct, specific. Name the actual axis tension. Don't explain the scoring system — speak about the person. "Your sense of fairness is unusually impartial — you hold strangers to the same standard as people you love, and that consistency shows up even when it costs you" is good. "Your E axis score indicates equal-weight proximity preferences" is not.
+### `did` lines (answer summaries)
+- One plain sentence restating the choice, second person.
+- They show in mixed lists, away from their question, so **every `did` names its subject in full** ("the $1 million", "the person on the side track", "your colleague"). Never "it", "that" or "the one" pointing back at the question.
+
+### You protect / You'll trade away
+- Each item must read correctly after "You protect:" and "You'll trade away:" (for example "promises", "your own comfort").
+
+### Share lines
+- First person, something the sender would be glad to say about themselves ("I keep my word."). A tendency that reads badly out of context gets no share line and is never sent.
+
+### Everywhere
+- No em dashes. No "math", "ceiling" or "floor" metaphors. No internal terms in the UI.
+- Labels in "Read more about you" stay short: "Your answers", "Pointing the other way", "Toward outcomes" / "Toward rules".
+- **Question, answer and setup wording is instrument text.** Propose changes to Ken; never apply them in a copy sweep.
 
 ---
 
 ## 4. Typography
 
-### Primary Font: Cormorant Garamond
-- **Source:** Google Fonts (`https://fonts.google.com/specimen/Cormorant+Garamond`)
-- **Why:** Elegant, thin, almost philosophical. Carries intellectual weight without feeling cold. Slightly dramatic, unmistakably literary.
-- **Use for:** All headlines, question text, code display, distinction paragraph
-
-### Secondary Font: Cormorant Garamond (Italic)
-- **Use for:** Scenario setup text, scene descriptions, follow-up context, taglines
-- Italics in Cormorant feel like a stage whisper — intimate, slightly cinematic
-
-### Body/UI Font: Quattrocento Sans
-- **Use for:** Answer button labels, axis labels, small UI text
-- Should feel quiet next to Cormorant — functional, not competing
-
-### Type Scale (mobile-first, base 16px)
-
-| Role | Size | Weight | Style |
-|---|---|---|---|
-| Code display | 56px | 600 | Upright, tracked wide |
-| Question text | 28–32px | 400 | Upright |
-| Scenario setup | 18–20px | 400 | Italic |
-| Distinction paragraph | 18px | 400 | Upright |
-| Answer button label | 16px | 400 | Upright, UI font |
-| Axis label | 13px | 400 | Upright, UI font |
-| Caption / metadata | 13px | 300 | Upright |
-
-### Line Height
-- Question text: 1.5–1.6
-- Distinction paragraph: 1.7 (needs room — it's being read carefully)
-- Display/headline: 1.1–1.2
-
----
-
-## 5. Color Palette
-
-> **[SUPERSEDED — history only]** Replaced by §0.1 (pure black and white on paper, no accent). Do not build with the dark background or Monarch Orange below.
-
-### Core Palette
-
-| Name | Hex | Usage |
+| Role | Font | Notes |
 |---|---|---|
-| **Charcoal** | `#1C1C1E` | Primary background, main surfaces |
-| **Deep Charcoal** | `#111110` | Darkest backgrounds, illustration overlay |
-| **Cream** | `#F5F0E8` | Primary text, light surfaces |
-| **Warm White** | `#FAF7F2` | Cards, answer buttons (resting state) |
-| **Monarch Orange** | `#E8652A` | Accent — CTAs, selected state, progress, code highlight |
-| **Monarch Orange (dim)** | `#B34D1A` | Hover state, pressed state |
-| **Muted Cream** | `#C8BFA8` | Secondary text, axis labels, disabled states |
+| Question text, summary, code letters, reveal headings, character names | Cormorant Garamond | Upright |
+| Setup line above a question | Cormorant Garamond italic | Like a stage whisper |
+| Answers, buttons, panel text, labels, kickers | Quattrocento Sans | Quiet next to Cormorant |
 
-*Note: "Monarch Orange" is the palette name for the accent color. The CSS variable is `--color-accent`. Always use the variable in code, never the hex directly.*
-
-### Usage Rules
-- `--color-accent` is used sparingly. It should feel like a flame — noticed because everything around it is dark. Never use it as a background fill for large areas.
-- **The background is always dark.** Even on result screens. This is not a bright, clinical app.
-- **Text on illustrations** uses cream with a subtle dark vignette — never a solid overlay.
-- Answer buttons resting: Warm White text on semi-transparent dark (`rgba(255,255,255,0.07)`). Selected: accent border + text.
-- **The code letters** are displayed in cream at large size. On the share card, each letter may be individually highlighted in accent to draw the eye.
-
-### CSS Variables
-```css
-:root {
-  --color-bg:           #1C1C1E;
-  --color-bg-deep:      #111110;
-  --color-cream:        #F5F0E8;
-  --color-warm-white:   #FAF7F2;
-  --color-accent:       #E8652A;
-  --color-accent-dim:   #B34D1A;
-  --color-muted:        #C8BFA8;
-  --color-overlay:      rgba(17, 17, 16, 0.55);
-
-  --font-display:       'Cormorant Garamond', Georgia, serif;
-  --font-ui:            'Quattrocento Sans', sans-serif;
-
-  --transition-slow:    600ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-medium:  350ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-fast:    180ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-```
-
-### Tailwind Integration
-
-Tern uses Tailwind CSS v4 with CSS-first configuration. The CSS custom properties above are defined in `src/styles/index.css` and referenced directly in Tailwind classes via `var()`. No `tailwind.config.js` theme extension needed in v4 — use arbitrary value syntax:
-
-```html
-<!-- Use CSS variables directly in Tailwind classes -->
-<div class="bg-[var(--color-bg)] text-[var(--color-cream)]">
-<button class="border-[var(--color-accent)] transition-[var(--transition-fast)]">
-<h1 class="font-[var(--font-display)] text-[56px] tracking-[0.15em]">
-```
-
-For commonly reused combinations, use `@apply` in `index.css` rather than creating Tailwind theme tokens — this keeps the design system in one place (CSS variables) rather than splitting it between CSS and Tailwind config.
-
-The component specs in Section 9 below give exact values. Use these directly in Tailwind arbitrary values rather than creating custom utility classes.
+- Code letters on the reveal screen: large (about 56 to 92 px), one row, generous spacing.
+- Reveal headings: about 30 to 44 px, line height about 1.15.
+- Kickers: small capitals, wide letter spacing, graphite.
+- No sans-serif headlines.
 
 ---
 
-## 6. Illustration System
+## 5. Screens and flow
 
-> **[SUPERSEDED — history only]** Replaced by §0.2 and §0.5: scenes are drawn in code, in the ink-on-paper style, inside the question card. No full-bleed sepia images and no AI image generation.
+### 5.1 Title screen
+First visit only. "Tern", the line "A quiet walk through hard questions.", and three buttons: **Choose your character**, **What is Tern?** (a short explanation on an arrival screen), **Privacy**. Returning players skip straight to the map where they left off ("Welcome back.").
 
-### Style
-- **Hand-drawn, sketch aesthetic** — not photorealistic, not flat vector
-- Black and white with sepia toning — warm, aged, like a woodcut or editorial illustration
-- Linework intentional and slightly loose — human, not mechanical
-- Each illustration evokes a scene, not a diagram. Atmosphere over accuracy.
+### 5.2 Character select
+See §0.7. After starting, a one-time hint: "Tap anywhere to walk · explore the park".
 
-### Generation Guidance (AI-assisted, V1)
-> *"Editorial illustration, ink sketch style, sepia tone, high contrast, loose confident linework, no color, atmospheric, slightly dramatic — [scene description]. Style of New Yorker editorial illustration or vintage woodcut print."*
+### 5.3 The map and its markers
 
-Avoid: flat vectors, realistic photography, anime/cartoon styles, anything that reads as obviously AI-generated.
+| Marker | Meaning | How it's drawn |
+|---|---|---|
+| **Open** | Not answered yet | Ink pennant, pale ground disc with one slow ripple, a "?" bubble that fades up once the stop is on screen |
+| **Done** | Answered | Paper pennant with a bold check; the disc goes away and the place melts back into the map |
+| **Calling** | The open stop the portrait most wants answered next (it would sharpen your least-certain value pair) | A second, dashed ring around the stop's disc that breathes slowly. Only on the stop itself, never an arrow |
+| **Fogged world** | A world that hasn't opened | Paper fog over the region, its name, and how to open it (for example "answer every stop in the park") |
+| **Opening soon** | A declared world that isn't built | A faint sketch in fog. (None today: all five worlds are built.) |
 
-### Sizing & Display
-- **Full-bleed, full-screen** — fill the entire viewport
-- Portrait, optimized for mobile (roughly 9:16)
-- Dark gradient vignette overlays the bottom 50% where text appears
-- Core files: `/public/illustrations/Q1.jpg`, `Q1-followup-a.jpg`, etc.
-- Depth files: `/public/illustrations/depth/D1.jpg`, etc.
-- Recommended resolution: 1080×1920px minimum
+No "7 of 12" anywhere on the map.
 
----
+Walking onto an open stop opens its card. "Step away" walks you a step back, and that stop stays quiet until you walk away and return.
 
-## 7. Screen Architecture
+### 5.4 The question card
 
-Six screens across the two assessment phases. No routing — pure state-driven rendering.
+**Layout:** the card rises from the bottom over the map. Scene on top, then the setup line (italic), the question, the answers, and "Step away".
 
-### Screen 1: Question Screen
+**Order on open:** the scene arrives first; the words follow after about 1 s.
 
-Used for core set, depth graph, and exploration mode. The layout is identical across all three — the phase is invisible to the user.
+**Answering:** tap an answer, then **Confirm**. A misclick costs nothing.
 
-```
-┌─────────────────────────────┐
-│                             │
-│   [Full-bleed illustration] │
-│                             │
-│                             │
-│▓▓▓▓ dark vignette ▓▓▓▓▓▓▓▓│
-│                             │
-│  [Setup text — italic]      │
-│                             │
-│  [Question — large serif]   │
-│                             │
-│  ┌─────────────────────┐   │
-│  │   Answer option A   │   │
-│  └─────────────────────┘   │
-│  ┌─────────────────────┐   │
-│  │   Answer option B   │   │
-│  └─────────────────────┘   │
-│  ┌─────────────────────┐   │
-│  │   Answer option C   │   │
-│  └─────────────────────┘   │
-│                             │
-│  [——————●————————————]      │  ← progress bar, no numbers, ever
-└─────────────────────────────┘
-```
+**After Confirm** (the answer-to-follow-up sequence):
+1. The chosen answer marks (about 250 ms) and the words hide.
+2. The scene plays the answer's small action.
+3. The scene fades to paper.
+4. The follow-up's scene fades in, then shifts into the new situation.
+5. A hold of 0.9 s, so the change lands.
+6. The follow-up's words appear.
 
-**Depth phase:** no visual announcement when the depth graph begins. Questions continue seamlessly. The shift is felt in question quality, not labeled in UI.
+Aim for about **3.5 s** from answer to follow-up. Longer feels like a stall (D4's "Stop" was cut from 5.2 s to 4.2 s).
 
-**Exploration phase:** identical to depth phase visually. One addition: a quiet text link ("See your results") appears below the progress bar, styled in `var(--color-muted)` at 13px. This is the only way to distinguish exploration from depth visually — and only for the user, not an observer. When no questions remain, the system transitions back to the distinction reveal with the message *"You've explored everything we have."* displayed as setup text.
+**The card never jumps.** The new text is laid out while hidden, and the card glides to its new height (about 0.55 s).
 
-**Clarifying question:** when meaningful inconsistency triggers a clarifying question, a single quiet line appears above the setup text: *"Something came up that we want to explore."* No explanation of the tension. No accusatory framing. The question does the work.
+**After the last step**, the card closes. The answer lands, then the portrait updates (0.7 s later), so each insight feels caused by the choice.
 
-### Screen 2: Follow-up Screen
+**Revisiting a done stop** opens a review: the question's title, your answers and their notes, **Answer again** (clears that one answer and asks it fresh) and **Close**.
 
-Identical to Screen 1, except:
-- Illustration **cross-fades** to the follow-up variant — this is the emotional beat
-- Setup text updates to reflect the new context
-- Image shifts first, question fades in after a beat
+### 5.5 The portrait panel
 
-This is the most important transition in the app. It must feel like the world just changed.
+**Desktop and landscape (900 px wide and up):** a panel on the right, always visible. It can be minimized to a thin rail, which glows softly when something new arrives.
 
-### Screen 3: Convergence Offer
+**Phone and portrait:** a bottom sheet. Closed, it shows a 64 px handle with your summary (or "You, so far"), a grip and a chevron. A glow on the handle means something new was revealed. See §8 for how it moves.
 
-Appears when axis letters have stabilized before the core set is complete. Framed as discovery, not permission to stop.
+**When something changes,** your character points toward the panel and says "Your portrait just changed →" (or "↓" on a phone). Changed sections dissolve out and resolve back in, with a short ink mark beside them.
 
-```
-┌─────────────────────────────┐
-│                             │
-│   [Same illustration —      │
-│    held, not transitioning] │
-│                             │
-│▓▓▓▓ dark vignette ▓▓▓▓▓▓▓▓│
-│                             │
-│  We have a pretty clear     │
-│  picture of you.            │
-│                             │
-│  Want to see what           │
-│  we found?                  │
-│                             │
-│  ┌─────────────────────┐   │
-│  │   Show me           │   │  ← goes to Code Reveal
-│  └─────────────────────┘   │
-│                             │
-│  [Keep going ↓]             │  ← quiet text link, continues core set
-│                             │
-└─────────────────────────────┘
-```
+**Sections, top to bottom** (each appears once its unlock is reached):
 
-**Copy principle:** never say "you can stop" or "that's enough." The system found something and is offering to share it. The user is always in control of continuing.
+| Section | Shows | Unlocks at |
+|---|---|---|
+| **You, so far** / **You, in full** | Your summary (one "You…" sentence) and a short description; "Your summary changed." when it shifts; **Read more about you** | 4 park answers (before that: "Answer a question to begin." / "Keep going. Your summary appears after a few answers.") |
+| **Your code** | The five letters and one line explaining them | 12 park answers |
+| **Share your result** | A box with **Send to a friend** | 12 park answers |
+| **Chapters** | One per later world: its one-line summary, how you change there, what you do there | That world's ladder |
+| **More about you** | Other tendencies, as chips | 4 park answers, once there's more than one |
+| **You protect / You'll trade away** | Two short lists | 6 park answers |
+| **Your compass** | Five pairs as bars from the middle ("Rules ↔ Outcomes"), each appearing once two of your questions touch it | 2 park answers; all five at 10 |
+| **Where you're torn** | Up to three tensions between your own answers | 8 park answers, and only once a real tension exists |
+| **Notes on each answer** | Each question's notes, newest first, collapsible | 1 answer |
+| Tools | "Share what you have so far" (before the park is done), "Change character", "Start over", "Privacy" | Always |
 
-### Screen 4: Code Reveal
+**Read more about you** opens an extra section under the summary: each tendency with what it means and the answers behind it ("Your answers", "Pointing the other way"), then each compass pair ("You lean clearly toward rules.") with the answers pulling each way. Facts from the player's own choices, no new judgment.
 
-The primary result screen. The code is the moment.
+**The bottom line** of the panel always says what's next:
+- a world that just opened and has no answers yet: "The City is open · Show me" (replays the look-over);
+- otherwise the next unlock and its dots: "Next: What you protect ●●○";
+- at the very end: "You've walked every world".
 
-```
-┌─────────────────────────────┐
-│                             │
-│   [Muted background —       │
-│    abstract tern motif]     │
-│                             │
-│▓▓▓▓ dark vignette ▓▓▓▓▓▓▓▓│
-│                             │
-│  Your instinct is           │  ← small, italic, fades in first
-│                             │
-│  O C H L S                  │  ← large, tracked, cream, fades in
-│                             │
-│  O · outcomes               │  ← axis legend, muted, small
-│  C · collective             │
-│  H · heart                  │
-│  L · loyalty                │
-│  S · system                 │
-│                             │
-│  ┌─────────────────────┐   │
-│  │   Go deeper  →      │   │  ← paid: enters depth graph
-│  └─────────────────────┘   │
-│                             │
-│  [Share this  ↗]            │  ← free share action
-│  [Start over  ↺]            │
-└─────────────────────────────┘
-```
+### 5.6 Unlock ladders and dots
 
-**Code display:** the five letters are displayed large, with generous tracking, in cream. Below each letter, the axis label in muted small type — *O · outcomes*, *C · collective* — gives immediate legibility without requiring prior knowledge of the system. Users can read their result without a manual.
+**The park:** 1 notes · 2 compass · 4 summary · 6 protect/trade · 8 where you're torn · 10 whole compass · 12 code.
 
-**Reveal animation:** the letters do not appear all at once. They materialize one at a time, left to right, each with a brief pause — as if the system is deciding. Total reveal time: ~2.5 seconds (see Section 8 for exact spec). This is the payoff of the whole experience. It should feel like a moment.
+**Each later world** has three steps, counted in that world's answers:
 
-### Screen 5: Distinction Reveal
+| World | How you change there | What you do there | Chapter (and the next world opens) |
+|---|---|---|---|
+| Neighborhood | 3 | 6 | 10 |
+| City | 4 | 8 | 13 |
+| Coast | 3 | 6 | 8 |
+| Observatory | 4 | 8 | 12 |
 
-The distinction result screen. Code + one-line summary + full radar chart + axis breakdown + distinction paragraph.
+**Dots, never numbers.** Closeness to the next unlock is filled and empty dots (●●○), counting only the answers since the last unlock. Never a total, a fraction or a percentage.
 
-```
-┌─────────────────────────────┐
-│                             │
-│   [Muted background]        │
-│                             │
-│▓▓▓▓ dark vignette ▓▓▓▓▓▓▓▓│
-│                             │
-│  O C H L S                  │  ← code, smaller than Code Reveal
-│                             │
-│  [Radar chart — 5 axes]     │  ← fills the middle section
-│                             │
-│  [Distinction paragraph —   │
-│   3–4 sentences, large-ish  │
-│   serif, cream, reads like  │
-│   something someone said    │
-│   about you]                │
-│                             │
-│  ┌─────────────────────┐   │
-│  │   Share this  ↗     │   │
-│  └─────────────────────┘   │
-│                             │
-│  [Keep exploring  ↓]        │
-│  [Start over  ↺]            │
-└─────────────────────────────┘
-```
+An unlock is revealed once. Redoing an answer never replays a reveal.
 
-**Distinction paragraph placement:** below the radar chart, in Cormorant Garamond at 18px. It should feel like it's being read, not scanned. Give it space.
+### 5.7 Arrival moments
 
-**Radar chart:** five axes, accent fill, animates outward from center on entry. Axes are labeled. The visual contrast between a tight chart and a wide one — between someone who sits close to the midpoint on everything and someone who scores extreme on all five — should be immediately readable.
+Arrival screens are slower than anything else in the game: a paper veil fades in over the map (0.8 s), then each line rises in turn (first after 0.9 s, then 0.5 s apart, each fading over 1 s). Text is centred. They close on a button.
 
-**Final report readability requirements (non-negotiable):**
-- Present information in this fixed order:
-1. Code (hero)
-2. One-line plain-language summary
-3. Radar chart
-4. Axis breakdown (5 short rows)
-5. Distinction paragraph
-- Keep each axis row to one line: `[LETTER] [Pole name] — [short plain-language gloss]`
-- Avoid technical scoring language (`normalized`, `nudge`, `threshold`) in user-visible copy.
-- Distinction paragraph is 3–4 sentences max, with average sentence length under 22 words.
-- Use one key tension sentence at most; avoid stacking multiple abstract tensions in one paragraph.
-- If a sentence exceeds two commas, split it.
-- Keep line length readable on mobile by constraining paragraph width to content max-width and 1.7 line height.
-- Maintain contrast priority: code > summary > paragraph > axis metadata.
+| Moment | When | What it shows |
+|---|---|---|
+| **Your summary** | 4 park answers | "So far", your summary, its description, "This can change as you answer more.", **Keep walking** |
+| **Your code** | 12 park answers | "You answered every question in the park", the five letters **one at a time, left to right** (each fades in over 0.3 s, 0.5 s apart), your summary, the radar chart, the letter legend, a line that the Neighborhood is open and your code won't change there; **Send your code to a friend** (main) and **Keep walking** |
+| **A chapter** | A later world's last ladder step | The chapter name, its summary, how you change there, "Your portrait has a new chapter.", and what's next ("Past the City, the fog is lifting over the Coast."); **Send to a friend** and **Keep walking** |
+| **The look-over** | Right after the reveal screens, when a world opens | See below |
+| **The ending** | The Observatory's chapter | "You've walked every world. Your portrait is as full as it gets, and you can always answer a question again." |
 
-**Suggested one-line summary format:**
-- `You lean [pole], [pole], and [pole] — with your strongest signal in [axis].`
-- Purpose: orient quickly before chart reading; not a replacement for the paragraph.
+The code reveal is non-negotiable: never show all five letters at once.
 
-### Screen 6: Share Card (generated image)
+**The look-over** (Ken's ruling, 2026-10-03). How a newly opened world shows itself without an arrow:
+1. The map fades to paper.
+2. It comes back framed on the new world's entrance (a gate, a street sign, a trail sign) with a landmark the player already knows in view.
+3. The fog lifts slowly while that world's "?" bubbles rise one by one.
+4. One line of directions in words, from a known landmark:
+   - "The Neighborhood is open, past the cabin and through the gate."
+   - "The City is open, where the main street leaves the Neighborhood."
+   - "The Coast is open, where the avenue leaves the City."
+   - "The Observatory is open, up the trail south of the Coast."
+5. About 4 s later the view fades back to the player. A tap or key skips it.
 
-- 1080×1080px square
-- Charcoal background, faint Arctic Tern silhouette watermark
-- Code letters large, tracked, cream — the hero element
-- Axis legend in muted small type below the code
-- Code + legend + Tern wordmark
-- If distinction is available: code + radar chart (small) + first sentence of distinction paragraph + Tern wordmark
+No camera slides across the map, no bursts. It never walks the character there. "Show me" in the panel replays it until the player answers a stop in that world.
 
-#### Share Card Generation
+### 5.8 Sharing
 
-The share card is rendered using `html-to-image` from a **hidden off-screen component** (`ShareCard.jsx`). The component is always mounted when the share screen is active but positioned off-viewport (`position: absolute; left: -9999px`). It renders at a fixed 1080×1080px regardless of device viewport.
+Written for the friend who receives it (Ken's ruling, 2026-10-03). The friend has seen none of the questions; the sender must be glad to put their name to it.
 
-When the user taps "Share this":
-1. `html-to-image` captures the hidden component as a PNG blob
-2. The share flow is attempted in this order:
+**Where:** after the park is done, sharing is the main button on the code reveal, on each chapter screen, and a box near the top of the portrait. Before that, a quiet "Share what you have so far" link at the bottom of the panel.
 
-**Primary — Web Share API (mobile):**
-```js
-if (navigator.share && navigator.canShare({ files: [file] })) {
-  navigator.share({ files: [pngFile], title: 'My Tern code', text: `I'm ${code}` })
-}
-```
-This opens the native share sheet (iMessage, WhatsApp, Instagram Stories, etc.) with the image attached.
+**The share sheet** ("Send to a friend"):
+- The picture the friend will see: a 1080 × 1350 ink-on-paper card with your character, the lines you picked, and your code (after the park).
+- "Pick up to 3 lines about you": chips with the share lines of your tendencies (first person). Lines without a share line never appear.
+- "Your message": the exact text that will be sent. It says what Tern is ("a game of 12 hard choices about right and wrong"), lists your lines, gives your code with "Play and tell me yours:", and ends with the link. Before the park is done it says "So far".
+- **Share** (the phone's share sheet, with the picture) and **Copy message**; on a computer without a share sheet, **Copy message** and **Save picture**.
+- "Only what you see here is sent. Your answers stay on this device." and **Not now**.
 
-**Fallback — Download (desktop and unsupported mobile):**
-```js
-// Create a download link with the PNG blob
-a.download = `tern-${code}.png`
-```
-Downloads `tern-OCHLS.png` (or whatever the code is) directly.
+Message and card copy live in `content.js` → `shareCopy`.
 
-**Share content:** Image only. No link back to Tern in V1 (no backend to resolve). The Tern wordmark on the card serves as branding.
-
-#### iOS Safari Known Issue
-
-`html-to-image` has inconsistent rendering on iOS Safari — particularly with custom fonts and CSS transforms. Mitigations:
-- Use `toPng()` with `pixelRatio: 2` for retina quality
-- Ensure Cormorant Garamond is fully loaded before capture (`document.fonts.ready`)
-- If `toPng()` fails, retry once with `toCanvas()` fallback
-- If both fail, show a quiet message: *"Screenshot your result to share it"* — do not break the experience
+### 5.9 Privacy and other screens
+"Privacy" (on the title screen, character select and panel) opens an arrival screen: answers stay in this browser on this device, are never sent, no account, no tracking, no analytics, no ads; "Start over" or clearing site data erases them. "Start over" asks for confirmation first.
 
 ---
 
-## 8. Animation System
+## 6. Motion and timing
 
-### Core Principle
-> **The scene breathes. The user waits, just a moment, and the moment is worth it.**
+| Moment | Timing |
+|---|---|
+| Card opens: scene, then words | Words after about 1 s |
+| Answer marks, words hide | about 250 ms |
+| Scene fades to paper / next scene fades in | about 0.55 s each |
+| Hold after the scene shifts, before the words | 0.9 s |
+| Answer to follow-up, total | aim for about 3.5 s |
+| Card glides to a new height | about 0.55 s |
+| Portrait updates after the card closes | 0.7 s |
+| Panel section dissolve / resolve | 0.7 s / 1.2 s, in coarse steps (a soft, pixelated feel) |
+| Arrival screen veil | 0.8 s |
+| Arrival screen lines | first at 0.9 s, then every 0.5 s, each fading over 1 s |
+| Code letters | one every 0.5 s, each fading over 0.3 s |
+| Look-over | fade to paper about 0.7 s, hold about 4 s, fade back about 0.9 s |
+| Fog lifting | slow ease over several seconds |
+| Zoom | eased, never snaps |
 
-Deliberate pacing signals that what's happening matters. Every animation should feel like something earned, not endured.
-
-### Transition Types
-
-#### Scene Entry (new question)
-1. Previous screen fades to black — `400ms`
-2. New illustration fades in — `800ms`, slow, like developing in a darkroom
-3. Setup text fades up (opacity 0→1, translateY 12px→0) — `500ms`, delayed `300ms`
-4. Question text — same treatment, delayed `600ms`
-5. Answer buttons stagger in — `100ms` apart, starting at `900ms`
-
-Total time to fully readable: ~1.4 seconds. Deliberate, not slow.
-
-#### Follow-up Illustration Swap (the emotional beat)
-1. Current illustration fades to 0 — `600ms`
-2. New illustration fades in — `800ms`
-3. Question text cross-fades simultaneously — content changes as image changes
-
-This is the most important animation in the app. It must feel like the world just shifted. Never update text and image simultaneously — the image leads.
-
-#### Phase Transitions (convergence offer, code reveal, distinction reveal)
-Slower and more deliberate than question transitions. These are arrival moments.
-1. Fade to black — `600ms`
-2. New screen fades in — `1000ms`
-3. Text elements stagger — `800ms` before first element, `400ms` between elements
-
-#### Code Letter Reveal (special)
-The five letters materialize one at a time, left to right.
-1. Each letter: opacity 0→1, scale 0.8→1.0 — `300ms` per letter
-2. Pause between letters: `200ms`
-3. Total reveal: ~2.5 seconds including pauses
-4. After all letters: axis legend fades in — `500ms`, delayed `300ms`
-
-This is a designed moment. Do not rush it. Do not reveal all letters simultaneously.
-
-#### Answer Selection
-1. Tapped button: border → `var(--color-accent)`, text → accent — `180ms`
-2. Other buttons: fade to 40% opacity — `180ms`
-3. `300ms` pause, then scene transition begins
-
-#### Progress Bar
-- Fills left to right using `var(--color-accent)`
-- Smooth width transition — `400ms ease`
-- No numbers. No labels. No percentage. Just the bar.
-- In depth phase: tracks axis confidence — may advance unevenly, which is honest
-
-#### Radar Chart Entry
-- Axes animate outward from center — each draws in sequence, `600ms` total
-- Fill fades in after axes complete — `300ms`
-
-### CSS Animation Tokens
-```css
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes illustrationIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes selectPulse {
-  0%   { border-color: transparent; }
-  100% { border-color: var(--color-accent); }
-}
-
-@keyframes phaseIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes letterReveal {
-  from { opacity: 0; transform: scale(0.8); }
-  to   { opacity: 1; transform: scale(1.0); }
-}
-```
+**Reduced motion** (`prefers-reduced-motion`): ambient motion stops and figures hold still; scenes jump to their end states; panel dissolves, arrival-screen staggers and the look-over's fades are instant.
 
 ---
 
-## 9. Component Specs
-
-### Answer Button
-```
-Background:    rgba(255, 255, 255, 0.06)
-Border:        1px solid rgba(255, 255, 255, 0.12)
-Border-radius: 8px
-Padding:       16px 20px
-Font:          UI font, 16px, color: var(--color-cream)
-Min-height:    56px
-Width:         100%
-
-On hover:
-  Background: rgba(255, 255, 255, 0.10)
-  Border:     1px solid rgba(255, 255, 255, 0.20)
-  Transition: var(--transition-fast)
-
-On selected:
-  Border:     1.5px solid var(--color-accent)
-  Color:      var(--color-accent)
-  Background: rgba(232, 101, 42, 0.08)
-```
-
-### Progress Bar
-```
-Container: full width, height 2px, background rgba(255,255,255,0.12)
-Fill:      var(--color-accent), height 2px
-Position:  fixed bottom, full width
-No label. No percentage. No question count. Ever.
-```
-
-### Code Display
-```
-Font:          Cormorant Garamond, 56px, weight 600
-Letter-spacing: 0.15em
-Color:         var(--color-cream)
-Layout:        centered, single row
-```
-
-### Axis Legend (below code)
-```
-Font:     Quattrocento Sans, 13px, weight 300
-Color:    var(--color-muted)
-Layout:   centered column, 6px gap between rows
-Format:   "[LETTER] · [pole name]" — e.g. "O · outcomes"
-```
-
-### Distinction Report Block
-```
-Order:
-  1) code (hero)
-  2) one-line summary (16px)
-  3) radar chart
-  4) 5-row axis breakdown
-  5) distinction paragraph
-
-Axis breakdown row:
-  Font:      Quattrocento Sans, 14px
-  Color:     var(--color-muted)
-  Spacing:   8px vertical
-  Example:   "O · outcomes — you optimize for net impact."
-
-Paragraph:
-  Font:      Cormorant Garamond, 18px
-  Lineheight:1.7
-  Max width: 38ch
-  Margin-top:20px
-```
-
-### Vignette Overlay
-```css
-.vignette {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 65%;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(17, 17, 16, 0.4) 30%,
-    rgba(17, 17, 16, 0.85) 60%,
-    rgba(17, 17, 16, 0.97) 100%
-  );
-}
-```
+## 7. Accessibility
+- Every control is a real button, reachable by keyboard. Arrow keys walk; `+` and `-` zoom; arrow keys and Enter work in character select; Escape closes the share sheet.
+- The card and arrival screens are live regions, so screen readers hear new text.
+- Focus moves to the first answer when the words appear, and to the main button on arrival screens.
+- Dots carry a text label ("2 more to go") for screen readers.
 
 ---
 
-## 10. Motion Accessibility
+## 8. Phone feel
 
-All animations respect `prefers-reduced-motion`. When reduced motion is preferred: crossfades replace slides/transforms, illustration swap is instant, code letter reveal shows all letters simultaneously.
+Ken's rulings (2026-09-29). Browser-pane checks can't catch these, because the pane pauses animations while hidden; check them in headless Chrome with touch and CPU slowdown (`docs/ARCHITECTURE.md` → Testing).
 
-```css
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-```
+- **Sheets drag.** Any bottom sheet follows the finger when dragged, closes on a pull-down or a tap outside it, and shows a chevron. A quarter-ish pull or a quick flick is enough. A drag starting inside scrolled content scrolls instead.
+- **Cards glide, never jump.** When card text changes, the new text is laid out hidden and the card glides to its new height.
+- **No stalls.** Keep answer-to-follow-up near 3.5 s.
+- **The map rests.** While a card covers a phone screen, the map behind it redraws at half rate.
+- **Pinch to zoom**; a second finger cancels the first finger's walk.
 
 ---
 
-## 11. Mobile-First Layout
-
-- Base design: 390px wide (iPhone 14 viewport)
-- Max content width: 480px, centered on larger screens
-- Text padding: 24px horizontal
-- Answer button stack: 12px gap
-- Bottom safe area: `env(safe-area-inset-bottom)`
-- Illustrations: `object-fit: cover`, `object-position: center top`
+## 9. Map zoom
+Pinch on a phone, pinch or scroll on a trackpad, `+` / `-` on a keyboard. 0.6× to 1.8×, centred on the player, eased, saved with the game.
 
 ---
 
-## 12. PWA Shell
-
-- `display: standalone`
-- Status bar: `black-translucent`
-- Theme color: `#1C1C1E`
-- Splash screen: charcoal background, Tern wordmark centered in Cormorant Garamond
-- App icon: Arctic Tern silhouette on charcoal, accent orange detail
+## 10. Home-screen app
+- Installable (`game/manifest.webmanifest`): standalone display, paper background and theme colour (`#FAFAF8`).
+- App icon: Mof on paper.
 
 ---
 
-## 13. What This Is Not
-
-- **No bright white backgrounds.** This is not a clinical survey.
-- **No progress numbers.** "4 of 11" turns a mirror into a test.
-- **No confetti, celebrations, or gamification rewards.** The insight is the reward.
-- **No purple gradients.** No glassmorphism. No generic SaaS aesthetic.
-- **No sans-serif headlines.** Cormorant is non-negotiable for display text.
-- **No busy layouts.** One question. One image. Choices. Nothing else.
-- **No rushed transitions.** If an animation feels fast, slow it down.
-- **No kitschy result copy.** See Section 3.
-- **No announced phase transitions.** Core-to-depth is invisible. Users don't need to know the system changed gears.
-- **No loading states.** Design so transitions are immediate. If something must load, the illustration preloading strategy in `docs/ARCHITECTURE.md` handles it.
+## 11. What this is not
+- **No colour accents, no dark mode, no raster illustrations, no AI image generation** without Ken's ruling.
+- **No progress numbers.** No question counts, steps or percentages. Dots only.
+- **No points, badges, streaks, leaderboards, confetti or celebrations.** The insight is the reward.
+- **No wayfinding arrows**, compasses or edge pointers.
+- **No busy motion.** If it feels busy, calm it.
+- **No crowd statistics** ("how others answered") in V1.
+- **No archetype names or type labels.**
+- **No loading states.** Everything is drawn in code, so there's nothing to wait for.
+- **No purple gradients, glassmorphism or generic app styling.**
 
 ---
 
-*Tern Design System — maintained alongside the codebase. Any visual changes must be reflected here first.*
+## 12. Superseded (history only)
+
+Retired by Ken's rulings in 2026-09; kept so the history isn't lost. Do not build from these.
+
+- **Visual system:** a dark charcoal background, a "Monarch Orange" accent, cream text, a dark vignette, full-bleed sepia editorial illustrations generated by AI (Gemini/Imagen). Replaced by §0.
+- **Screens:** a full-screen question screen with a bottom progress bar; a "convergence offer" ("We have a pretty clear picture of you. Want to see what we found?"); a code reveal leading to a paid "Go deeper"; a "distinction reveal" (code, one-line summary, radar chart, axis breakdown, generated paragraph); an "exploration mode"; a share card rendered with html-to-image. Replaced by the map, the portrait panel, the unlock ladder and the arrival moments in §5.
+- **Kept from that design:** the scene changing before the words, the letter-by-letter code reveal, the slower pacing of arrival moments, the type pairing, and the copy principles.
+
+---
+
+*Tern design system, maintained alongside the game. Any visual change is reflected here first.*

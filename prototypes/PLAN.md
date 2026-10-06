@@ -1,8 +1,10 @@
 # Prototype plan — Tern park walk
 
+> **Status (2026-10-05): history.** The prototype was forked into the real game in `game/` (2026-09-27) and is no longer the visual reference: `docs/DESIGN.md` §0 and `game/index.html` are. Keep this file and `trolley-walk.html` for history; don't build on them.
+
 **File:** `prototypes/trolley-walk.html` (single self-contained HTML file, canvas-drawn, no dependencies)
 **Published:** https://claude.ai/artifact/2ZbxVZXBZE1amxGWBXJ9hZ (private artifact; current version v21)
-**Role:** throwaway UX prototype for Roadmap Phase 2 ("Feel it", `docs/VISION.md`). It is also the **visual reference** for `docs/DESIGN.md` §0. If this file and DESIGN §0 disagree, DESIGN §0 wins and the prototype gets fixed.
+**Role (historical):** throwaway UX prototype for Roadmap Phase 2 ("Feel it", `docs/VISION.md`). It is also the **visual reference** for `docs/DESIGN.md` §0. If this file and DESIGN §0 disagree, DESIGN §0 wins and the prototype gets fixed.
 
 Read before changing anything: `docs/DESIGN.md` §0 (look and feel), `docs/PLAN-progression.md` (map, portrait, unlocks, worlds), `AGENTS.md` (especially the 2026-09 entries).
 

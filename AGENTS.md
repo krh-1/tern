@@ -40,7 +40,7 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Discovery:** Showing "Question 4 of 11" turns the experience into a test. Users start rushing rather than sitting with questions. The quiet progress bar with no numbers is a deliberate product decision.
 **Action:** Do not add question numbers, step counts, or percentage text anywhere in the UI. Non-negotiable.
 
-### 2026-02 — Conflict Avoidance Is a Pattern, Not an Axis
+### 2026-02 — Conflict Avoidance Is a Pattern, Not an Axis [AMENDED 2026-09 — now the portrait line "You avoid open conflict" (tendency `avoid-conflict`), per Ken's 2026-09-27 ruling; still not an axis]
 **Context:** Mapping Q5 (The Inheritance) to axes.
 **Discovery:** Conflict avoidance is a detectable behavioral pattern, not an axis. It shows when a user gives a passive trunk answer on Q5 but an active answer on the follow-up when permission is explicitly granted. This gap is revealing data.
 **Action:** Do not add a Conflict Avoidance axis. Detect via the logic in `docs/SCORING.md` and incorporate into the distinction paragraph for affected users.
@@ -60,7 +60,7 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Discovery:** The core set's social value depends entirely on every user having seen the same questions. If users get different questions, they can't compare notes or recognize shared experiences. This shared reference layer is a core product value.
 **Action:** Never randomize, personalize, or adapt the core question set. Personalization only happens in the depth graph.
 
-### 2026-02 — Inconsistency Is Always Meaningful by Question Design
+### 2026-02 — Inconsistency Is Always Meaningful by Question Design [AMENDED 2026-10 — answers that pull against each other now show as "Where you're torn" tensions; clarifying stops are not built]
 **Context:** Designing inconsistency handling.
 **Discovery:** The question library is designed so any combination of answers has a coherent axis-model explanation. Apparent inconsistency is almost always meaningful — two framings of the same axis producing different answers under different emotional conditions. True noise should be impossible if questions are designed correctly.
 **Action:** Do not implement re-asking in the core set. In the depth graph, queue a clarifying question with *"Something came up that we want to explore."* Never make the user feel corrected. See `docs/SCORING.md`.
@@ -80,7 +80,7 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Discovery:** Revealing all five letters simultaneously wastes the most important moment in the experience. Letters materializing one at a time — with brief pauses, like the system is arriving at each conclusion — turns the code reveal into an event. This is the payoff of the whole core experience and must be treated as such.
 **Action:** Always reveal letters sequentially, left to right, ~300ms per letter with ~200ms pauses. Never reveal all simultaneously. See `docs/DESIGN.md` section 8 — Code Letter Reveal. This animation is non-negotiable.
 
-### 2026-02 — Distinction Is Radar Chart Plus Generated Paragraph
+### 2026-02 — Distinction Is Radar Chart Plus Generated Paragraph [SUPERSEDED 2026-09 — the portrait (headline, tendencies from the authored library, compass, tensions, chapters) replaced the paid distinction; the radar shows only on the code reveal. See docs/SCORING.md]
 **Context:** Designing the paid tier result.
 **Discovery:** The distinction needed to do two things: show magnitude (which the code alone doesn't convey) and surface what's specific and interesting about this particular profile. A radar chart handles magnitude visually. A generated paragraph handles specificity in language. Together they're stronger than either alone. The paragraph must feel like something a perceptive person observed — not a template, not a summary, not flattering.
 **Action:** The distinction always has both components. Do not ship a distinction with only a radar chart or only a paragraph. The paragraph is generated from axis scores + depth path, and must follow the result copy principles in `docs/DESIGN.md` Section 3.
@@ -90,7 +90,7 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Discovery:** Tern should feel like a game — not gamified (no points, badges, streaks) but genuinely engaging through intrinsic design: pacing, anticipation, satisfying reveals, the sense of building toward something. This quality is structural — it comes from question design, transition timing, and reveal choreography — and can be destroyed by adding friction, clinical language, loading states, or treating result screens as information pages rather than moments.
 **Action:** Evaluate every implementation decision against game-feel: does this make the experience feel more like something you're moving through, or does it flatten that quality? Protect the letter reveal animation, the illustration swap sequencing, the phase transition pacing, and the absence of progress numbers. See `docs/DESIGN.md` Section 1 and `docs/VISION.md` — Game Feel.
 
-### 2026-02 — Phase Transitions Are Arrival Moments
+### 2026-02 — Phase Transitions Are Arrival Moments [AMENDED 2026-10 — the arrival moments are now the headline reveal, the code reveal, each world's chapter screen and the look-over; there is no convergence offer or distinction reveal. The slower arrival timing still applies]
 **Context:** Designing convergence offer, code reveal, and distinction reveal screens.
 **Discovery:** Phase transition screens — convergence offer, code reveal, distinction reveal — are fundamentally different from question screens. They are destinations, not steps. They require slower, more deliberate animation (800ms out, 1000ms in vs. 400ms/800ms for questions) and staggered text elements that feel like arriving somewhere rather than navigating to a page.
 **Action:** Always use the phase transition animation timings for non-question screens. Never use the question transition timings for arrival screens. See `docs/DESIGN.md` section 8 — Phase Transitions.
@@ -105,7 +105,7 @@ This is the institutional memory of the codebase across agent sessions and conte
 
 *Append new entries below this line. Date and topic are required.*
 
-### 2026-03 — Canonical UX Simulation Script Added
+### 2026-03 — Canonical UX Simulation Script Added [SUPERSEDED 2026-10 — docs/SIMULATIONS.md is history; the game in game/ is canonical]
 **Context:** User requested a comprehensive walkthrough of three full assessment runs (questions, answers, follow-ups, scoring, and results) to experience Tern end-to-end from docs alone.
 **Discovery:** The workspace is currently documentation-only (no `src/` tree), so core question text and scoring are fully canonical from docs, while depth-node wording must be represented as explicit examples rather than verbatim nodes.
 **Action:** Use `docs/SIMULATIONS.md` as the canonical walkthrough artifact for demos and stakeholder onboarding. Keep core flows exact to `docs/QUESTIONS.md` + `docs/SCORING.md`, and label depth paths as representative until `src/data/depthGraph.js` is available in-repo.
@@ -115,22 +115,22 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Discovery:** Adding explicit assumptions per question (time pressure, available alternatives, who is involved) preserves nuance while keeping prompts identity-neutral and consistent with the no-noise guarantee. This improves answer quality without requiring adaptive core questions.
 **Action:** In `docs/QUESTIONS.md`, require `assumptions` for core and depth schemas and include global + follow-up assumptions for every core question. Keep identity-neutral specificity by default, and only add demographic cues when the cue itself is the variable being probed.
 
-### 2026-03 — H/T Rebalance via Thought-Oriented Core Nudges
+### 2026-03 — H/T Rebalance via Thought-Oriented Core Nudges [SUPERSEDED 2026-09 — the ids it cites belong to the old core set; nudges now live in game/content*.js]
 **Context:** After rewriting question copy for explicit assumptions and identity-neutral specificity, a second pass was requested to rebalance scoring nudges and update downstream scoring documentation.
 **Discovery:** The H/T axis was overly Heart-skewed in core prompts. Adding modest `H-` nudges to clearly analytic/procedural options improved expressiveness without changing branching structure or expected golden test codes.
 **Action:** Keep Thought-direction signal in core options where users are explicitly choosing process/analysis over relational intuition (Q4-B, Q5-A, Q6-A, Q6-FU-A, Q7-A, Q9-B, Q10-B, Q11-C). After any nudge change, recompute normalization ranges and update golden test math in `docs/SCORING.md` and any simulation artifacts that include numeric traces.
 
-### 2026-03 — Final Report Must Be Scan-Readable Before Deep Reading
+### 2026-03 — Final Report Must Be Scan-Readable Before Deep Reading [SUPERSEDED 2026-09 — the final report became the running portrait; scan-first still holds, see "Portrait Copy Must Say What It Means"]
 **Context:** After tone and specificity updates, focus shifted to improving the final report user experience (distinction screen readability).
 **Discovery:** Users need a fast orientation layer before reading the 3–4 sentence distinction paragraph. A fixed content hierarchy improves comprehension: code first, quick summary, chart, short axis rows, then paragraph.
 **Action:** Keep final report order fixed and lightweight: `code -> one-line summary -> radar -> 5-row axis breakdown -> paragraph`. Avoid method jargon in user copy. Keep paragraph concise and readable on mobile (`max-width` constraint, generous line height).
 
-### 2026-03 — Distinction Copy Baseline: Plain, Short, High-Signal
+### 2026-03 — Distinction Copy Baseline: Plain, Short, High-Signal [SUPERSEDED 2026-09 — no distinction paragraph exists; plain-copy rules continue in "Portrait Copy Must Say What It Means"]
 **Context:** Follow-up pass focused on improving final report readability and tone consistency after question rewrites and nudge rebalancing.
 **Discovery:** Distinction sentence templates were semantically strong but too long/abstract in places. Shorter sentence patterns with one explicit tension line maximum improve comprehension and preserve voice.
 **Action:** In `docs/SCORING.md`, keep distinction templates in plain language, second person, and concise structure (target ~22 words average sentence length). Avoid scoring-jargon in user-facing output and keep paragraph assembly constrained for scan-readability.
 
-### 2026-03 — Distinction Report Terminology Alignment
+### 2026-03 — Distinction Report Terminology Alignment [SUPERSEDED 2026-09 — there is no distinction report]
 **Context:** Documentation drift emerged after adding final-report readability requirements (summary + axis breakdown) while older docs still described distinction as only radar + paragraph.
 **Discovery:** Treating radar+paragraph as core analytic components and summary+axis rows as presentation layers keeps conceptual consistency across Vision, Architecture, Design, README, and Scoring docs.
 **Action:** Use "distinction report" for the user-facing artifact and "core analytic components" for scoring outputs. Keep both terms synchronized when updating docs.
@@ -287,3 +287,8 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Context:** Ken asked for the skeptic judge pass he requires on content, then approved my recommendation for applying it (2026-10-04). Verdicts: `docs/question-bank-wip/judge-city.md`, `judge-coast.md`, `judge-observatory.md` (49 questions: keep 7 / sharpen 42 / cut 0). Scope: `game/plan-judge-fixes.md`.
 **Discovery:** The author's own pass was again too lenient. The trunks held; the failures were in follow-ups, details and portrait wiring: answers feeding tendencies they don't show, giveaway phrases ("does more good overall", "Only luck differs"), answers that can't happen as written (D11's "leave it out" was really a lie under oath), copy claiming what the player didn't choose, and near-unanimous questions. Applied: every one of those fixes, plus six follow-ups (Observatory B06, B26, B27, B47; City B41, B04). Deferred: about 25 more "missing side" follow-ups, listed in each proposals file. Two Observatory tendencies ("machines-matter", "remembers") are defined but can't trigger until a second question supports them.
 **Action:** When a follow-up's situation is replaced, keep its key and give its answers new ids with a "2" (e.g. `Q11-FUA2-A`), so an old save never shows a note for a question the player wasn't asked. Run a separate skeptic judge on every content pass before Ken ratifies it, not after. When testing in a reused headless-Chrome profile, disable the cache (`Network.setCacheDisabled`): the local server lets Chrome cache scripts, so a reused profile can test stale code. Answer animations should keep the answer-to-follow-up time near 3.5 s (D4's "Stop" was cut from 5.2 s to 4.2 s).
+
+### 2026-10 — Repo Review: Docs Match the Build; NEXT-STEPS Is the Front Page for Work
+**Context:** Ken asked to "review the repo, update our docs, be clear on next steps" (2026-10-05).
+**Discovery:** The spec docs, `cursor.md` and `.cursor/rules/` still described the old model (two-phase, convergence, distinction, an `src/` folder that never existed), so Cursor agents were being pointed at things that don't exist. `docs/QUESTIONS.md` drifted every time content changed. The new README briefly claimed there was no deploy config, though `.github/workflows/deploy-storychart.yml` redeploys storych.art on every push to `main`.
+**Action:** `docs/NEXT-STEPS.md` holds where things stand, the recommended order of work, and decisions waiting on Ken; update it at the end of every session. `docs/QUESTIONS.md` is generated by `npm run export:questions` from the game files: never hand-edit it. The docs (README, VISION, ARCHITECTURE, DESIGN, SCORING, WORKFLOW), `cursor.md` and `.cursor/rules/` now describe the built game; prototypes, the Gemini pipeline, SIMULATIONS and BUILD-READINESS are marked as history. A push to `main` is a release. The `career-first` tendency also has no `share` line (decision pending, see NEXT-STEPS).

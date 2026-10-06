@@ -1,5 +1,7 @@
 # Simulation Walkthroughs — Tern (Ethics Domain, V1)
 
+> **Superseded (2026-10-05): history only.** These walkthroughs simulate the old two-phase model (11 fixed core questions, a convergence offer, a depth graph, a distinction paragraph) on question wording that has since changed. The game no longer works this way. For the current questions see `docs/QUESTIONS.md` (generated from `game/content*.js`); for how answers become the portrait and code, including a worked example with real answer ids, see `docs/SCORING.md`. To simulate a player today, call `compute()` in `game/portrait.js` from node. The body below is unchanged.
+
 > **⚠ Stale as of 2026-09-27:** the no-escape-answer pass removed and added answer options and follow-ups across Q1–Q11 and D1–D12 in `docs/QUESTIONS.md`. Normalization ranges, golden-test math and numeric traces below have not been recomputed. Scoring is deliberately deferred until the question set is frozen.
 
 This document provides three end-to-end assessment simulations based on:

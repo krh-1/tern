@@ -1,154 +1,74 @@
-# Tern 🦋
+# Tern
 
 > *You already know who you are.*
 
-Tern is a values and decision-style assessment framework. Through scenario-based dilemmas with branching follow-up questions and illustrated scenes, it surfaces the instincts and philosophies people already carry — revealing how they actually make decisions, not just how they think they do.
+Tern is a calm walking game about hard choices. You walk a hand-drawn, black-and-white map as a small puffy character. Every stop on the map is a dilemma with no easy way out. From your first answer, a portrait of how you decide starts writing itself beside the map, in plain sentences like "You keep your word."
 
-The framework is **domain-agnostic**. Each domain asks a different question of the same person:
-
-- **Ethics** — how do you weigh rules, outcomes, loyalty, and justice? *(Active — V1)*
-- **Parenting** — what do you believe about discipline, independence, and how children grow? *(Planned)*
-- **Leadership** — how do you distribute authority, handle conflict, and build trust? *(Future)*
-- **Relationships** — what do you believe about commitment, conflict, and care? *(Future)*
-
-Each domain produces a **five-letter code**, one letter per philosophical axis, and a **living portrait**: plain statements about who you are that start after your first answer and grow as you keep going.
-
-> **Direction change (2026-09):** Tern is moving from "test, then result" to a map of questions with a growing portrait and unlockable worlds. See `docs/PLAN-progression.md` and the Roadmap in `docs/VISION.md`. Parts of this README and the spec docs still describe the old model until the rulings in Phase 1 are made.
->
-> **Look and feel (ratified 2026-09):** a calm, cozy, black-and-white, code-drawn park you walk around as a small puffy character. See `docs/DESIGN.md` §0 and the prototype in `prototypes/` (`prototypes/PLAN.md`).
-
----
-
-## What a User Experiences
-
-**New model (planned):** you land in a park, a map where every question is a place. Answer any question, in any order. After your first answer, a "who you are" panel starts writing itself. After four answers you get a plain headline about yourself (*"You keep your word, even when it costs you"*). As you continue you unlock what you protect and what you'll trade away, then where you're torn. Finish the 12 park questions to get your code and full portrait, and a new world opens (the Neighborhood, then the City, the Coast and the Observatory). Stop, save, share and come back any time.
-
-**Current spec (being replaced):** A user opens Tern and is immediately placed inside a scenario — a full-screen illustrated scene with a question fading in over it. They choose from carefully designed answers, each one genuinely defensible. Some questions branch into follow-ups that shift the context: the person they're protecting becomes someone they love, the wealthy neighborhood becomes a poor one. These shifts are the emotional core of the experience.
-
-After enough signal is gathered, the user receives their **code** — five letters materializing one at a time, each representing where they landed on one of five philosophical axes. The code is shareable, comparable, and immediately discussable: *"You're OCHLS and I'm RCHLS — we agree on everything except the first axis, that's probably why we argue about this."*
-
-Users who continue into the depth graph receive a **distinction report**: a one-line summary, a radar chart showing how strongly they sit on each axis, an axis breakdown, and a generated paragraph describing what's most specific, extreme, or tensioned about their particular profile.
+- **Five worlds** on one map: the Park (the same 12 questions for everyone), the Neighborhood, the City, the Coast and the Observatory. 75 questions in all.
+- **Unlocks are information, not points.** More answers reveal more: your summary, what you protect, where you're torn, and after the park's 12, your five-letter code.
+- **The code** (for example `OCHLS`) is one letter per value pair: Outcomes or Rules, Collective or Individual, Heart or Thought, Loyalty or Principle, System or Disruption. It comes only from the park's 12, so friends can compare.
+- **Private by design.** Answers are saved only in your browser. No account, no tracking.
 
 There are no right answers. There is no score. There is only the mirror.
 
 ---
 
-## The Five-Letter Code (Ethics Domain)
+## Run it
 
-| Position | Axis | Letter A | Letter B |
-|---|---|---|---|
-| 1 | Outcomes vs. Rules | **O** — consequentialist | **R** — deontological |
-| 2 | Collective vs. Individual | **C** — collective good | **I** — personal interest |
-| 3 | Heart vs. Thought | **H** — empathetic | **T** — rational |
-| 4 | Loyalty vs. Principle | **L** — allegiance | **P** — justice |
-| 5 | System vs. Disruption | **S** — works within structures | **D** — breaks unjust rules |
-
-Example codes: `OCHLS`, `RIHPD`, `OCHPD`. 32 possible combinations.
-
----
-
-## Quick Start
-
-If you're in the full app repository (with `src/` and `package.json`), run:
+The game is static files with no build step.
 
 ```bash
-npm install
-npm run dev        # http://localhost:5173
-npm run build
-npm run preview
+python3 -m http.server 8123 --directory game
 ```
 
-This current snapshot may be documentation-only for planning/review sessions.
+Then open http://localhost:8123. (Testing in parallel? `127.0.0.1:8123` keeps a separate save from `localhost:8123`.)
 
 ---
 
-## Tech Stack
+## Where things live
 
-| Layer | Choice |
+```
+game/                      # the game
+  index.html               # the engine: map, player, question card, portrait panel, unlocks, share, save
+  content.js               # the instrument for the Park, plus axes, tendencies, tensions, worlds, share copy
+  content-<world>.js       # the instrument for each later world
+  portrait.js              # scoring and portrait logic (also runs in node)
+  scenes.js, scenes-<world>.js   # code-drawn scenes, one pack per world
+  plan*.md                 # build plans, one per world
+  <world>-proposals.md     # open content questions per world
+docs/                      # product, design and content specs (below)
+docs/question-bank-wip/    # judge verdicts behind each content pass
+prototypes/                # the original park prototype (history)
+AGENTS.md                  # every ruling and lesson so far; read first, append last
+cursor.md, .cursor/rules/  # agent instructions for Cursor
+```
+
+`scripts/illustrations/` and `docs/ILLUSTRATION-GENERATION.md` belong to an image-generation pipeline that is on hold: every scene is drawn in code.
+
+---
+
+## Docs
+
+| Doc | What it covers |
 |---|---|
-| Framework | React + Vite |
-| Styling | Tailwind CSS |
-| PWA | vite-plugin-pwa |
-| Charts | Recharts |
-| Share card | html-to-image |
-| Deployment | Vercel |
+| `AGENTS.md` | Ken's rulings and lessons from every session. Wins over any other doc. |
+| `docs/NEXT-STEPS.md` | **Start here:** where things stand, the recommended next steps, decisions waiting on Ken |
+| `docs/VISION.md` | What Tern is, the five worlds, the portrait, the code, sharing, the roadmap |
+| `docs/DESIGN.md` | The ink-on-paper look (§0, ratified), screens, timings, copy rules, phone feel |
+| `docs/ARCHITECTURE.md` | Files, data shapes, the portrait computation, the map engine, save format, testing, how to add a world |
+| `docs/QUESTIONS.md` | The question set |
+| `docs/SCORING.md` | The five value pairs and how answers score |
+| `docs/QUESTION-BANK.md` | The question library and its history |
+| `docs/SIMULATIONS.md` | Worked example runs |
+| `docs/PLAN-progression.md` | The approved plan for the map, portrait and unlocks |
+| `docs/WORKFLOW.md` | How work flows: plans, content passes, judges, verification |
 
-No backend. No database. No API calls. Fully client-side in V1.
+**Reading order for an agent or developer:** `AGENTS.md`, then `docs/ARCHITECTURE.md`, `docs/DESIGN.md`, `docs/WORKFLOW.md`, and `docs/QUESTIONS.md` / `docs/SCORING.md` before touching content.
 
----
-
-## Project Structure
-
-```
-tern/
-├── public/
-│   ├── manifest.json
-│   ├── icons/
-│   └── illustrations/
-│       ├── Q1.jpg, Q2.jpg ...       # Core question illustrations
-│       └── depth/
-│           └── D1.jpg, D2.jpg ...   # Depth graph illustrations
-│
-├── src/
-│   ├── data/
-│   │   ├── questions.js             # Core question set (fixed, universal)
-│   │   └── depthGraph.js            # Depth graph nodes (adaptive)
-│   ├── engine/
-│   │   ├── scoring.js               # Axis scoring, code generation, distinction — domain-agnostic
-│   │   └── branching.js             # Core sequencing + depth routing — domain-agnostic
-│   ├── components/
-│   │   ├── QuestionCard.jsx
-│   │   ├── AnswerButton.jsx
-│   │   ├── ProgressBar.jsx
-│   │   ├── ConvergenceOffer.jsx     # Mid-assessment invitation screen
-│   │   ├── CodeReveal.jsx           # Five-letter code reveal — primary result screen
-│   │   ├── DistinctionReveal.jsx    # Summary + radar + axis breakdown + paragraph — distinction result
-│   │   ├── RadarChart.jsx
-│   │   └── ShareCard.jsx
-│   ├── hooks/
-│   │   └── useAssessment.js         # All assessment state across both phases
-│   ├── styles/index.css
-│   ├── App.jsx
-│   └── main.jsx
-│
-├── cursor.md                        # Agent instructions — read every session
-├── AGENTS.md                        # Discovered patterns and gotchas — append every session
-├── README.md                        # This file
-│
-├── docs/
-│   ├── VISION.md                    # What Tern is and where it's going
-│   ├── ARCHITECTURE.md              # How the system is structured
-│   ├── DESIGN.md                    # Visual and interaction system
-│   ├── SCORING.md                   # Five axes, code logic, distinction generation
-│   ├── QUESTIONS.md                 # Core question set + depth graph documentation
-│   ├── QUESTION-BANK.md             # Draft question pool (judged, awaiting ratification)
-│   ├── PLAN-progression.md          # Map + portrait + unlocks + worlds plan (2026-09)
-│   ├── BUILD-READINESS.md           # Current gate before building
-│   └── WORKFLOW.md                  # Tools and development process
-```
+**For a product person or designer:** `docs/VISION.md`, then `docs/DESIGN.md`, then play the game.
 
 ---
 
-## Documentation Reading Order
+## Deploying
 
-**If you are an AI agent or developer:**
-1. `cursor.md` — instructions and non-negotiables
-2. `docs/ARCHITECTURE.md` — system structure and two-phase model
-3. `docs/SCORING.md` — five axes, code generation, distinction logic
-4. `docs/QUESTIONS.md` — core question set and depth graph
-5. `docs/DESIGN.md` — visual system and all screen states
-6. `docs/WORKFLOW.md` — how to work on this repo (including bootstrapping)
-7. `AGENTS.md` — patterns and gotchas from prior sessions
-
-**If you are a product person, designer, or stakeholder:**
-1. `docs/VISION.md` — what Tern is, the code model, game-feel principle, roadmap
-2. `docs/PLAN-progression.md` — the new map / portrait / unlock plan
-3. `docs/DESIGN.md` — the visual and product experience
-4. `docs/QUESTIONS.md` and `docs/QUESTION-BANK.md` — the question library
-5. `docs/SCORING.md` — how the axes and code work
-
----
-
-## Deployment
-
-Push to `main` triggers a Vercel production deploy. Feature branches should be based off `dev`. See `docs/WORKFLOW.md` for the full branching strategy.
+Every push to `main` redeploys storych.art (the `/tern` page of hamada-world) through `.github/workflows/deploy-storychart.yml`, which calls Vercel's redeploy API; its secrets live in the GitHub repo settings. The game is plain static files, so any static host could serve the `game/` folder.

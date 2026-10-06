@@ -1,6 +1,6 @@
-# Workflow — Tern
+# Workflow: Tern
 
-How agents and developers work on this repo effectively. Read this before starting any task.
+How agents and developers work on this repo. Read this before starting any task.
 
 ---
 
@@ -8,16 +8,70 @@ How agents and developers work on this repo effectively. Read this before starti
 
 Tern uses the Compound Engineering philosophy:
 
-> Each unit of work should make subsequent units easier — not harder.
+> Each unit of work should make subsequent units easier, not harder.
 
-This means: plan thoroughly, review carefully, document everything. The AGENTS.md file is how Tern gets smarter over time. Never skip it.
+Plan on disk, review carefully, and record every ruling and lesson. `AGENTS.md` is how Tern gets smarter over time. Never skip it.
+
+**Ken operates; agents execute.** Ken dictates, reviews and rules. Agents draft and build. Specs, expected answers and judgment calls are Ken's: propose, then get his explicit yes. Never run through a decision point unattended.
+
+---
+
+## Before any task
+
+1. Read `AGENTS.md` (every entry is a ruling or a lesson; later entries supersede earlier ones where marked).
+2. Read the doc for the task: `docs/ARCHITECTURE.md` (code), `docs/DESIGN.md` (anything visual or interactive; §0 is ratified), `docs/QUESTIONS.md` and `docs/SCORING.md` (content).
+3. Check the relevant `game/plan*.md` and `game/<world>-proposals.md`.
+
+---
+
+## Plans live on disk
+
+Substantial work gets a plan file in `game/` before it starts, so a lost context window can't erase it: `game/plan.md` (the park), `game/plan-<world>.md` (one per world), `game/plan-judge-fixes.md`. Each plan holds:
+- the goal, in Ken's words, with the date;
+- Ken's rulings for this piece of work;
+- what's delegated, to whom, and the done-check;
+- the done-check for the whole piece;
+- a **Status** list, appended as work lands.
+
+**Delegation is never silent.** Tell Ken before or as you hand work to a subagent: what, to which model, and the done-check. Content and scenes usually go to separate subagents; the engine, integration and testing stay with the lead agent.
+
+---
+
+## How content changes flow
+
+Questions, answers, follow-ups, nudges, notes, `did` lines, tendencies and tensions are the **instrument**: they decide what Tern measures. They change only this way:
+
+```
+author → skeptic judge → Ken ratifies → apply → scenes → verify → record
+```
+
+1. **Author.** A subagent drafts into `game/content-<world>.js` (or proposes changes to an existing world). Every answer gets `nudges`, `note` and `did`; every new tendency gets `detail` and a `share` line, or a deliberate decision to leave it out.
+2. **Skeptic judge, before Ken sees it.** A separate judge agent reviews against the bar in `docs/QUESTIONS.md`: no escape answers, a thoughtful person must hesitate, follow-ups pressure both sides, answers feed only tendencies they genuinely show, no giveaway wording, no impossible setups, copy claims only what the player chose. The author's own pass has always been too lenient. Verdicts go in `docs/question-bank-wip/judge-<world>.md`.
+3. **Ken ratifies.** Open questions go in `game/<world>-proposals.md`, each with a recommendation. "Approved" ratifies what exists. Applying a proposals file needs an explicit "implement", and then means exactly what the file recommends now, not what it defers.
+4. **Apply.** Edit only the content file(s) in scope. A replaced follow-up keeps its key; its answers get new ids with a "2" (`Q11-FUA2-A`). Update every reference (tendencies, `more`, tensions, `next()`).
+5. **Scenes.** Any changed situation, follow-up or answer meaning gets its scene updated in `game/scenes-<world>.js`. The scene changes before the words.
+6. **Verify** (below).
+7. **Record.** Add a section to the proposals file listing what changed and what's deferred, update the plan's Status, and append to `AGENTS.md`.
+
+**Never in a copy sweep:** question, answer and setup wording. Propose those to Ken.
+
+---
+
+## Verify before calling anything done
+
+"Done" needs proof: the check output or the thing itself, not a claim.
+
+**Content (node):** load all five content files and `game/portrait.js`; every step reachable; every answer has `nudges`/`note`/`did`; ids unique; every referenced id exists; thousands of random runs through `compute()` with no errors; the code unchanged by non-park answers; no em dashes.
+
+**Game (headless Chrome over the DevTools protocol):** play every changed stop to the end at phone width with no console errors; random walks never enter a building or leave the map; earlier worlds' layouts unchanged; phone feel with touch and 4× CPU slowdown. Disable the cache, or a reused profile can test stale scripts. Use `127.0.0.1:8123` for a save separate from `localhost:8123`.
+
+Details and the `window.__tern` dev hooks: `docs/ARCHITECTURE.md` → Testing.
 
 ---
 
 ## Tool Stack
 
 ### Compound Engineering (day-to-day feature work)
-The primary development workflow for all feature work on Tern.
 
 **Install:**
 ```bash
@@ -25,187 +79,84 @@ The primary development workflow for all feature work on Tern.
 /plugin install compound-engineering
 ```
 
-**The four commands:**
-
 | Command | When to use |
 |---|---|
-| `/workflows:plan` | Before writing any code. Turn a feature idea into a detailed implementation plan. |
-| `/workflows:work` | Execute the plan. Use worktrees and task tracking. |
-| `/workflows:review` | Before considering any work done. Multi-agent review catches issues. |
-| `/workflows:compound` | After every session. Document learnings in AGENTS.md. |
-
-**Rule:** Never start coding without running `/workflows:plan` first. No exceptions.
-
----
+| `/workflows:plan` | Before writing code. Turn a feature idea into a plan (saved on disk, see above). |
+| `/workflows:work` | Execute the plan. |
+| `/workflows:review` | Before considering work done. |
+| `/workflows:compound` | After every session. Record learnings in `AGENTS.md`. |
 
 ### Ralph (autonomous multi-iteration tasks)
-Use Ralph for tasks that require many iterations — particularly content generation tasks like the V2 question pipeline.
+For long content tasks such as the future question pipeline. Not installed in this repo yet (`scripts/ralph/` doesn't exist); see https://github.com/snarktank/ralph.
 
-**Install:**
-```bash
-/plugin marketplace add snarktank/ralph
-# or manually:
-mkdir -p scripts/ralph
-# copy ralph.sh from https://github.com/snarktank/ralph
-chmod +x scripts/ralph/ralph.sh
-```
-
-**Run:**
 ```bash
 ./scripts/ralph/ralph.sh --tool claude 10   # up to 10 iterations
 ```
 
-**When to use Ralph on Tern:**
-
 | Task | Ralph? |
 |---|---|
-| Generate new question candidates | Yes — write a PRD, let Ralph iterate |
-| Validate axis mappings across question set | Yes |
-| Generate distinction paragraph variants | Yes |
-| Build a new UI component | No — use Compound Engineering |
-| Fix a bug | No — too focused for Ralph |
-| Generate illustrations batch (V2) | Yes — with appropriate PRD |
+| Generate new question candidates | Yes: write a PRD, let Ralph iterate, then the judge and Ken |
+| Check axis mappings across the question set | Yes |
+| Draft tendency or note variants | Yes, then the judge and Ken |
+| Engine or map work | No: plan and build directly |
+| Fix a bug | No |
 
-**Ralph key files for Tern:**
-- `prd.json` — user stories Ralph works through
-- `progress.txt` — append-only learnings between Ralph iterations
-- `AGENTS.md` — Ralph updates this after each iteration
-
----
-
-### Useful Slash Commands
+### Useful slash commands
 
 | Command | When to use |
 |---|---|
-| `/simplify` | After any complex implementation — reduce cognitive load for future agents |
-| `/batch` | When making the same change across multiple files simultaneously |
+| `/simplify` | After a complex implementation |
+| `/batch` | The same change across many files |
 
 ---
 
-## Bootstrapping (First-Time Setup)
+## What requires a doc update
 
-The repo currently contains documentation only — no source code, no `package.json`, no config files. Before any feature work, scaffold the project:
-
-```bash
-npm create vite@latest . -- --template react
-npm install
-npm install -D tailwindcss @tailwindcss/vite
-npm install recharts html-to-image
-npm install -D vite-plugin-pwa
-```
-
-Then configure:
-1. **`vite.config.js`** — add Tailwind and PWA plugins. See `docs/ARCHITECTURE.md` → PWA Configuration for settings.
-2. **`src/styles/index.css`** — add `@import "tailwindcss"` and the CSS custom properties from `docs/DESIGN.md` → Section 5 (CSS Variables).
-3. **`index.html`** — add Google Fonts links for Cormorant Garamond and Quattrocento Sans.
-4. Create the directory structure: `src/data/`, `src/engine/`, `src/components/`, `src/hooks/`, `public/illustrations/`, `public/illustrations/depth/`.
-
-**Implementation order:**
-1. Data layer first — `src/data/questions.js` (populate from `docs/QUESTIONS.md`)
-2. Engine layer — `src/engine/scoring.js`, `src/engine/branching.js`
-3. State layer — `src/hooks/useAssessment.js`
-4. UI layer — components, then `App.jsx`
-5. Illustrations — source or generate per `docs/DESIGN.md` → Section 6
-
-Do not start UI work before the engine is testable with golden test cases from `docs/SCORING.md`.
-
----
-
-## Standard Feature Workflow
-
-```
-1. Read cursor.md (every session, no exceptions)
-2. Read AGENTS.md (check for relevant gotchas)
-3. Read relevant doc (ARCHITECTURE, SCORING, QUESTIONS depending on task)
-4. /workflows:plan → get plan approved
-5. /workflows:work → implement
-6. /workflows:review → review
-7. /workflows:compound → update AGENTS.md
-8. Update relevant docs if anything changed (SCORING.md, QUESTIONS.md, DESIGN.md)
-9. Commit with clear message
-```
-
----
-
-## Standard Content Generation Workflow (V2 Question Pipeline)
-
-```
-1. Write PRD for the content task (use /prd skill)
-2. Convert to prd.json (use /ralph skill)
-3. Run Ralph: ./scripts/ralph/ralph.sh --tool claude
-4. Review generated content against:
-   - Axis mapping validity (does each question move the axes it claims?)
-   - Answer balance (no obviously correct answer)
-   - Tone consistency (matches Tern voice)
-   - Novelty (not redundant with existing questions)
-5. Approve or revise
-6. Update QUESTIONS.md
-7. Commit
-```
-
----
-
-## Commit Message Format
-
-```
-type(scope): short description
-
-Types: feat, fix, docs, style, refactor, content
-Scope: questions, scoring, ui, engine, docs, pwa
-
-Examples:
-  feat(questions): add Q12 nuclear preemption scenario
-  fix(scoring): correct proximity axis normalization range
-  docs(scoring): update distinction thresholds after Q8 reweight
-  content(questions): add Iran nuclear follow-up variants (V2 staging)
-  style(ui): adjust answer button hover timing to 180ms
-```
-
----
-
-## What Requires a Doc Update
-
-| Change | Update required |
+| Change | Update |
 |---|---|
-| Any question wording change | QUESTIONS.md |
-| Any axis nudge change | QUESTIONS.md + SCORING.md |
-| Any distinction generation logic change | SCORING.md |
-| Any convergence threshold change | SCORING.md |
-| Any new visual component | DESIGN.md |
-| Any color, font, or animation timing change | DESIGN.md |
-| Any new file or folder | ARCHITECTURE.md + README.md |
-| Any discovered pattern or gotcha | AGENTS.md |
+| Question wording, follow-up or nudge | `docs/QUESTIONS.md` (and `docs/SCORING.md` for nudges) |
+| Portrait rules, ladders, world opening | `docs/SCORING.md`, `docs/ARCHITECTURE.md` |
+| A new screen, marker, timing or visual element | `docs/DESIGN.md` |
+| A new file, data field or engine mechanism | `docs/ARCHITECTURE.md` (and `README.md` for new files) |
+| A new world | `docs/VISION.md`, `docs/ARCHITECTURE.md`, `docs/DESIGN.md`, `docs/QUESTIONS.md` |
+| Any ruling by Ken, pattern or gotcha | `AGENTS.md` |
 
 **If you are unsure whether a change needs a doc update, it does.**
 
 ---
 
-## Branching Strategy (V1 — Main-Only)
+## Commit message format
 
-V1 uses a simplified branching model. Feature branches merge directly to main.
+```
+type(scope): short description
 
-| Branch | Purpose |
-|---|---|
-| `main` | Production. Every push deploys to Vercel. |
-| `feat/[name]` | Feature work. Branch from main, merge back to main. |
-| `fix/[name]` | Bug fixes. Branch from main. |
-| `content/[name]` | New questions, distinction copy, depth nodes. |
+Types: feat, fix, docs, style, refactor, content
+Scope: questions, scoring, ui, engine, map, scenes, docs
 
-V2 may introduce a `dev` integration branch when the team grows or release cadence requires it.
+Examples:
+  content(city): add D11 follow-ups on both sides
+  feat(map): add the Observatory region
+  fix(engine): route taps around Coast buildings
+  docs(design): describe the look-over
+```
+
+Ken commits. Agents commit only when asked.
 
 ---
 
-## Testing
+## Branching
 
-V1 has no automated test suite. Manual verification checklist before any merge:
+| Branch | Purpose |
+|---|---|
+| `main` | The current game. |
+| `feat/[name]` | Feature work. Branch from main, merge back to main. |
+| `fix/[name]` | Bug fixes. |
+| `content/[name]` | New questions, notes, tendencies. |
 
-- [ ] All questions in the active question set render correctly on mobile (390px)
-- [ ] All follow-up triggers fire correctly
-- [ ] Progress bar advances correctly and reaches 100%
-- [ ] Results screen shows correct code for a known answer set (see golden test cases in SCORING.md)
-- [ ] Share card generates and downloads correctly
-- [ ] App works offline after first load (PWA)
-- [ ] Scenes appear with no loading flash (they're code-drawn; see `docs/DESIGN.md` §0)
-- [ ] Animations respect `prefers-reduced-motion`
+Every push to `main` redeploys storych.art through `.github/workflows/deploy-storychart.yml` (Vercel redeploy API), so a push is a release. The game is static files.
 
-V2 will introduce automated scoring unit tests. Add them when building the question pipeline.
+---
+
+## History
+
+Until 2026-10 this doc described bootstrapping a React + Vite app, populating `src/data/questions.js`, generating illustrations, and a manual checklist built around a progress bar and a share card made with html-to-image. None of that was built: the game is static files in `game/` (`docs/ARCHITECTURE.md`).

@@ -1,367 +1,311 @@
-# Architecture — Tern
+# Architecture: Tern
+
+> **Status (2026-10):** describes the game as built in `game/`. Rulings live in `AGENTS.md`; where this doc and `AGENTS.md` disagree, `AGENTS.md` wins. The old React/Vite plan this doc used to describe was never built; see "History" at the end.
 
 ## Overview
 
-Tern is a fully client-side React PWA. No backend, no database, no API calls in V1. All state is ephemeral — the assessment resets on page reload.
+Tern is a handful of static files with **no build step**, no backend, no database and no network calls. Open `game/index.html` through any static server and it runs.
 
-Three conceptual layers:
-
-```
-Data Layer          →    Engine Layer         →    UI Layer
-(questions.js,           (scoring.js,              (components,
- depthGraph.js)           branching.js,             hooks,
-                          useAssessment.js)          App.jsx)
+```bash
+python3 -m http.server 8123 --directory game
+# then open http://localhost:8123
 ```
 
-The assessment runs in two phases — core set and depth graph — handled by the same engine with different data sources and routing logic. The result is a five-letter code plus, for paid users, a one-line summary, radar chart, axis breakdown, and distinction paragraph. See `docs/SCORING.md` and `docs/VISION.md` for the full rationale.
+Three layers, kept apart on purpose:
+
+| Layer | Files | What it is |
+|---|---|---|
+| **Instrument** (content) | `game/content.js`, `game/content-<world>.js` | The questions, follow-ups, scoring nudges, notes and the portrait's statement library. This is measurement, not UI copy. |
+| **Portrait engine** | `game/portrait.js` | Pure logic: answers in, portrait out. No DOM. Runs in the browser and in node. |
+| **Game engine and scenes** | `game/index.html`, `game/scenes*.js` | The map, the player, the question card, the portrait panel, unlocks, reveals, share and save. Scenes are code-drawn on a canvas. |
 
 ---
 
-## Data Layer
+## File map
 
-### `src/data/questions.js`
-
-The core question set. Fixed and universal — every user answers these in the same order. Single source of truth for core question content: text, answers, axis nudges, follow-up triggers, and illustration filenames.
-
-**Schema:**
-```js
-{
-  id: 'Q1',
-  title: 'The Trolley Problem',
-  illustration: 'Q1.jpg',
-  setup: 'A runaway trolley...',          // optional italic scene-setting text
-  assumptions: [                          // required scenario constraints
-    'No hidden information beyond what is stated.',
-    'You must choose now; waiting is not possible.'
-  ],
-  question: 'Do you pull the lever?',
-  phase: 'core',
-  answers: [
-    {
-      id: 'Q1-A',
-      text: 'Yes — pull it',
-      nudges: {
-        O: +2,   // Outcomes vs. Rules → toward Outcomes
-        L: +1,   // Loyalty vs. Principle → toward Loyalty
-      }
-    },
-  ],
-  followUp: {                             // optional
-    trigger: ['Q1-B'],
-    illustration: 'Q1-followup-a.jpg',
-    setup: 'What if the one person was your mother?',
-    assumptions: ['...'],
-    question: 'Do you still pull it?',
-    answers: [ /* same shape */ ],
-    weight: 1.5,
-  }
-}
+```
+game/
+├── index.html                  # the engine: map, player, card, panel, unlocks, reveals, share, save, zoom
+├── content.js                  # the instrument for the Park (core 12), plus axes, tendencies, tensions, worlds, shareCopy
+├── content-neighborhood.js     # world 2: appends 14 questions, tendencies, tensions
+├── content-city.js             # world 3: 19 questions
+├── content-coast.js            # world 4: 12 questions
+├── content-observatory.js      # world 5: 18 questions
+├── portrait.js                 # scoring and portrait logic (window.TernPortrait, or module.exports in node)
+├── scenes.js                   # code-drawn scenes for the park (window.TERN_SCENES)
+├── scenes-<world>.js           # one scene pack per later world (pushed onto window.TERN_SCENE_PACKS)
+├── manifest.webmanifest, icons/  # home-screen install (app icon is Mof)
+├── plan.md                     # V1 plan, contracts and decisions (the park)
+├── plan-<world>.md             # one build plan per later world
+├── plan-judge-fixes.md         # scope of the 2026-10-04 skeptic-judge fixes
+└── <world>-proposals.md        # open content questions per world: what was applied, what's deferred
 ```
 
-Axis keys: `O/R` = Outcomes/Rules, `C/I` = Collective/Individual, `H/T` = Heart/Thought, `L/P` = Loyalty/Principle, `S/D` = System/Disruption. Nudges use the axis key with sign: `O+2` pushes toward Outcomes, `O-2` pushes toward Rules.
+Elsewhere:
+- `docs/question-bank-wip/judge-*.md`: the judge verdicts behind each content pass.
+- `prototypes/trolley-walk.html`: the original park prototype the engine was forked from (history; the game is now the reference).
+- `scripts/illustrations/`, `docs/ILLUSTRATION-GENERATION.md`: the image-generation pipeline, **on hold** (scenes are drawn in code).
 
-### `src/data/depthGraph.js`
-
-The depth question graph. A network of nodes tagged with which axes they probe and which tensions they surface. Not a linear sequence — the engine selects the next node based on axis confidence.
-
-**Node schema:**
-```js
-{
-  id: 'D1',
-  title: 'The Promise About the Home',
-  illustration: 'depth/D1.jpg',
-  setup: '...',
-  assumptions: ['...'],                   // required scenario constraints
-  question: '...',
-  phase: 'depth',
-  probesAxes: ['L', 'H'],                  // primary axes this question moves
-  probeTension: 'loyalty_vs_consistency',  // named tension being probed
-  isClarifying: false,                     // true = surfaced by inconsistency detection
-  answers: [
-    {
-      id: 'D1-A',
-      text: '...',
-      nudges: { L: -2, H: +1 }
-    }
-  ],
-  followUp: null | { /* same shape as core follow-up */ },
-  weight: 1.0,
-}
-```
-
-### ~~`src/data/archetypes.js`~~
-
-**This file does not exist in the Tern model.** There are no named foundation archetypes. The result is the five-letter code plus the distinction report (summary, radar, axis breakdown, paragraph). Do not introduce an archetypes file.
+**Script load order** (in `index.html`): `content.js`, then each `content-<world>.js` in world order (each appends to `window.TERN_CONTENT`), then `portrait.js`, then `scenes.js` and each `scenes-<world>.js`.
 
 ---
 
-## Engine Layer
+## Data shapes (the instrument)
 
-### `src/engine/scoring.js`
+All content hangs off `window.TERN_CONTENT`. Axis ids are signed pairs: `OR` (+ toward Outcomes, − toward Rules), `CI` (Collective / Individual), `HT` (Heart / Thought), `LP` (Loyalty / Principle), `SD` (System / Disruption).
 
-Runs in both phases. Accepts answer history and returns axis scores, the code, confidence levels, and distinction outputs.
-
-**Phase 1 output:**
+### Axes
 ```js
-scoringEngine(answers, 'core') → {
-  axisScores: { O: 7.2, C: 3.1, H: 8.4, L: 5.0, S: 6.3 },
-  axisConfidence: { O: 0.9, C: 0.6, H: 0.85, L: 0.7, S: 0.65 },
-  code: 'OCHLS',                          // one letter per axis
-  isConverged: false,
-  specialPatterns: { conflictAvoidant: false },
-}
+{ id: 'OR', pos: 'O', neg: 'R', posLabel: 'Outcomes', negLabel: 'Rules',
+  posDetail: `You judge a choice by what it leads to.`,           // shown in "Read more about you"
+  negDetail: `Some things you won't do, even for a better result.` }
 ```
 
-**Phase 2 output:**
+### Questions
 ```js
-scoringEngine(answers, 'depth') → {
-  axisScores: { O: 7.4, C: 2.9, H: 8.6, L: 4.8, S: 6.5 },
-  axisConfidence: { O: 0.95, C: 0.85, H: 0.92, L: 0.88, S: 0.9 },
-  code: 'OCHLS',                          // unchanged from Phase 1
-  isDistinctionReady: true,
-  distinction: {
-    radarData: [ /* per-axis score for chart */ ],
-    paragraph: '...',                     // generated from scores + depth path
-    tensionsFound: ['L-near-midpoint', 'H-O-correlation'],
-    conflictAvoidant: false,
+{
+  id: 'B56', world: 'hood', title: `The Quiet Loan`, scene: 'loan', weight: 'light',  // weight: light | medium | heavy (emotional load, for placement)
+  steps: {
+    trunk: { setup: `…`, q: `…`, answers: [
+      { id: 'B56-A', text: `Ask them for it directly.`,
+        nudges: { LP: -2, CI: -1 },                 // signed pushes on the axes
+        note: `…`,                                  // shown after answering: what this choice suggests
+        did: `You'd ask a friend directly to repay…` },  // one plain sentence, used in "Read more about you"
+    ] },
+    fuA: { weight: 1.5, setup: `…`, q: `…`, answers: [ … ] },
   },
+  next(step, picks) { /* returns the next step key, or null when the question is done */ },
 }
 ```
 
-### `src/engine/branching.js`
+- `world` is the world id (`park` is the default when it's missing).
+- **Step keys:** `trunk`, then follow-ups. A single follow-up is `fu`. When follow-ups depend on the trunk answer, the key follows the trunk answer: `fuA` after answer A, `fuB` after B, `fuC` after C. (Q1, the oldest question, is an exception: its `fuA` follows any trunk answer and its `fuB` is a second-level follow-up after a specific pair of picks. `next()` is always the source of truth.)
+- **Step weight:** the trunk counts 1. A follow-up counts 1.5 by default, or its own `weight` (for example 2 for a high-stakes follow-up).
+- **Answer ids:** `<QID>-<letter>` for the trunk (`B56-A`), `<QID>-FU-<letter>` for `fu`, `<QID>-FUA-<letter>` for `fuA`, and so on.
+- **Replaced follow-ups get a "2":** when a follow-up's situation is replaced, it keeps its key but its answers get new ids with a "2" (`Q11-FUA2-A`). An old save then never shows a note for a question the player wasn't asked.
+- **Renamed keys:** when a single `fu` becomes `fuA`/`fuB`, its answer ids change too. Old saves lose only that one pick.
+- Every answer must have `nudges`, `note` and `did`. `did` names its subject in full, so it reads correctly in a list away from its question.
 
-Handles question sequencing for both phases.
-
-**Core phase:**
+### Tendencies (the statement library)
 ```js
-getNextCore(currentQuestion, answerId, allCoreQuestions) → Question | null
-// check follow-up trigger → advance → null when core set complete
+{ id: 'keeps-word', text: `You keep your word.`,       // the portrait line, second person
+  share: `I keep my word.`,                            // optional: the first-person line a player may send; no share = never sent
+  detail: `A promise still counts when breaking it would be easier or kinder.`,
+  support: ['B37-B', 'B02-FU-A', …], against: ['B37-A', …],   // answer ids
+  min: 2, priority: 1,                                 // lower priority wins ties
+  protect: ['promises'], trade: ['your own comfort'] } // read after "You protect:" and "You'll trade away:"
 ```
+A later world adds evidence to an existing tendency through its `more` map (extra `support`/`against` ids), and pushes its own new tendencies.
 
-**Depth phase:**
+### Tensions
 ```js
-getNextDepth(axisConfidence, code, answeredIds, depthGraph, pendingClarifying) → Question | null
-// surface pending clarifying question first if queued
-// otherwise find lowest-confidence axis → find unasked candidate → null when depth complete
+{ when: ['Q1-A', 'Q1-FUA-B'], text: `You'd sacrifice one stranger to save five, but not someone you love. …` }
 ```
+A tension shows when every id in `when` was picked.
 
-**Inconsistency detection:**
+### Worlds
 ```js
-detectInconsistency(recentAnswers, depthGraph) → Question | null
-// returns a clarifying depth node if meaningful inconsistency detected, else null
+worlds: [
+  { id: 'park', name: `The Park` },
+  { id: 'hood', name: `The Neighborhood`, chapter: `With the people closest to you`,
+    closeTo: `with the people closest to you`,   // used in "Close to home, you lean more toward…"
+    opens: 'all',                                // 'all' of the previous world, or 'most' (two-thirds, rounded up)
+    ladder: [ { at: 3, key: 'shift', name: `How you change close to home` },
+              { at: 6, key: 'tend',  name: `What you do close to home` },
+              { at: 10, key: 'chapter', name: `Your Neighborhood chapter` } ] },
+  …
+]
 ```
+Optional flags: `soon: true` (declared but not built: shown as an "opening soon" sketch), `last: true` (the final world).
+
+| World | id | Opens at | Ladder |
+|---|---|---|---|
+| The Park | `park` | start | the park ladder (below) |
+| The Neighborhood | `hood` | all 12 park answers | 3 / 6 / 10 |
+| The City | `city` | 10 Neighborhood answers | 4 / 8 / 13 |
+| The Coast | `coast` | 13 City answers | 3 / 6 / 8 |
+| The Observatory | `observatory` | 8 Coast answers | 4 / 8 / 12 |
+
+### Other content
+- `shareCopy`: every sentence of the share message and card (`intro`, `introSoFar`, `code`, `cardKicker`…). The friend has seen none of the questions, so it says what Tern is.
+- `codeLine`: the one-line explanation shown under the code.
 
 ---
 
-## State Layer
+## The portrait computation (`game/portrait.js`)
 
-### `src/hooks/useAssessment.js`
+`TernPortrait.compute(content, answers, { opened })` takes the answers so far and returns everything the panel shows. It is pure and deterministic, so it can be checked in node.
 
-All assessment state lives here. Components are thin — they call this hook.
+**Input:** `answers` is `{ [questionId]: { picks: { trunk: 'Q1-A', fuA: 'Q1-FUA-B' }, order: n } }`. `opened` is the list of world ids that have opened before.
 
-**State:**
+**What it computes:**
+
+| Output | How |
+|---|---|
+| `axes` (the compass) | For each pair: the sum of weighted nudges over every answered question in every world. `lean` (−1 to 1) is that score divided by the most signal those questions could carry. `confidence` is the share of possible signal answered so far. An axis is `known` once 2 questions touch it. Each axis lists the answers that pulled `toward` your side and `away` from it. |
+| `code`, `codeAxes` | The same scoring over **the first world's questions only** (the park). One letter per axis: the positive letter if the score is ≥ 0. Later worlds can never change it. |
+| `tendencies` | A tendency shows when (supporting answers picked − against answers picked) ≥ `min` (2), from at least 2 different questions. Sorted by strength, then `priority`. Each carries `evidence` and `counter` (the answers behind it, as plain `did` facts). |
+| `headline`, `description` | The strongest tendency; the next two joined. |
+| `protect`, `trade` | Up to 4 each, collected from the tendencies shown. |
+| `tensions` | Every tension whose `when` ids are all picked. |
+| `notes` | Each answered question's notes, in answer order. |
+| `calling` | The open stop that would most sharpen the least-certain axis, among worlds that are open. Only after the first answer. |
+| `count`, `complete` | Park answers counted; `complete` once all 12 park questions are answered. |
+| `unlocked`, `has(key)`, `next` | Which ladder steps are reached, and the next one as filled/empty dots. |
+| `worlds` | Per world: `open`, `ready`, `answered`, `total`, its `unlocked` steps, and its chapter: `shift` (the pair where this world's answers lean most differently from all your other answers, if the gap is ≥ 0.3), `tendencies` backed by 2+ answers from this world, and its `headline`. |
+
+**The park ladder** (`LADDER` in `portrait.js`): 1 notes · 2 compass · 4 headline · 6 protect · 8 tension · 10 all bars · 12 code. It counts park answers only.
+
+**Opening worlds:** a world opens when the previous world is open and has enough answers (`opens: 'all'` or two-thirds), or when its id is in `opened`. The engine records an opened world in the save as `world:<id>` in `seen`, so a world **stays open forever**: "Answer again" on a park stop never re-fogs the Neighborhood.
+
+---
+
+## The game engine (`game/index.html`)
+
+One self-contained page: CSS, markup and a single script.
+
+### The map
+- **Isometric projection.** The world is a flat grid in map units; `iso()` turns map units into screen pixels at a fixed tile size, and `toScreen()` / `toWorld()` convert with the camera. Everything is drawn at fixed pixel sizes.
+- **One continuous map.** The park sits at the west. Each later world is a region further east (the Observatory is south of the Coast). Streets carry on from one world into the next, joined at exactly the same end points.
+- **Regions.** `REGIONS` lists every world past the park, in opening order, with its bounds, fog label, "how to open" hint and, optionally:
+  - `walk`: its own rectangle you can walk in (for a world off the east strip, like the Observatory);
+  - `fogArea`: the rectangle its fog covers, and which edge it fades from;
+  - `soonAt`: where the next unbuilt world's "opening soon" sketch stands.
+- **Fog.** Each region has a fog level that eases slowly from 1 to 0 when it opens. Stops in a world wake (`isOpen`) once its fog is half gone.
+- **Where you can walk.** `walkAreas()` is the park plus every open world's strip (up to `eastLimit()`), plus any open region's `walk` rectangle. `clampPt()` keeps every target inside them.
+- **Separate random sequences per world.** Scenery placement uses a seeded random number generator, one per world (`rnd` for the park, `hr` for the Neighborhood, `cr`, `kr`, `orr` for the others). Adding a world never shifts an earlier world's trees or houses. To clear space in an earlier world, filter its scenery afterwards; never change its seed or its street control points.
+- **Stops.** `PLACES` gives each question a map position, a prop `kind`, and optionally where you stand (`stand`) and where its flag goes (`flag`). Walking onto a stop opens its card.
+
+### Solid buildings and routing
+- `FOOT` gives every building-type prop a footprint (width, depth, optional y offset). Houses in the Neighborhood have footprints too. You can't walk into any of them.
+- A stop's `stand` point must sit outside its footprint.
+- **Taps route around buildings** (`walkTo`): a straight line if it's clear, otherwise an A* search (a standard shortest-path search) on a half-unit grid, smoothed down to the corners you can't see past. Cells outside the open areas count as walls.
+- **Arrow keys slide along walls** rather than stopping dead.
+
+### The look-over
+When a world opens, `lookOver(region)` runs once, after any reveal screens:
+1. The map fades to paper.
+2. It comes back framed on the new world's entrance (`LOOKS[id].at`), zoomed out enough to show a landmark the player already knows.
+3. The fog lifts while that world's "?" bubbles rise one by one, west to east.
+4. One line of plain directions shows (`LOOKS[id].line`, for example "The Neighborhood is open, past the cabin and through the gate.").
+5. After about 4 seconds, the view fades back to the player. A tap or key skips it.
+
+Until the player answers a stop in that world, the panel's bottom line reads "<World> is open · Show me", which replays the look-over. It never walks the character there.
+
+### Zoom
+- Pinch on a phone, pinch or scroll on a trackpad, `+` and `-` on a keyboard. Range 0.6× to 1.8×, always centred on the player, eased (no snapping), saved with the game.
+- Zoom is a canvas scale (`Z`), not a change of tile size. `W` and `H` are the view size in map pixels (screen size ÷ `Z`).
+- **Gotcha:** anything comparing screen pixels (pointer `clientX/Y`, the card's camera shift, the desktop panel width) must be divided by `Z` or use `innerWidth`/`innerHeight`. Pointer coordinates go into `toWorld` / `nodeAtScreen` divided by `Z`.
+- A second finger cancels the first finger's walk.
+
+### The question card and scenes
+- **Scene packs.** `scenes.js` defines `window.TERN_SCENES(h)`; each later world pushes a function onto `window.TERN_SCENE_PACKS`. The engine calls each with the same helper kit `h` (scene state, easing, ink colours, drawing helpers such as `drawPerson`, `indoor`, `bubble`) and merges the returned scenes by id. A question's `scene` field picks its scene.
+- **Scene contract.** Each scene is an object drawn on a 400 × 250 canvas:
+  - `base(variant)`: set the starting state for a step (the variant is the step key: `trunk`, `fu`, `fuA`…);
+  - `shift(variant)`: animate into a follow-up's situation;
+  - `acts`: a map from answer id to target values, or `act(answer)`: the small action an answer plays (the lever moves, the door opens);
+  - `draw(g, t)`, and optionally `update(dt)`.
+  Scene values ease toward targets (`sset` sets, `sto` eases). Harm is never drawn: the scene fades before impact.
+- **Answer flow** (`choose`): the chosen answer marks (250 ms) → the words hide → the scene plays the answer → the scene fades to paper → the next step's scene is set up and fades in → `shift` → a 0.9 s hold → the words appear. The new text is laid out while hidden and the card glides to its new height. Aim for about 3.5 s from answer to follow-up.
+- **Opening a card:** the scene arrives first; the words follow after 1 s.
+- **Answers need a confirm:** tap an answer, then "Confirm". A misclick costs nothing.
+- **Done stops:** tapping one opens a review (your answers and their notes) with "Answer again", which clears that one answer and asks the question fresh. Unlocks already seen stay seen.
+
+### The portrait panel, reveals and share
+- `renderPortrait()` calls `TernPortrait.compute` and rebuilds the panel. Changed sections dissolve out and resolve back in.
+- `afterAnswer()` runs 0.7 s after the card closes: it finds newly reached unlocks, marks them in `seen`, re-renders, then plays any arrival screens (summary at 4, code at 12, each chapter) and then any look-over.
+- Share builds the message from `shareCopy` and draws a 1080 × 1350 card image on a canvas. It uses the Web Share API when available, with copy-message and save-picture fallbacks.
+- Details of each screen: `docs/DESIGN.md`.
+
+### Performance
+While the question card covers a phone screen, the map behind it redraws at half rate.
+
+---
+
+## Save format
+
+Saved on the device only, in `localStorage` (the browser's per-site storage). Every read and write is wrapped so a private window still plays, just unsaved.
+
+| Key | Contents |
+|---|---|
+| `tern.v1` | The game state (below) |
+| `tern.panelMin` | `'1'` if the desktop portrait panel is minimized |
+
 ```js
 {
-  // Phase management
-  phase: 'core' | 'convergence-offer' | 'code-reveal' | 'depth' | 'distinction-reveal' | 'exploration' | 'share',
-
-  // Current question
-  currentQuestion: Question | null,
-
-  // Full answer history across both phases
-  answerHistory: AnswerRecord[],          // { questionId, answerId, nudges, weight, phase }
-
-  // Scoring outputs — updated after every answer
-  axisScores: AxisScores | null,          // { O, C, H, L, S } normalized 0–10
-  axisConfidence: AxisConfidence | null,  // { O, C, H, L, S } 0–1
-  code: string | null,                   // e.g. 'OCHLS' — set when phase 1 converges
-
-  // Phase 2 result
-  distinction: {
-    radarData: RadarPoint[],
-    paragraph: string,
-    tensionsFound: string[],
-  } | null,
-
-  // Special patterns
-  specialPatterns: { conflictAvoidant: boolean },
-
-  // Inconsistency
-  pendingClarifyingQuestion: Question | null,
-
-  // Progress
-  coreProgress: number,                  // 0–1, core set question completion
-  depthProgress: number,                 // 0–1, axis confidence across all axes
+  started: true,
+  char: 0,                                   // index into CHARACTERS
+  answers: { Q1: { picks: { trunk: 'Q1-A', fuA: 'Q1-FUA-B' }, order: 1 }, … },
+  headline: 'You keep your word.',           // the last summary shown, to detect "Your summary changed."
+  seen: ['notes', 'compass', 'headline', …, 'hood:shift', 'world:hood'],  // unlocks already revealed, and worlds opened
+  pos: { x: 20, y: 27 },                     // where the player stood
+  zoom: 1,
 }
 ```
 
-**Actions:**
-- `submitAnswer(answerId)` — records answer, recomputes scores, advances question or phase
-- `acceptCodeOffer()` — user accepts early convergence offer, transitions to code-reveal
-- `continueToDepth()` — user declines early offer or completes core set, transitions to depth
-- `continueExploring()` — user continues after distinction reveal, transitions to exploration
-- `returnToResults()` — user returns from exploration to distinction-reveal with updated scores
-- `restart()` — resets all state
-- `goToShare()` — transitions to share phase
-
-**Phase transitions:**
-```
-core → (convergence detected) → convergence-offer → (accept) → code-reveal
-core → (convergence detected) → convergence-offer → (keep going) → core (continues)
-core → (all questions answered, no convergence) → code-reveal
-code-reveal → (go deeper) → depth
-depth → (distinction ready) → distinction-reveal
-distinction-reveal → (keep exploring) → exploration
-exploration → (user returns or no questions remain) → distinction-reveal (updated)
-distinction-reveal → (share) → share
-any → (restart) → core (fresh)
-```
+- Saved after every answer and on page hide.
+- On load, answers to questions that no longer exist are dropped. Picks with unknown answer ids are skipped by the portrait.
+- "Start over" clears `tern.v1` and reloads.
 
 ---
 
-## UI Layer
+## Testing
 
-### `App.jsx`
+There is no automated test suite in the repo. The practice that has worked:
 
-Renders one screen based on `phase`. No routing.
+**Node checks** (load all five content files and `portrait.js` in node):
+- every step reachable through `next()`; every answer has `nudges`, `note`, `did`; ids unique;
+- every id referenced by tendencies, `more`, tensions and `next()` exists;
+- thousands of random answer runs through `compute()` with no errors;
+- the code never changes when only non-park answers change;
+- no em dashes in copy.
 
-```jsx
-if (['core', 'depth', 'exploration'].includes(phase)) return <QuestionCard />
-if (phase === 'convergence-offer') return <ConvergenceOffer />
-if (phase === 'code-reveal') return <CodeReveal />
-if (phase === 'distinction-reveal') return <DistinctionReveal />
-if (phase === 'share') return <ShareCard />
-```
+**Headless Chrome over the DevTools protocol** (Chrome with no window, driven by a script):
+- with touch input and 4× CPU slowdown, it measures phone feel reliably (the browser pane can't: it pauses animations while hidden);
+- play every stop to the end at phone width and check the console;
+- run random walks across all worlds and check none enters a building or leaves the map;
+- **disable the cache** (`Network.setCacheDisabled`): the local server lets Chrome cache scripts, so a reused profile can test stale code.
 
-### Components
+**Save isolation:** two tabs on `localhost:8123` share one save, and the page saves on unload, so parallel testers overwrite each other. Use `127.0.0.1:8123` for a separate save.
 
-| Component | Role |
+**Dev hooks** (`window.__tern` in the browser console):
+
+| Hook | Does |
 |---|---|
-| `QuestionCard.jsx` | Full-bleed illustration + setup + question + answers + progress. All question phases. |
-| `AnswerButton.jsx` | Single answer option, manages visual selected state |
-| `ProgressBar.jsx` | Fixed bottom bar, no labels. Core: question progress. Depth: axis confidence. |
-| `ConvergenceOffer.jsx` | Mid-assessment invitation screen — *"We have a pretty clear picture of you."* |
-| `CodeReveal.jsx` | Five-letter code reveal — the primary result screen. |
-| `DistinctionReveal.jsx` | Code + one-line summary + radar chart + axis breakdown + distinction paragraph. |
-| `RadarChart.jsx` | Recharts spider chart, five axes, accent color fill |
-| `ShareCard.jsx` | Off-screen rendered PNG via html-to-image. Code only, or code + chart + paragraph excerpt if distinction is available. |
+| `__tern.go(x, y)` | Teleport the player |
+| `__tern.walk(x, y)` | Walk there using the router |
+| `__tern.where()` | Player position, route, and whether it's inside a wall |
+| `__tern.open('B09')` | Open a stop's card |
+| `__tern.review('B09')` | Open a done stop's review |
+| `__tern.state` | The live save state |
+| `__tern.card(answers, lines)` | Draw a share card for a given set of answers |
+| `__tern.icon(size)` | Draw Mof as an app icon |
+| `__tern.wipe()` | Clear the save and reload |
 
 ---
 
-## Animation Critical Path
+## How to add a world
 
-```
-User taps answer
-  → AnswerButton selected state (180ms)
-  → 300ms pause
-  → Illustration fades out (400ms)
-  → New illustration fades in (800ms)
-  → Question text cross-fades (500ms, offset 300ms into illustration fade)
-  → Answer buttons stagger in (100ms apart, from 900ms total)
-```
+From `AGENTS.md` (2026-10 entries):
 
-Phase transitions (convergence offer, code reveal, distinction reveal) use a longer, more deliberate fade — 600ms out, 1000ms in, staggered text elements. These are arrival moments, not navigation events. Full animation spec: `docs/DESIGN.md` section 8.
+1. **Content:** `game/content-<world>.js` appends questions with `world: '<id>'`, new tendencies, extra evidence for existing tendencies (`more`), and tensions. Every answer has `nudges`, `note`, `did`; every new tendency has `detail` and a `share` line (or a deliberate decision to leave it out).
+2. **Scenes:** `game/scenes-<world>.js` pushes a pack onto `window.TERN_SCENE_PACKS`, one scene per question, covering every step and answer.
+3. **World entry** in `content.worlds`: `name`, `chapter`, `closeTo`, `opens`, `ladder`.
+4. **Region** in `REGIONS`: bounds, fog label, hint; `walk` and `fogArea` if it sits off the east strip; `soonAt` for the next world's sketch.
+5. **Streets** joined to the previous world's at exactly the same end points.
+6. **Its own random sequence** for scenery. Never change an earlier world's street control points or seed; filter afterwards instead.
+7. **`PLACES`** for every stop, and a **`FOOT`** footprint for every building-type stop, with `stand` outside it.
+8. **`LOOKS`** entry: the point to frame and one line of directions from a landmark the player already knows.
+9. Add the `<script>` tags to `index.html`.
+10. Constants that scenery generation reads (like `shoreX`) must be defined above the generation code, or the page fails to load.
+11. Verify: node checks, every stop played in headless Chrome, random walks, earlier worlds' layouts unchanged, the code unchanged.
 
----
+## Adding a domain
 
-## Illustration Loading
-
-> **[SUPERSEDED 2026-09]** Scenes are drawn in code inside the question card (`docs/DESIGN.md` §0). There are no illustration files to load or generate. Kept for history until the architecture is rewritten after Ken approves `docs/PLAN-progression.md`.
-
-Core illustrations preloaded on init. Depth illustrations preloaded after code is determined — we then know which depth nodes are candidates.
-
-```js
-// On init — core set
-coreQuestions.forEach(q => {
-  new Image().src = `/illustrations/${q.illustration}`
-  if (q.followUp) new Image().src = `/illustrations/${q.followUp.illustration}`
-})
-
-// After code determined — depth graph candidates
-const candidates = depthGraph.filter(q =>
-  q.probesAxes.some(axis => axisConfidence[axis] < 0.75)
-)
-candidates.forEach(q => {
-  new Image().src = `/illustrations/${q.illustration}`
-})
-```
+A new domain is new content: its own axes, questions, tendency library, tensions, worlds and share copy, in the same shapes. `portrait.js` doesn't change. The engine's map and places are Ethics-specific today.
 
 ---
 
-## Illustration Generation (Agentic Build)
+## History
 
-> **[SUPERSEDED 2026-09]** Scenes are drawn in code inside the question card (`docs/DESIGN.md` §0). There are no illustration files to load or generate. Kept for history until the architecture is rewritten after Ken approves `docs/PLAN-progression.md`.
-
-Illustrations can be generated at build time via the **Gemini API (Imagen)** so the pipeline stays fully agentic: no manual art step required.
-
-- **Manifest:** `scripts/illustrations/manifest.json` — lists every core (and optionally depth) illustration with a scene description. Prompts are built from the DESIGN.md style (editorial, ink sketch, sepia) + scene.
-- **Script:** `scripts/illustrations/generate.js` — calls the Gemini Imagen API per entry, decodes base64 response, writes to `public/illustrations/` and `public/illustrations/depth/`.
-- **Build integration:** Run `node scripts/illustrations/generate.js` when `GEMINI_API_KEY` is set — either as a dedicated step (`npm run generate:illustrations`) or before the app build. The app build then uses whatever is in `public/illustrations/`.
-
-See `docs/ILLUSTRATION-GENERATION.md` for manifest format, flags (`--dry-run`, `--core-only`), and agent responsibilities.
-
----
-
-## PWA Configuration
-
-Handled by `vite-plugin-pwa` in `vite.config.js`.
-
-- Display: `standalone`
-- Theme color: `#1C1C1E`
-- Cache strategy: `CacheFirst` for illustrations, `NetworkFirst` for app shell
-- Offline: fully functional after first load
-
----
-
-## Adding a New Domain
-
-1. Create `src/data/{domain}-questions.js` — core question set, same schema, new axis keys
-2. Create `src/data/{domain}-depthGraph.js` — depth graph nodes, same schema
-3. Add domain config to `useAssessment` initialization — axis definitions, letter assignments
-4. Add illustrations to `/public/illustrations/{domain}/`
-
-No engine changes needed. The scoring and branching engines are domain-agnostic by design.
-
----
-
-## Exploration Mode
-
-After the distinction is revealed, users can tap "Keep exploring" to enter exploration mode. This phase lets users continue answering questions they haven't seen — the depth graph keeps routing by lowest-confidence axis.
-
-### Behavior
-
-- **Question rendering:** identical to depth phase. No visual announcement. `App.jsx` renders `<QuestionCard />`.
-- **Scoring:** `submitAnswer()` continues to record answers and recompute axis scores.
-- **Live radar update:** after each answer, `axisScores` are updated. The radar chart is not visible during question flow — the user sees it when they return to results.
-- **Distinction regeneration:** the distinction paragraph and one-line summary are regenerated after every answer in exploration mode, using the updated scores and expanded answer history. The user sees the updated distinction when they return to results.
-- **Code is locked:** the five-letter code never changes after Phase 1. Exploration refines magnitude, not category.
-
-### Navigation
-
-- **Return to results:** a persistent quiet text link ("See your results") appears below the progress bar during exploration. Tapping it transitions to `distinction-reveal` with updated radar + paragraph.
-- **Share:** available from the updated distinction reveal screen.
-- **Restart:** available from the updated distinction reveal screen.
-
-### Exit Conditions
-
-- **Exhaustion:** when no unasked depth-graph candidates remain (`getNextDepth` returns `null`), the system automatically transitions back to `distinction-reveal` with a quiet message: *"You've explored everything we have."*
-- **User choice:** user taps "See your results" at any time.
-- **No timeout or question limit.** The experience ends when the content does or the user decides.
-
-### State Transition
-
-```
-distinction-reveal → (user taps "Keep exploring") → exploration
-exploration → (user taps "See your results" OR no questions remain) → distinction-reveal (updated)
-```
-
----
-
-## Known V1 Constraints
-
-- No persistence — resets on reload, intentional
-- No accounts — V2 feature
-- Scenes are drawn in code, in the ink-on-paper style (`docs/DESIGN.md` §0); no image assets. (The old Gemini pipeline in `docs/ILLUSTRATION-GENERATION.md` is on hold.)
-- Share card (html-to-image) has inconsistent behavior on iOS Safari — test carefully
-- Distinction paragraph generation in V1 is rule-based (pattern matching on axis scores + depth path). V2 may use a language model for more naturalistic output.
-- The depth graph in V1 is small (10–15 nodes). V2 question pipeline will grow it significantly.
+Until 2026-10 this doc described a planned React + Vite progressive web app with `src/data/questions.js`, `src/data/depthGraph.js`, a scoring engine with a "convergence" check, a two-phase state machine (core set, convergence offer, code reveal, depth graph, distinction reveal, exploration, share), Recharts for the radar chart, html-to-image for the share card, image preloading, and a Gemini/Imagen illustration pipeline. None of it was built. Ken's progression model (`docs/PLAN-progression.md`) replaced the design, and the game was built as static files instead. Don't reintroduce those pieces without Ken's ruling.

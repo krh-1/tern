@@ -1,5 +1,7 @@
 # Build Readiness — Tern V1
 
+> **Superseded (2026-10-05): history only.** This checklist tracked readiness to build. The game has since been built and Ken has ratified all five worlds (75 questions): it lives in `game/` (`game/plan.md` and the per-world plans list the build decisions). Current sources: `docs/PLAN-progression.md` for the model, `docs/QUESTIONS.md` (generated from `game/content*.js`) for the questions, `docs/SCORING.md` for scoring, and AGENTS.md for every ruling since. Open content items live in `game/*-proposals.md`. The body below is unchanged, so its unchecked boxes are not a to-do list.
+
 > **Status (2026-09-27): RE-PLANNING — not ready to build.** The experience model changed from "test, then result" to a map with a growing portrait and unlockable worlds (`docs/PLAN-progression.md`). The spec docs describe the old model until Phase 1 of the roadmap (`docs/VISION.md` → Roadmap) is done. The checklist directly below is the current gate. The older items further down were completed against the old model and are kept for history.
 
 ## Current Gate — Phase 1: Decide and Design

@@ -2,8 +2,8 @@
   "name": "tern",
   "private": true,
   "version": "0.0.0",
-  "description": "Values and decision-style assessment framework. Pre-bootstrap — see docs/WORKFLOW.md for setup.",
+  "description": "Tern: a calm ink-on-paper game of hard moral choices. Static files in game/; run with python3 -m http.server 8123 --directory game.",
   "scripts": {
-    "generate:illustrations": "node scripts/illustrations/generate.js"
+    "export:questions": "node scripts/export-questions.mjs"
   }
 }

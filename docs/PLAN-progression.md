@@ -1,6 +1,6 @@
 # Plan — Progression, Map, and the Living Portrait
 
-> **Status:** approved direction; all decisions ruled by Ken on 2026-09-27 (§10). Nothing is built yet. Where this plan conflicts with `docs/ARCHITECTURE.md`, `docs/DESIGN.md`, `docs/QUESTIONS.md` or `docs/SCORING.md`, this plan wins until those docs are rewritten (Roadmap Phase 1).
+> **Status (2026-10-05):** built. All five worlds are live in `game/`, and the spec docs were rewritten to the built game, so they now describe the details; this file stays as the record of the approved direction and Ken's rulings (§10). Not built from this plan: clarifying stops (✦), the portrait paragraph at 12, compare with a friend, share a single question, the magic-link save. See `docs/NEXT-STEPS.md`.
 
 ---
 

@@ -1,5 +1,7 @@
 # Plan — Tern V1, first playable (the Park)
 
+> **Status (2026-10-05): done, history.** The park shipped and four more worlds followed (`plan-neighborhood.md`, `plan-city.md`, `plan-coast.md`, `plan-observatory.md`, `plan-judge-fixes.md`). The current build is described in `docs/ARCHITECTURE.md`; open work is in `docs/NEXT-STEPS.md`.
+
 Goal (Ken, 2026-09-27): the first playable game, built from `docs/PLAN-progression.md` (approved) and the park prototype.
 
 ## What "playable" means here

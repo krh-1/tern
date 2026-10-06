@@ -1,15 +1,13 @@
 ---
-description: Tern — engine is domain-agnostic
-globs: src/engine/**/*.js
+description: Tern — the engine, portrait logic and scene packs
+globs: game/index.html, game/portrait.js, game/scenes*.js
 alwaysApply: false
 ---
 
-# Tern: Engine Layer
+# Tern: Engine
 
-**Domain-agnostic:** `scoring.js` and `branching.js` must not know which domain is active. No hardcoded axis names, letter sets, or domain-specific logic. Domain config (axes, normalization ranges, letter assignment) is supplied by the caller or data layer.
-
-**scoring.js:** Accepts answer history and phase; returns axis scores, code, confidence, and (in phase 2) distinction outputs. Letter = high pole if normalized score ≥ 5.0, else low pole.
-
-**branching.js:** Core sequencing and depth-graph routing. `getNextCore`, `getNextDepth`, `detectInconsistency`. Clarifying questions are queued, not re-asking; surface with "Something came up that we want to explore."
-
-**Conflict avoidance:** Detect via Q5 trunk passive + Q5 follow-up active when permitted; flag in specialPatterns and feed distinction. Not an axis.
+- `game/portrait.js` is pure logic that also runs in node; keep scoring there and keep it testable.
+- `game/index.html` holds the map and UI. Worlds past the park are `REGIONS` (bounds, optional `walk` rectangle and `fogArea`), each with its own random sequence for scenery. Never change an earlier world's street control points or random sequence; filter afterwards so its layout never shifts.
+- Every building has a footprint (`FOOT` or the houses/towers lists); the player routes around them (`walkTo`). Stands sit outside footprints.
+- A new world needs: `content-<world>.js`, `scenes-<world>.js`, an entry in `content.worlds` (chapter, closeTo, ladder), a region, `PLACES` + `FOOT`, a `LOOKS` framing, and streets joined to the previous world's at exactly the same end points.
+- Test with node checks and a headless Chrome over DevTools (cache disabled; test on `127.0.0.1:8123` to keep a separate save). The browser pane pauses animation while hidden.

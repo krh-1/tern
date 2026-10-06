@@ -627,7 +627,20 @@ window.TERN_CONTENT = {
         { at: 8, key: 'tend', name: `What you do at work and under the law` },
         { at: 13, key: 'chapter', name: `Your City chapter` },
       ] },
-    { id: 'coast', name: `The Coast`, soon: true, opens: 'most' },
+    { id: 'coast', name: `The Coast`, chapter: `For strangers and people not yet born`, closeTo: `when strangers are counting on you`,
+      opens: 'most',
+      ladder: [
+        { at: 3, key: 'shift', name: `How you change when strangers count on you` },
+        { at: 6, key: 'tend', name: `What you do when strangers count on you` },
+        { at: 8, key: 'chapter', name: `Your Coast chapter` },
+      ] },
+    { id: 'observatory', name: `The Observatory`, chapter: `Who you are underneath`, closeTo: `when the question is about you`,
+      opens: 'most', last: true,
+      ladder: [
+        { at: 4, key: 'shift', name: `How you change when the question is about you` },
+        { at: 8, key: 'tend', name: `What you do when the question is about you` },
+        { at: 12, key: 'chapter', name: `Your Observatory chapter` },
+      ] },
   ],
 
   // What a player sends a friend (index.html → share). The friend has seen none of the questions, so say what Tern is.

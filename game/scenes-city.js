@@ -107,14 +107,6 @@
     g.beginPath(); g.rect(x1, y, x2 - x1, 6); g.fill(); g.stroke();
     line(g, x1 + 6, y + 6, x1 + 6, floor || 210); line(g, x2 - 6, y + 6, x2 - 6, floor || 210);
   }
-  function tree(g, x, y, s, t, ph) { // a round street tree; only its crown sways, and only a little
-    const sw = reduce ? 0 : Math.sin(t * 0.7 + (ph || 0)) * 1.1 * s;
-    g.strokeStyle = INK; g.lineWidth = 1.6; g.lineCap = 'round';
-    line(g, x, y, x, y - 28 * s); line(g, x, y - 18 * s, x + 6 * s, y - 24 * s);
-    const C = [[0, -42, 13], [-10, -34, 10], [10, -35, 10], [-4, -51, 9], [7, -49, 8]];
-    g.fillStyle = INK; for (const [cx, cy, r] of C) { ellipse(g, x + cx * s + sw, y + cy * s, (r + 1.4) * s, (r + 1.4) * s); g.fill(); }
-    g.fillStyle = PAPER; for (const [cx, cy, r] of C) { ellipse(g, x + cx * s + sw, y + cy * s, r * s, r * s); g.fill(); }
-  }
   function moon(g, x, y, r, a) {
     if (a <= 0.01) return;
     g.save(); g.globalAlpha = Math.min(1, a); g.fillStyle = INK; ellipse(g, x, y, r, r); g.fill();
@@ -218,6 +210,11 @@
     if (o.who) {
       g.save(); g.beginPath(); const p = win[1]; g.moveTo(p[0], p[1]); g.lineTo(p[2], p[3]); g.lineTo(p[4], p[5]); g.lineTo(p[6], p[7]); g.closePath(); g.clip();
       drawPerson(g, 10, -15, { look: o.who, scale: 0.42, t: o.t || 0, dir: 0.5 }); g.restore();
+    }
+    if (o.kids > 0.01) { // two children in the back seat
+      g.save(); g.beginPath(); const p = win[0]; g.moveTo(p[0], p[1]); g.lineTo(p[2], p[3]); g.lineTo(p[4], p[5]); g.lineTo(p[6], p[7]); g.closePath(); g.clip();
+      faded(g, o.kids, c => { drawPerson(c, -13, -19, { scale: 0.3, t: o.t || 0, phase: 421, dir: 0.5 }); drawPerson(c, -5, -19, { scale: 0.27, t: o.t || 0, phase: 422, dir: 0.5 }); });
+      g.restore();
     }
     if (o.belt) { g.save(); g.globalAlpha *= Math.min(1, o.belt); g.strokeStyle = INK; g.lineWidth = 1.4; line(g, 4, -34, lerp(4, 14, o.belt), lerp(-34, -26, o.belt)); g.restore(); }
     g.strokeStyle = GRAPH; g.lineWidth = 1; line(g, -2, -22, -2, -10);
@@ -327,18 +324,17 @@
     selfdrive: {
       base(v) {
         sc.x.v = v;
-        sset({ roll: 0, sw: 0, st: 0, go: 0, spot: 0, belt: 0, walk: 0, yes: 0, other: 0, flip: 0, place: 0 });
-        if (v === 'fuA') sset({ sw: 1 });
+        sset({ roll: 0, sw: 0, st: 0, go: 0, kids: 0, belt: 0, walk: 0, flip: 0, place: 0 });
         if (v === 'fuB') sset({ st: 1 });
         if (v === 'trunk') sto({ roll: 1 }, 0.35); // the car eases up the road while you read, then holds
       },
       shift(v) {
-        if (v === 'fuA') sto({ spot: 1 }, 0.9);
+        if (v === 'fuA') sto({ kids: 1 }, 1.0); // your children walk to the car and get in
         if (v === 'fuB') { sto({ belt: 1 }, 0.9); sto({ walk: 1 }, 0.22); }
       },
       acts: {
         'Q11-A': { sw: 1 }, 'Q11-B': { st: 1 },
-        'Q11-FUA-A': { yes: 1 }, 'Q11-FUA-B': { other: 1 },
+        'Q11-FUA2-A': { place: 1 }, 'Q11-FUA2-B': { flip: 1 },
         'Q11-FUB-A': { flip: 1 }, 'Q11-FUB-B': { place: 1 },
       },
       async act(a) {
@@ -351,23 +347,21 @@
       draw(g, t) {
         const v = sc.x.v, sw = V('sw'), st = V('st');
         if (v === 'fuA') {
-          // a showroom: one car under a spotlight with the swerve rule; another, plain, with the other rule
-          const spot = V('spot'), yes = V('yes'), other = V('other');
-          indoor(g);
-          g.save(); g.globalAlpha = 0.25 + spot * 0.75; g.strokeStyle = HAIR; g.lineWidth = 1;
-          for (let k = -4; k <= 4; k++) line(g, 210 + k * 3, 0, 210 + k * 22, 198);
-          g.strokeStyle = GRAPH; ellipse(g, 210, 202, 96, 9); g.stroke(); g.restore();
-          car(g, 210, 202, { s: 1.15, lights: yes });
-          car(g, 64, 202, { s: 0.9, dash: other < 0.5, a: 0.55 + other * 0.45 });
-          g.strokeStyle = INK; g.lineWidth = 1.4; line(g, 286, 202, 286, 166); line(g, 112, 202, 112, 170);
-          ruleCard(g, 286, 152, 1, 0, 1); ruleCard(g, 112, 156, 0, 1, 0.55 + other * 0.45);
-          // your family
-          const yx = lerp(lerp(334, 254, yes), 140, other), px = lerp(lerp(364, 300, yes), 172, other), kx = lerp(lerp(386, 324, yes), 196, other);
-          const dirTo = other > 0.5 ? -0.8 : yes > 0.5 ? -0.6 : -0.5;
-          drawPerson(g, px, 212, { scale: 0.88, t, phase: 401, dir: dirTo });
-          drawPerson(g, kx, 212, { scale: 0.5, t, phase: 402, dir: dirTo });
-          drawPerson(g, yx, 212, { me: true, scale: 0.9, t, dir: dirTo, lArm: [lerp(-3, -12, Math.max(yes, other)), lerp(5, -2, Math.max(yes, other))] });
-          thread(g, yx + 10, 178, px - 10, 178, 10, 0.7); thread(g, px + 8, 182, kx - 4, 194, 8, 0.7);
+          // your own children get into one of these cars. The swerve rule you set goes with it, or you change it.
+          const kids = V('kids'), flip = V('flip'), place = V('place');
+          skyline(g, 150, 0.9);
+          g.strokeStyle = HAIR; g.lineWidth = 1; line(g, 0, 150, 400, 150);
+          g.strokeStyle = INK; g.lineWidth = 1.4; line(g, 0, 196, 400, 196);
+          g.strokeStyle = GRAPH; g.lineWidth = 1; g.save(); g.setLineDash([10, 10]); line(g, 0, 226, 400, 226); g.restore();
+          car(g, 236, 242, { s: 1.15, t, kids: clamp01((kids - 0.7) / 0.3) });
+          const k = ease(clamp01(kids)), gone = clamp01((kids - 0.7) / 0.3);
+          [[100, 421, 0.5], [122, 422, 0.45]].forEach(([x0, ph, sc2], i) => ghost(g, 1 - gone, lerp(x0, 212 + i * 12, k), lerp(186, 222, k), { scale: sc2, t, phase: ph, dir: kids > 0.02 ? 0.6 : -0.4, moving: kids > 0.05 && kids < 0.8, walk: t * 3 + i }));
+          const yx = 48;
+          drawPerson(g, yx, 186, { me: true, scale: 0.85, t, dir: 0.6, rArm: [lerp(6, 12, place), lerp(-14, -4, place)] });
+          thread(g, yx + 10, 160, lerp(100, 190, k) - 6, lerp(166, 206, k), 8, 0.7 * (1 - gone));
+          // the rule card: kept as it is, or turned over to protect the passenger, then laid on the car
+          const fl = Math.cos(clamp01(flip) * Math.PI), u = ease(clamp01(place)), cx = lerp(yx + 26, 244, u), cy = lerp(120, 200, u) - Math.sin(clamp01(place) * Math.PI) * 30;
+          ruleCard(g, cx, cy, flip > 0.5 ? 0 : 1, flip > 0.5 ? 1 : 0, 1, Math.abs(fl) < 0.08 ? 0.08 : Math.abs(fl));
           return;
         }
         if (v === 'fuB') {
@@ -490,13 +484,18 @@
     reference: {
       base(v) {
         sc.x.v = v;
-        sset({ send: 0, rough: 1, care: 0, back: 0, hang: 0 });
-        if (v === 'fu') sset({ send: 1, rough: 0 });
+        sset({ send: 0, rough: 1, care: 0, back: 0, hang: 0, decide: 0, held: 0 });
+        if (v === 'fuA') sset({ send: 1, rough: 1 });
+        if (v === 'fuB') sset({ send: 1, rough: 0 });
       },
-      shift(v) { if (v === 'fu') sto({ care: 1 }, 0.9); },
+      shift(v) {
+        if (v === 'fuA') sto({ decide: 1 }, 0.9);
+        if (v === 'fuB') sto({ care: 1 }, 0.9);
+      },
       acts: {
         'B03-A': { send: 1 }, 'B03-B': { rough: 0, send: 1 },
-        'B03-FU-A': { back: 1 }, 'B03-FU-B': { hang: 1 },
+        'B03-FUA-A': { held: 1, decide: 0.5 }, 'B03-FUA-B': { rough: 0, held: 1, decide: 0.5 },
+        'B03-FUB2-A': { back: 1 }, 'B03-FUB2-B': { hang: 1 },
       },
       async act(a) {
         await actor(this.acts, 1.2, async (id, m) => {
@@ -505,7 +504,7 @@
         })(a);
       },
       draw(g, t) {
-        const send = V('send'), rough = V('rough'), care = V('care'), back = V('back'), hang = V('hang');
+        const send = V('send'), rough = V('rough'), care = V('care'), back = V('back'), hang = V('hang'), decide = V('decide'), held = V('held');
         pavement(g);
         // the phone booth, and you in it
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.7; g.lineJoin = 'round';
@@ -524,14 +523,16 @@
           drawPerson(o, ex + 10, ey + 26, { scale: 0.32, t, phase: 432, dir: -0.3 }); drawPerson(o, ex + 22, ey + 26, { scale: 0.28, t, phase: 433, dir: -0.5 });
         });
         slots(g, ex - 36, ey + er + 8, 8, 0, 1 - care, 6);
-        // fu: the job itself. Overnight care: someone asleep, the moon, a chair kept for whoever is on shift
+        // fuB: the job itself. A daycare whose door stays shut when a worker doesn't show; a parent and child turned away
         inFrame(g, ex, ey, er, care, o => {
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, ex - er, ey + 22, ex + er, ey + 22);
-          moon(o, ex + 14, ey - 18, 5, 1);
-          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.3; o.beginPath(); o.roundRect(ex - 30, ey + 6, 40, 8, 3); o.fill(); o.stroke();
-          line(o, ex - 28, ey + 14, ex - 28, ey + 22); line(o, ex + 8, ey + 14, ex + 8, ey + 22); line(o, ex - 30, ey - 4, ex - 30, ey + 14);
-          sleeper(o, ex - 12, ey + 7, 0.62, t);
-          chair(o, ex + 22, ey + 8, -1, ey + 22, 1, true);
+          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.3; o.lineJoin = 'round';
+          o.fillRect(ex - 30, ey - 6, 30, 28); o.strokeRect(ex - 30, ey - 6, 30, 28);
+          o.beginPath(); o.moveTo(ex - 34, ey - 6); o.lineTo(ex - 15, ey - 20); o.lineTo(ex + 4, ey - 6); o.closePath(); o.fill(); o.stroke();
+          o.strokeRect(ex - 20, ey + 6, 10, 16); o.strokeRect(ex - 27, ey - 1, 6, 5);
+          o.strokeStyle = GRAPH; o.lineWidth = 1; ellipse(o, ex - 15, ey - 11, 2.4, 2.4); o.stroke();
+          drawPerson(o, ex + 12, ey + 22, { scale: 0.42, t, phase: 436, dir: -0.4, mood: 'worried', lArm: [-6, 2] });
+          drawPerson(o, ex + 2, ey + 22, { scale: 0.26, t, phase: 437, dir: -0.3 });
         });
         // the hiring manager on the other end
         const mx = 324, my = 92, mr = 44;
@@ -553,7 +554,10 @@
           for (const yy of [3, 13]) { g.beginPath(); for (let k = 0; k <= 11; k++) { const x = -11 + k * 2, y = yy + (k % 2 ? -1.6 : 1.6); k ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); }
         }
         g.restore();
-        talk(g, yx + 20, 150, mx - mr, my - 4, Math.max(send * (1 - (sc.x.v === 'fu' ? 1 : 0)), back) * (1 - hang), t, 24);
+        talk(g, yx + 20, 150, mx - mr, my - 4, Math.max(send * (sc.x.v === 'trunk' ? 1 : 0), back, held) * (1 - hang), t, 24);
+        // fuA: it comes down to you. A thread from the hiring manager's choice to the family
+        thread(g, mx - mr + 4, my + 18, ex + er - 2, ey + 14, -18, decide * 0.8, true);
+        if (decide > 0.01) { bubble(g, mx + 30, my - mr - 6, 22, 20, mx + 20, my - mr + 6, decide * (1 - held)); txt(g, '?', mx + 30, my - mr - 5.5, 13, decide * (1 - held), SANS(13)); }
       },
     },
 
@@ -561,17 +565,21 @@
     companyline: {
       base(v) {
         sc.x.v = v;
-        sset({ ask: 1, line_: 0, truth: 0, bake: 0 });
-        if (v === 'fu') sset({ ask: 0 });
+        sset({ ask: 1, line_: 0, truth: 0, bake: 0, alt: 0, saved: 0, warn: 0 });
+        if (v === 'fuA' || v === 'fuB') sset({ ask: 0 });
       },
-      shift(v) { if (v === 'fu') { sto({ bake: 1 }, 0.9); sto({ ask: 1 }, 0.8); } },
+      shift(v) {
+        if (v === 'fuA') { sto({ bake: 1 }, 0.9); sto({ alt: 1 }, 0.6); sto({ ask: 1 }, 0.8); } // the bakery, and another supplier it could still order from
+        if (v === 'fuB') { sto({ warn: 1 }, 0.9); sto({ ask: 1 }, 0.8); } // your manager's warning: your job
+      },
       acts: {
         'B04-A': { line_: 1, ask: 0 }, 'B04-B': { truth: 1, ask: 0 },
-        'B04-FU-A': { line_: 1, ask: 0 }, 'B04-FU-B': { truth: 1, ask: 0 },
+        'B04-FUA-A': { line_: 1, ask: 0 }, 'B04-FUA-B': { truth: 1, ask: 0, saved: 1 },
+        'B04-FUB-A': { truth: 1, ask: 0 }, 'B04-FUB-B': { line_: 1, ask: 0 },
       },
       async act(a) { await actor(this.acts, 1.2)(a); },
       draw(g, t) {
-        const ask = V('ask'), ln = V('line_'), truth = V('truth'), bake = V('bake');
+        const ask = V('ask'), ln = V('line_'), truth = V('truth'), bake = V('bake'), alt = V('alt'), saved = V('saved'), warn = V('warn');
         indoor(g);
         // the roller door, and the big orders stacked in front of it, first in line
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.rect(232, 54, 150, 148); g.fill(); g.stroke();
@@ -588,7 +596,7 @@
         g.strokeStyle = GRAPH; g.lineWidth = 1; line(g, 28, 192, 50, 192);
         hourglass(g, 39, 168, 0.8, t);
         // you behind the counter, your manager right beside you
-        const mgr = npcLook(441);
+        const mgr = npcLook(445);
         drawPerson(g, 82, 210, { look: mgr, scale: 0.92, t, dir: lerp(0.5, 0.9, truth), lArm: [-6, 2], rArm: [6, 2] });
         const yx = 124;
         drawPerson(g, yx, 210, { me: true, scale: 0.9, t, dir: 0.6, lArm: [lerp(-3, -14, ln), lerp(5, -10, ln)], rArm: [lerp(3, 14, truth), lerp(5, -12, truth)] });
@@ -597,7 +605,7 @@
         g.strokeStyle = HAIR; g.lineWidth = 1; for (let x = 164; x < 218; x += 12) line(g, x, 169, x, 208);
         // the customer
         const cx = 256;
-        drawPerson(g, cx, 210, { scale: 0.9, t, phase: 442, dir: -0.7, mood: bake > 0.5 ? 'worried' : null });
+        drawPerson(g, cx, 210, { scale: 0.9, t, phase: 524, dir: -0.7, mood: bake > 0.5 ? 'worried' : null });
         query(g, cx - 4, 128, cx - 8, 150, ask);
         // A: "it's the supplier", with a gesture off somewhere else
         say(g, yx - 6, 120, 40, yx, 144, ln);
@@ -605,7 +613,24 @@
         // B: you point at the big orders
         if (truth > 0.01) { g.save(); g.globalAlpha = truth; g.strokeStyle = GRAPH; g.lineWidth = 1.2; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(yx + 26, 168); g.quadraticCurveTo(220, 90, 304, 116); g.stroke(); g.restore(); }
         talk(g, yx + 18, 152, cx - 14, 150, Math.max(ln, truth), t, 10);
-        // fu: a small bakery and its wedding cake, waiting on the order
+        // fuB: the manager's warning. Your work badge, held up between you; it goes faint if you tell the truth anyway
+        thread(g, 86, 140, 66, 98, 6, warn * 0.6, true);
+        inFrame(g, 64, 72, 26, warn * (1 - truth * 0.45), o => {
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 38, 92, 90, 92);
+          badge(o, 64, 70, 1);
+        }, truth > 0.5);
+        // fuA: another shop the bakery could order from today, if it knew; a dashed path there, solid once you tell
+        inFrame(g, 232, 38, 20, alt, o => {
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 212, 52, 252, 52);
+          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.2; o.fillRect(222, 34, 20, 18); o.strokeRect(222, 34, 20, 18);
+          o.beginPath(); for (let k = 0; k <= 10; k++) o.lineTo(220 + k * 2.4, 32 + (k % 2 ? 3 : 0)); o.stroke(); line(o, 220, 32, 244, 32);
+          o.strokeRect(228, 42, 8, 10);
+        });
+        if (alt > 0.01) {
+          g.save(); g.globalAlpha = alt * (0.55 + saved * 0.45); g.strokeStyle = INK; g.lineWidth = 1.2; g.lineCap = 'round'; if (saved < 0.5) g.setLineDash([3, 4]);
+          g.beginPath(); g.moveTo(252, 42); g.quadraticCurveTo(262, 30, 272, 44); g.stroke(); g.restore();
+        }
+        // fuA: a small bakery and its wedding cake, waiting on the order
         inFrame(g, 306, 52, 36, bake, o => {
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 270, 74, 342, 74);
           o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.3;
@@ -615,7 +640,8 @@
             o.beginPath(); for (let k = 0; k <= w; k += 2) o.lineTo(x + k, y + 3 + (k % 4 ? 1.4 : 0)); o.stroke();
           });
           o.fillStyle = INK; ellipse(o, 301, 37, 1.6, 1.6); o.fill();
-          o.setLineDash([2, 2]); o.strokeRect(320, 56, 16, 14);
+          if (saved < 0.5) { o.setLineDash([2, 2]); o.strokeRect(320, 56, 16, 14); }
+          else { o.lineWidth = 1.3; o.strokeRect(320, 56, 16, 14); line(o, 320, 61, 336, 61); }
         });
       },
     },
@@ -750,17 +776,17 @@
     callup: {
       base(v) {
         sc.x.v = v;
-        sset({ serve: 0, refuse: 0, leave: 0, out: 1, in_: 0, fight: 0, sit: 0 });
-        if (v === 'fu') sset({ out: 0 });
+        sset({ serve: 0, refuse: 0, leave: 0, out: 1, in_: 0, fight: 0, sit: 0, lead: 0 });
+        if (v === 'fuB') sset({ out: 0 });
       },
-      shift(v) { if (v === 'fu') sto({ in_: 1 }, 0.8); },
+      shift(v) { if (v === 'fuB') { sto({ in_: 1 }, 0.8); sto({ lead: 1 }, 0.7); } },
       acts: {
         'B32-A': { serve: 1 }, 'B32-B': { refuse: 1 }, 'B32-C': { leave: 1 },
-        'B32-FU-A': { serve: 1 }, 'B32-FU-B': { sit: 1 },
+        'B32-FUB-A': { serve: 1 }, 'B32-FUB-B': { sit: 1 },
       },
       async act(a) { await actor(this.acts, 0.9)(a); },
       draw(g, t) {
-        const serve = V('serve'), refuse = V('refuse'), leave = V('leave'), out = V('out'), inw = V('in_'), sit = V('sit');
+        const serve = V('serve'), refuse = V('refuse'), leave = V('leave'), out = V('out'), inw = V('in_'), sit = V('sit'), lead = V('lead');
         indoor(g);
         // the front door
         door(g, 18, 98, 44, 210, Math.max(leave, serve) * 0.8, { pane: true });
@@ -804,6 +830,14 @@
         const lu = ease(clamp01(Math.max(refuse, sit)));
         envelope(g, lerp(yx + 24, 254, lu), lerp(172, 168, lu), 1 - serve - leave, 0.8);
         suitcase(g, yx - 22, 182, leave);
+        // fuB: the same leaders, still at their podium
+        inFrame(g, 96, 52, 30, lead, o => {
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 66, 76, 126, 76);
+          drawPerson(o, 90, 78, { look: npcLook(478), scale: 0.72, t: reduce ? 0 : t * 0.6, dir: 0.2 });
+          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.3; o.fillRect(83, 64, 18, 12); o.strokeRect(83, 64, 18, 12);
+          o.lineWidth = 2; line(o, 79, 64, 105, 60); o.lineWidth = 1.3;
+          line(o, 114, 76, 114, 36); o.fillRect(114, 36, 11, 8); o.strokeRect(114, 36, 11, 8);
+        });
         // B: the cost you accept, a door with a barred window
         inFrame(g, 96, 52, 30, refuse, o => {
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 66, 74, 126, 74);
@@ -817,7 +851,7 @@
     changed: {
       base(v) {
         sc.x.v = v;
-        sset({ pros: 0, drop: 0, hurt: 0, ring: 0 });
+        sset({ pros: 0, drop: 0, hurt: 0 });
       },
       shift(v) { if (v === 'fu') sto({ hurt: 1 }, 0.9); },
       acts: {
@@ -825,17 +859,16 @@
         'B33-FU-A': { pros: 1 }, 'B33-FU-B': { drop: 1 },
       },
       async act(a) {
-        await actor(this.acts, 0.9, async (id, m) => { sto(m, 0.9); if (m.drop) { await sleep(700); sc.x.ringT = sc.t; sto({ ring: 1 }, 1.2); } })(a);
+        await actor(this.acts, 0.9)(a);
       },
       draw(g, t) {
-        const pros = V('pros'), drop = V('drop'), hurt = V('hurt'), ring = V('ring');
+        const pros = V('pros'), drop = V('drop'), hurt = V('hurt');
         pavement(g);
         // the school, its little bell tower
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.lineJoin = 'round';
         g.beginPath(); g.rect(80, 34, 30, 34); g.fill(); g.stroke();
         g.beginPath(); g.moveTo(74, 34); g.lineTo(95, 18); g.lineTo(116, 34); g.closePath(); g.fill(); g.stroke();
-        const swing = reduce ? 0 : ring * (1 - clamp01((sc.t - (sc.x.ringT || 0)) / 4)) * Math.sin((sc.t - (sc.x.ringT || 0)) * 3.2) * 0.28;
-        g.save(); g.translate(95, 40); g.rotate(swing);
+        g.save(); g.translate(95, 40);
         g.beginPath(); g.moveTo(-8, 18); g.quadraticCurveTo(-8, 2, 0, 2); g.quadraticCurveTo(8, 2, 8, 18); g.closePath(); g.fill(); g.stroke();
         g.fillStyle = INK; ellipse(g, 0, 20, 2.2, 2.2); g.fill(); g.restore();
         g.fillStyle = PAPER; g.beginPath(); g.rect(8, 68, 174, 146); g.fill(); g.stroke();
@@ -883,13 +916,17 @@
     remorse: {
       base(v) {
         sc.x.v = v;
-        sset({ inn: 0, outt: 0, gate: 0, crowd: 0 });
-        if (v === 'fu') sset({ gate: 1 });
+        sset({ inn: 0, outt: 0, gate: 0, crowd: 0, plea: 0 });
+        if (v === 'fuB') sset({ gate: 1 });
       },
-      shift(v) { if (v === 'fu') sto({ crowd: 1 }, 0.8); },
+      shift(v) {
+        if (v === 'fuA') sto({ plea: 1 }, 1.2); // the person they hurt comes to the gate and asks for them to go free
+        if (v === 'fuB') sto({ crowd: 1 }, 0.8);
+      },
       acts: {
         'B34-A': { inn: 1, gate: 0 }, 'B34-B': { gate: 1, outt: 1 },
-        'B34-FU-A': { inn: 1, gate: 0 }, 'B34-FU-B': { outt: 1 },
+        'B34-FUA-A': { inn: 1, gate: 0 }, 'B34-FUA-B': { gate: 1, outt: 1 },
+        'B34-FUB-A': { inn: 1, gate: 0 }, 'B34-FUB-B': { outt: 1 },
       },
       async act(a) {
         await actor(this.acts, 0.9, async (id, m) => {
@@ -899,8 +936,8 @@
         })(a);
       },
       draw(g, t) {
-        const inn = V('inn'), outt = V('outt'), gate = V('gate'), crowd = V('crowd');
-        const fu = sc.x.v === 'fu';
+        const inn = V('inn'), outt = V('outt'), gate = V('gate'), crowd = V('crowd'), plea = V('plea');
+        const fu = sc.x.v === 'fuB';
         // the prison: a wall with barred windows, one door
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.rect(150, 58, 190, 112); g.fill(); g.stroke();
         g.beginPath(); g.rect(146, 54, 198, 5); g.fill(); g.stroke();
@@ -930,10 +967,17 @@
           o.fillStyle = INK; o.beginPath(); o.roundRect(0, -5, 12, 10, [0, 5, 5, 0]); o.fill(); o.restore();
           sparkle(o, 54, 52, 3, 0.8); sparkle(o, 86, 78, 2.5, 0.8);
         });
-        // fu: others watching from the street, thinking it came cheap
+        // fuB: others watching from the street, who may think they can get away with crime
         for (const [x, ph] of [[346, 483], [368, 484], [390, 485]]) {
           if (crowd > 0.01) { g.save(); g.globalAlpha = crowd * 0.5; g.strokeStyle = GRAPH; g.lineWidth = 1; g.setLineDash([2, 4]); line(g, x - 8, 214, 262, 190); g.restore(); }
           ghost(g, crowd * 0.9, x, 240, { scale: 0.62, t, phase: ph, dir: -0.7 });
+        }
+        // fuA: the person they assaulted walks up to the gate, a letter for the court in hand, and speaks for them
+        if (plea > 0.01) {
+          const q = ease(clamp01(plea)), vx = lerp(130, 184, q), vy = 232;
+          ghost(g, Math.min(1, plea * 2), vx, vy, { look: npcLook(489), scale: 0.84, t, dir: 0.6, moving: plea > 0.05 && plea < 0.9, walk: t * 3, rArm: [10, -6] });
+          paper(g, vx + 16, vy - 34, 10, 13, 0.1, q);
+          say(g, vx + 24, vy - 74, 38, vx + 12, vy - 56, clamp01((plea - 0.8) * 5) * (1 - Math.max(inn, outt)));
         }
         // you, outside the fence
         drawPerson(g, 96, 238, { me: true, scale: 0.88, t, dir: 0.6 });
@@ -982,13 +1026,14 @@
         const yx = 152;
         drawPerson(g, yx, 192, { me: true, scale: 0.9, t, sit: true, dir: lerp(0.5, -0.7, keep), rArm: [lerp(2, 3, keep), lerp(-10, 5, keep)] });
         handset(g, yx + 16, lerp(160, 182, keep), 0.2, 1);
-        thread(g, yx - 10, 156, 104, 156, 12, 0.7 + keep * 0.3, false, 1.1 + keep * 0.6);
-        // the true, damaging story: a page with a dark band. Posted, or put away
+        thread(g, yx - 10, 156, 104, 156, 12, 0.8);
+        // your proof of what they did: a page with a photo on it. Posted, or put away
         const u = ease(clamp01(post)), sx = lerp(yx + 18, kx + 50, u), sy = lerp(126, 104, u) - Math.sin(u * Math.PI) * 30, pa = 1 - keep;
         if (pa > 0.01 && post < 0.98) {
           g.save(); g.globalAlpha = pa; g.translate(sx, sy); g.scale(lerp(1, 0.6, u), lerp(1, 0.6, u));
           g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.3; g.fillRect(-12, -15, 24, 30); g.strokeRect(-12, -15, 24, 30);
-          g.fillStyle = INK; g.fillRect(-8, -9, 16, 5); g.strokeStyle = GRAPH; g.lineWidth = 1; for (const y of [1, 6, 11]) line(g, -8, y, 8, y);
+          g.strokeStyle = INK; g.lineWidth = 1.1; g.strokeRect(-8, -11, 16, 11); g.beginPath(); g.moveTo(-7, -1); g.lineTo(-2, -7); g.lineTo(2, -3); g.lineTo(4, -5); g.lineTo(7, -1); g.stroke();
+          g.strokeStyle = GRAPH; g.lineWidth = 1; for (const y of [4, 9]) line(g, -8, y, 8, y);
           g.restore();
           if (post < 0.05) { g.save(); g.globalAlpha = pa; g.fillStyle = INK; for (const [x, y, r] of [[yx + 18, 148, 1.4], [yx + 18, 142, 1.8]]) { ellipse(g, x, y, r, r); g.fill(); } g.restore(); }
         }
@@ -999,22 +1044,27 @@
     credit: {
       base(v) {
         sc.x.v = v;
-        sset({ give: 0, let_: 0, pay: 0, cut: 0 });
+        sset({ give: 0, let_: 0, pay: 1, cut: 0, mine: 0, one: 0, cw: 0, own: 0, cover: 0 });
+        if (v === 'fuB') sset({ let_: 1 });
       },
-      shift(v) { if (v === 'fu') sto({ pay: 1 }, 0.9); },
+      shift(v) {
+        if (v === 'fuA') sto({ one: 1 }, 0.9); // the one raise rises between you and your coworker's empty chair
+        if (v === 'fuB') sto({ cw: 1 }, 0.8);
+      },
       acts: {
         'B41-A': { give: 1 }, 'B41-B': { let_: 1 },
-        'B41-FU-A': { give: 1, cut: 1 }, 'B41-FU-B': { let_: 1 },
+        'B41-FUA2-A': { give: 1, cut: 1 }, 'B41-FUA2-B': { let_: 1, mine: 1 },
+        'B41-FUB-A': { own: 1 }, 'B41-FUB-B': { cover: 1 },
       },
       async act(a) { await actor(this.acts, 1.0)(a); },
       draw(g, t) {
-        const give = V('give'), let_ = V('let_'), pay = V('pay'), cut = V('cut');
+        const give = V('give'), let_ = V('let_'), pay = V('pay'), cut = V('cut'), mine = V('mine'), one = V('one'), cw = V('cw'), own = V('own'), cover = V('cover');
         indoor(g);
         // a glass wall, the city beyond it
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.fillRect(16, 20, 368, 130); g.strokeRect(16, 20, 368, 130);
         g.save(); g.beginPath(); g.rect(17, 21, 366, 128); g.clip(); skyline(g, 150, 1); g.restore();
         g.strokeStyle = INK; g.lineWidth = 1.3; for (const x of [108, 200, 292]) line(g, x, 20, x, 150);
-        // fu: next week's pay review
+        // next week's pay review
         if (pay > 0.01) {
           g.save(); g.globalAlpha = pay; g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.3; g.fillRect(316, 30, 58, 34); g.strokeRect(316, 30, 58, 34);
           g.fillRect(316, 30, 58, 8); g.strokeRect(316, 30, 58, 8); g.lineWidth = 1;
@@ -1022,22 +1072,37 @@
           g.strokeStyle = INK; ellipse(g, 322.5 + 4 * 7.6, 55.5, 5, 5); g.stroke(); g.restore();
         }
         // the boss, pleased, praising the idea
-        const boss = npcLook(501), co = npcLook(503);
-        const clap = reduce ? 0.5 : (Math.sin(t * 2.4) * 0.5 + 0.5);
+        const boss = npcLook(501), co = npcLook(506);
+        const clap = reduce ? 0.5 : (Math.sin(t * 1.5) * 0.5 + 0.5);
         drawPerson(g, 56, 210, { look: boss, scale: 0.95, t, dir: lerp(0.6, 0.9, give), lArm: [lerp(2, 6, clap * (1 - give)), -10], rArm: [lerp(-2, -6, clap * (1 - give)), -10] });
         sparkle(g, 78, 142, 3, 0.8 * (1 - give)); sparkle(g, 36, 138, 2.5, 0.8 * (1 - give));
         // the meeting: you, another colleague, and your coworker's empty chair
         const yx = 168, ex = 296;
-        drawPerson(g, yx, 182, { me: true, scale: 0.9, t, sit: true, dir: lerp(lerp(-0.6, 0.8, give), 0.1, let_), rArm: [lerp(3, 16, give), lerp(5, -6, give)] });
+        const said = Math.max(own, cover);
+        drawPerson(g, yx, 182, { me: true, scale: 0.9, t, sit: true, dir: lerp(lerp(lerp(-0.6, 0.8, give), 0.1, let_), lerp(0.8, 0.3, cover), said), rArm: [lerp(3, 16, give), lerp(5, -6, give)] });
         drawPerson(g, 232, 182, { scale: 0.88, t, phase: 502, sit: true, dir: -0.6 });
         g.save(); g.strokeStyle = INK; g.lineWidth = 1.5; g.setLineDash([3, 3]); g.beginPath(); g.roundRect(ex - 12, 134, 26, 38, [8, 8, 0, 0]); g.stroke(); g.restore();
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.rect(96, 172, 240, 6); g.fill(); g.stroke(); line(g, 106, 178, 106, 210); line(g, 326, 178, 326, 210);
-        // fu: your pay envelope on the table
-        envelope(g, yx + 12, 166, pay * (1 - cut * 0.6), 0.75);
+        // your pay envelope on the table. fuA: there's only one, and it hangs between you and your coworker's chair
+        const ox = yx + 12, oy = 166, mx2 = (yx + ex) / 2 + 2, my2 = 120, ou = ease(clamp01(one));
+        let px = lerp(ox, mx2, ou), py = lerp(oy, my2, ou) - Math.sin(clamp01(one) * Math.PI) * 10;
+        if (cut > 0.01) { const u = ease(clamp01(cut)); px = lerp(px, ex + 1, u); py = lerp(py, 126, u); }
+        if (mine > 0.01) { const u = ease(clamp01(mine)); px = lerp(px, ox, u); py = lerp(py, oy, u); }
+        const rival = one * (1 - Math.max(cut, mine));
+        thread(g, px - 10, py + 6, yx + 4, 144, -6, rival * 0.6, true); thread(g, px + 10, py + 6, ex + 1, 132, -6, rival * 0.6, true);
+        envelope(g, px, py, pay, 0.75);
         // the idea: praised above you, but it was theirs
         const u = ease(clamp01(give)), ix = lerp(yx, ex + 1, u), iy = lerp(108, 112, u) - Math.sin(u * Math.PI) * 18;
         star(g, ix, iy, 9, 1, false); sparkle(g, ix - 15, iy - 6, 2.5, 0.8); sparkle(g, ix + 14, iy + 4, 2, 0.8);
         thread(g, ix + 6, iy + 6, ex + 1, 134, -12, 0.6 * (1 - u), true);
+        // fuB: your coworker comes in and asks if you said anything
+        if (cw > 0.01) {
+          const cx2 = lerp(430, 362, ease(cw));
+          drawPerson(g, cx2, 210, { look: co, scale: 0.9, t, dir: -0.7, moving: cw < 0.95, walk: t * 3, mood: own > 0.5 ? 'worried' : null });
+          bubble(g, cx2 - 6, 126, 22, 20, cx2 - 8, 146, cw * (1 - said)); txt(g, '?', cx2 - 6, 126.5, 13, cw * (1 - said), SANS(13));
+          say(g, yx + 44, 116, 40, yx + 16, 142, said);
+          talk(g, yx + 20, 150, cx2 - 14, 160, said, t, 10);
+        }
       },
     },
 
@@ -1045,36 +1110,39 @@
     theft: {
       base(v) {
         sc.x.v = v;
-        sset({ rep: 0, stay: 0, kid: 0, shop: 0, fold: 0 });
+        sset({ rep: 0, stay: 0, kid: 0, hours: 0, fold: 0 });
       },
-      shift(v) { if (v === 'fuA') sto({ kid: 1 }, 1.0); if (v === 'fuB') sto({ shop: 1 }, 1.0); },
+      shift(v) { if (v === 'fuA') sto({ kid: 1 }, 1.0); if (v === 'fuB') sto({ hours: 1 }, 0.8); },
       acts: {
         'Q8-A': { rep: 1 }, 'Q8-B': { stay: 1 },
         'Q8-FUA-A': { rep: 1 }, 'Q8-FUA-B': { fold: 1 },
-        'Q8-FUB-A': { rep: 1 }, 'Q8-FUB-B': { stay: 1 },
+        'Q8-FUB2-A': { rep: 1 }, 'Q8-FUB2-B': { stay: 1 },
       },
       async act(a) { await actor(this.acts, 0.9)(a); },
       draw(g, t) {
-        const v = sc.x.v, rep = V('rep'), stay = V('stay'), kid = V('kid'), shop = V('shop'), fold = V('fold');
+        const v = sc.x.v, rep = V('rep'), stay = V('stay'), kid = V('kid'), hours = V('hours'), fold = V('fold');
         indoor(g);
         // the manager's door, the filing cabinet by it
         door(g, 16, 92, 42, 210, 0, { pane: true });
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.rect(66, 112, 40, 98); g.fill(); g.stroke();
         for (const y of [144, 176]) line(g, 66, y, 106, y); g.lineWidth = 1.3; for (const y of [126, 158, 190]) line(g, 80, y, 92, y);
-        // a window (fuB: the small family business it's taken from)
+        // a window (fuB: the shift board, where two coworkers' hours have just been cut)
         const wx = 140, wy = 40, ww = 110, wh = 78;
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.4; g.fillRect(wx, wy, ww, wh); g.strokeRect(wx, wy, ww, wh);
-        if (shop > 0.01) {
-          faded(g, shop, o => {
+        if (hours > 0.01) {
+          const cutU = ease(clamp01((hours - 0.45) / 0.55)); // the board comes up first, then half of each week empties
+          faded(g, hours, o => {
             o.save(); o.beginPath(); o.rect(wx + 1, wy + 1, ww - 2, wh - 2); o.clip();
-            o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.2; o.strokeRect(wx + 18, wy + 30, 74, 48);
-            for (let i = 0; i < 6; i++) { o.fillStyle = i % 2 ? PAPER : INK; o.beginPath(); o.rect(wx + 18 + i * 12.3, wy + 20, 12.3, 10); o.fill(); o.stroke(); }
-            o.fillStyle = PAPER; o.fillRect(wx + 28, wy + 36, 30, 12); o.strokeRect(wx + 28, wy + 36, 30, 12); o.strokeRect(wx + 70, wy + 48, 14, 30);
-            drawPerson(o, wx + 34, wy + 78, { scale: 0.34, t, phase: 513, dir: 0.3, mood: 'worried' }); drawPerson(o, wx + 52, wy + 78, { scale: 0.3, t, phase: 514, dir: -0.3, mood: 'worried' });
+            o.fillStyle = PAPER; o.fillRect(wx + 1, wy + 1, ww - 2, wh - 2);
+            [[0, 513], [1, 514]].forEach(([r, ph]) => {
+              const ry = wy + 10 + r * 34;
+              drawPerson(o, wx + 15, ry + 26, { scale: 0.3, t, phase: ph, dir: 0.4, mood: cutU > 0.5 ? 'worried' : null });
+              slots(o, wx + 30, ry + 10, 6, 6 - 3 * cutU, 1, 9);
+            });
             o.restore();
           });
         }
-        g.strokeStyle = HAIR; g.lineWidth = 1; g.globalAlpha = 1 - shop; line(g, wx + ww / 2, wy, wx + ww / 2, wy + wh); line(g, wx, wy + wh / 2, wx + ww, wy + wh / 2); g.globalAlpha = 1;
+        g.strokeStyle = HAIR; g.lineWidth = 1; g.globalAlpha = 1 - hours; line(g, wx + ww / 2, wy, wx + ww / 2, wy + wh); line(g, wx, wy + wh / 2, wx + ww, wy + wh / 2); g.globalAlpha = 1;
         // your colleague at the petty-cash box. A bill slips into a pocket now and then.
         desk(g, 300, 388, 172);
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.4; g.fillRect(312, 158, 26, 14); g.strokeRect(312, 158, 26, 14); line(g, 312, 163, 338, 163);
@@ -1122,8 +1190,8 @@
           desk(g, 150, 330, 176);
           lunchbox(g, lerp(250, 212, ease(clamp01(lunch))), 176, 1);
           const fam = 1;
-          drawPerson(g, 300, 188, { scale: 0.9, t, phase: 521, sit: true, dir: -0.6 }); drawPerson(g, 264, 192, { scale: 0.55, t, phase: 522, sit: true, dir: -0.5 });
-          chair(g, 300, 188, -1, 210, fam); chair(g, 264, 192, -1, 210, fam);
+          chair(g, 304, 188, -1, 210, fam); chair(g, 264, 192, -1, 210, fam);
+          drawPerson(g, 300, 188, { scale: 0.9, t, phase: 523, sit: true, dir: -0.6 }); drawPerson(g, 262, 192, { scale: 0.55, t, phase: 522, sit: true, dir: -0.5 });
           const yx = lerp(lerp(118, 52, down), 186, lunch);
           const sitting = lunch > 0.85;
           if (lunch > 0.01) chair(g, 186, 190, 1, 210, lunch);
@@ -1172,16 +1240,20 @@
     platform: {
       base(v) {
         sc.x.v = v;
-        sset({ conf: 0, beside: 0, stay: 0, down: 0, between: 0, hold: 0 });
-        if (v === 'fu') sset({ down: 1 });
+        sset({ conf: 0, beside: 0, stay: 0, down: 0, between: 0, hold: 0, turn: 0, ground: 0, away: 0 });
+        if (v === 'fuA') sset({ conf: 1 }); // you've confronted them, close by
+        if (v === 'fuB') sset({ down: 1 });
       },
+      shift(v) { if (v === 'fuA') sto({ turn: 1 }, 0.7); }, // the harasser turns on you: much bigger, stepping in close
       acts: {
         'Q10-A': { conf: 1 }, 'Q10-B': { beside: 1 }, 'Q10-C': { stay: 1 },
-        'Q10-FU-A': { between: 1 }, 'Q10-FU-B': { hold: 1 },
+        'Q10-FUA-A': { ground: 1 }, 'Q10-FUA-B': { away: 1 },
+        'Q10-FUB-A': { between: 1 }, 'Q10-FUB-B': { hold: 1 },
       },
       async act(a) { await actor(this.acts, 1.0)(a); },
       draw(g, t) {
-        const fu = sc.x.v === 'fu', conf = V('conf'), beside = V('beside'), stay = V('stay'), down = V('down'), between = V('between'), hold = V('hold');
+        const fu = sc.x.v === 'fuB', conf = V('conf'), beside = V('beside'), stay = V('stay'), down = V('down'), between = V('between'), hold = V('hold');
+        const turn = V('turn'), ground = V('ground'), away = V('away');
         // the platform: a tiled wall, the tunnel mouth, the edge and the track
         g.strokeStyle = HAIR; g.lineWidth = 1;
         for (let y = 24; y < 166; y += 12) { line(g, 0, y, 400, y); for (let x = ((y / 12) % 2) * 12; x < 400; x += 24) line(g, x, y, x, y + 12); }
@@ -1194,23 +1266,30 @@
         g.strokeStyle = GRAPH; g.lineWidth = 1; line(g, 0, 236, 400, 236); line(g, 0, 246, 400, 246);
         for (let x = 6; x < 400; x += 20) line(g, x, 233, x - 4, 249);
         // two bystanders, frozen, looking away
-        drawPerson(g, 34, 194, { scale: 0.82, t, phase: 541, dir: -0.6 }); drawPerson(g, 64, 196, { scale: 0.82, t, phase: 542, dir: -0.8 });
+        drawPerson(g, 34, 194, { scale: 0.82, t, phase: 541, dir: -0.6 }); drawPerson(g, 64, 196, { scale: 0.82, t, phase: 547, dir: -0.8 });
         // the one shouting, and the one being shouted at (fu: knocked to the ground, sitting there)
-        const har = npcLook(543), tgt = npcLook(544);
+        const har = npcLook(543), tgt = npcLook(545);
         const back = between;
-        const hx = lerp(fu ? 246 : 232, 214, back), wag = reduce ? 0 : Math.sin(t * 2.2) * 3;
-        const calm = Math.max(conf, between) * 0.6;
-        drawPerson(g, hx, 196, { look: har, scale: 0.9, t, dir: lerp(0.8, -0.8, Math.max(conf, between)), mood: 'angry', rArm: [lerp(8, 4, calm), lerp(-8 + wag, 4, calm)], lArm: [-6, lerp(-2, 4, calm)] });
-        marks(g, 'anger', hx + 6, 146, (0.65 + (reduce ? 0 : 0.25 * Math.sin(t * 1.6))) * (1 - calm), t);
+        // fuA: the harasser turns and steps in close to you, much bigger than you
+        const close = ease(clamp01(turn));
+        const hx = lerp(lerp(fu ? 246 : 232, 214, back), lerp(240, 250, away), close), wag = reduce ? 0 : Math.sin(t * 2.2) * 3;
+        const hs = lerp(0.9, 1.12, ease(clamp01(turn)));
+        const calm = Math.max(conf, between) * 0.6 * (1 - turn);
+        drawPerson(g, hx, lerp(196, 206, ease(clamp01(turn))), { look: har, scale: hs, t, dir: lerp(0.8, -0.8, Math.max(conf, between)), mood: 'angry', rArm: [lerp(8, 4, calm), lerp(-8 + wag * (1 - turn), 4, calm)], lArm: [-6, lerp(-2, 4, calm)] });
+        marks(g, 'anger', hx + 6, lerp(146, 138, turn), (0.65 + (reduce ? 0 : 0.25 * Math.sin(t * 1.6))) * (1 - calm), t);
         const tx = 300;
-        if (down > 0.5) drawPerson(g, tx, 200, { look: tgt, scale: 0.9, t, sit: true, dir: -0.6, mood: 'worried', lArm: [-6, 6], rArm: [4, 6] });
+        if (down > 0.5) {
+          drawPerson(g, tx + 4, 212, { look: tgt, scale: 0.9, t, sit: true, dir: -0.6, mood: 'worried', lArm: [-8, 8], rArm: [6, 8] });
+          g.save(); g.translate(338, 210); g.rotate(1.3); g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.3; g.beginPath(); g.roundRect(-8, -6, 16, 12, 2); g.fill(); g.stroke(); g.beginPath(); g.arc(0, -6, 4, Math.PI, 0); g.stroke(); g.restore();
+        }
         else drawPerson(g, tx + beside * 6, 196, { look: tgt, scale: 0.9, t, dir: lerp(-0.6, 0.6, beside), mood: 'worried', lArm: [-2, -4], rArm: [6, -4] });
         // you, on the front edge of the platform, with a phone that has no signal
         let yx = fu ? 170 : 128;
-        yx = lerp(lerp(lerp(yx, 196, conf), 330, beside), yx - 14, stay);
+        yx = lerp(lerp(yx, 196, conf), 330, beside);
         yx = lerp(yx, 272, between);
-        const ydir = stay > 0.5 ? -0.5 : hold > 0.5 ? 0.1 : (beside > 0.5 ? -0.7 : 0.7);
-        drawPerson(g, yx, 212, { me: true, scale: 0.9, t, dir: ydir, moving: [conf, beside, between].some(k => k > 0.05 && k < 0.95), walk: t * 3,
+        yx = lerp(yx, 134, ease(away)); // fuA: you back away along the platform
+        const ydir = stay > 0.5 ? 0.4 : hold > 0.5 ? 0.3 : (beside > 0.5 ? -0.7 : 0.7);
+        drawPerson(g, yx, 212, { me: true, scale: 0.9, t, dir: away > 0.05 ? (away < 0.9 ? -0.6 : 0.5) : ydir, moving: [conf, beside, between, away].some(k => k > 0.05 && k < 0.95), walk: t * 3,
           lArm: between > 0.3 ? [-14, -2] : [lerp(-3, -6, beside), lerp(5, -2, beside)], rArm: between > 0.3 ? [14, -2] : conf > 0.3 ? [12, -14] : [lerp(4, 3, stay + hold), lerp(-10, 5, stay + hold)] });
         const ph = (1 - Math.max(conf, beside, between)) * (1 - (stay + hold) * 0.6);
         if (ph > 0.01) {
@@ -1218,7 +1297,7 @@
           g.save(); g.globalAlpha = ph; g.strokeStyle = GRAPH; g.lineWidth = 1; for (let k = 0; k < 3; k++) g.strokeRect(yx + 26 + k * 4, 160 - k * 3, 2.5, 4 + k * 3);
           g.strokeStyle = INK; line(g, yx + 25, 149, yx + 38, 163); g.restore();
         }
-        say(g, yx + 6, 122, 40, yx + 2, 146, conf);
+        say(g, yx + 6, 122, 40, yx + 2, 146, conf * (1 - turn * (1 - ground)) * (1 - away));
         thread(g, yx + 10, 174, tx - 10, 166, 10, beside * 0.9);
       },
     },
@@ -1237,7 +1316,7 @@
         g.stroke(); g.strokeStyle = HAIR; g.lineWidth = 1; for (let x = 0; x < 400; x += 50) for (let k = 1; k < 4; k++) line(g, x + 40 - k * 9, 34 - k * 4.5, x + 40 - k * 9, 34);
         // a machine on the floor
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.fillRect(318, 130, 66, 80); g.strokeRect(318, 130, 66, 80);
-        g.lineWidth = 1.3; ellipse(g, 351, 160, 14, 14); g.stroke(); line(g, 351, 160, 351 + Math.cos(t * (reduce ? 0 : 0.6)) * 11, 160 + Math.sin(t * (reduce ? 0 : 0.6)) * 11);
+        g.lineWidth = 1.3; ellipse(g, 351, 160, 14, 14); g.stroke(); line(g, 351, 160, 359, 152);
         g.strokeRect(326, 186, 50, 10);
         // the shift board: who works days, who works nights. One row is all nights.
         const bx = 140, by = 52, rows = 3, cols = 6, cw = 18, rh = 20;
@@ -1257,11 +1336,13 @@
         door(g, 16, 96, 42, 210, 0, { pane: true });
         // your colleague, who helped build your career, pinning up the week
         const men = npcLook(551), mate = Object.assign({}, npcLook(553), { eyes: 'sleepy' });
-        drawPerson(g, 214, 210, { look: men, scale: 0.92, t, dir: lerp(-0.4, -0.8, rep), lArm: [lerp(-6, -3, let_), lerp(-16, 5, let_)] });
+        drawPerson(g, 214, 210, { look: men, scale: 0.92, t, dir: lerp(-0.4, -0.8, rep), lArm: [-6, -16] });
+        g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.2; g.fillRect(186, 150, 12, 12); g.strokeRect(186, 150, 12, 12); moon(g, 192, 156, 3.5, 1);
         drawPerson(g, 288, 210, { look: mate, scale: 0.86, t: reduce ? 0 : t * 0.7, dir: -0.3 });
+        g.save(); g.strokeStyle = GRAPH; g.lineWidth = 1; g.setLineDash([1.5, 3.5]); line(g, 284, 162, bx - 6, by + rh * 1.5); g.restore();
         // you: to the HR door with a note, or staying put
         const yx = lerp(128, 76, rep);
-        drawPerson(g, yx, 210, { me: true, scale: 0.9, t, dir: rep > 0.5 ? -0.7 : 0.6, moving: rep > 0.05 && rep < 0.95, walk: t * 3, rArm: [lerp(6, 3, let_), lerp(-6, 5, let_)] });
+        drawPerson(g, yx, 210, { me: true, scale: 0.9, t, dir: rep > 0.5 ? -0.7 : lerp(0.6, 0.1, let_), moving: rep > 0.05 && rep < 0.95, walk: t * 3, rArm: [lerp(6, 3, let_), lerp(-6, 5, let_)] });
         const pu = ease(clamp01((rep - 0.6) / 0.4));
         paper(g, lerp(yx + 20, 38, pu), lerp(170, 204, pu), 12, 15, 0, (1 - let_ * 0.9) * (1 - clamp01((rep - 0.92) * 12)));
         thread(g, yx + 12, 172, 202, 172, 16, 0.9, rep > 0.5);
@@ -1296,19 +1377,35 @@
         const [ax, ay] = walkIn(pa, 316), [bx2, by2] = walkIn(pb, 364);
         drawPerson(g, ax, ay, { look: other, scale: 0.88, t, sit: pa < 0.05, dir: pa > 0.05 ? -0.8 : lerp(-0.5, 0.2, pb), moving: pa > 0.05 && pa < 0.95, walk: t * 3 });
         drawPerson(g, bx2, by2, { look: kid, scale: 0.88, t, sit: pb < 0.05, dir: pb > 0.05 ? -0.8 : lerp(-0.5, 0.2, pa), moving: pb > 0.05 && pb < 0.95, walk: t * 3 });
+        star(g, ax + 2, ay - 52, 4, 1, true);
         thread(g, 94, 72, bx2 + 4, by2 - 40, 30, 0.75, pa > 0.5);
       },
     },
 
-    // ---------------------------------------------------------------- D6 The Leaked Draft
+    // ---------------------------------------------------------------- D6 The Pension Cut
     pensions: {
-      base(v) { sc.x.v = v; sset({ pub: 0, box: 0, shut: 0 }); },
-      acts: { 'D6-A': { pub: 1 }, 'D6-B': { shut: 1 } },
+      base(v) {
+        sc.x.v = v;
+        sset({ pub: 0, box: 0, shut: 0, home: 0, ment: 0, still: 0 });
+        if (v === 'fuB') sset({ shut: 1 });
+      },
+      shift(v) {
+        if (v === 'fuA') sto({ home: 1 }, 0.9);
+        if (v === 'fuB') sto({ ment: 1 }, 0.9);
+      },
+      acts: {
+        'D6-A': { pub: 1 }, 'D6-B': { shut: 1 },
+        'D6-FUA-A': { pub: 1 }, 'D6-FUA-B': { shut: 1 },
+        'D6-FUB2-A': { pub: 1 }, 'D6-FUB2-B': { still: 1 },
+      },
       async act(a) {
-        await actor(this.acts, 0.9, async (id, m) => { if (m.pub) { sto({ pub: 1 }, 0.8); await sleep(1100); sto({ box: 1 }, 1.4); } else sto(m, 1.1); })(a);
+        await actor(this.acts, 0.9, async (id, m) => {
+          if (m.pub) { if (V('shut') > 0.5) { sto({ shut: 0 }, 1.6); await sleep(900); } sto({ pub: 1 }, 0.8); await sleep(1100); sto({ box: 1 }, 1.4); }
+          else sto(m, 1.1);
+        })(a);
       },
       draw(g, t) {
-        const pub = V('pub'), box = V('box'), shut = V('shut');
+        const pub = V('pub'), box = V('box'), shut = V('shut'), home = V('home'), ment = V('ment'), still = V('still');
         indoor(g);
         // night through a tall window; the retirees whose pensions will be cut
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.fillRect(20, 24, 210, 126); g.strokeRect(20, 24, 210, 126);
@@ -1316,14 +1413,22 @@
         g.strokeStyle = INK; g.lineWidth = 1.3; line(g, 125, 24, 125, 150);
         const rx = 94, ry = 74, rr = 42;
         inFrame(g, rx, ry, rr, 1, o => {
-          for (let r = 0; r < 5; r++) for (let c = 0; c < 10; c++) {
-            const x = rx - 38 + c * 8.4 + (r % 2) * 4, y = ry - 26 + r * 11;
-            o.fillStyle = PAPER; o.strokeStyle = r < 3 ? GRAPH : INK; o.lineWidth = 1; ellipse(o, x, y, 3.2, 3.2); o.fill(); o.stroke();
+          for (let r = 0; r < 4; r++) for (let c = 0; c < 9; c++) { // rows and rows of people
+            const x = rx - 40 + c * 10 + (r % 2) * 5, y = ry - 28 + r * 13;
+            o.fillStyle = PAPER; o.strokeStyle = r < 2 ? GRAPH : INK; o.lineWidth = 1;
+            o.beginPath(); o.arc(x, y + 9, 5, Math.PI, 0); o.fill(); o.stroke(); ellipse(o, x, y + 1, 3.4, 3.4); o.fill(); o.stroke();
           }
           drawPerson(o, rx - 12, ry + 44, { scale: 0.5, t: reduce ? 0 : t * 0.6, phase: 571, dir: 0.3 });
           drawPerson(o, rx + 12, ry + 44, { scale: 0.48, t: reduce ? 0 : t * 0.6, phase: 572, dir: -0.3 });
         });
-        hourglass(g, rx + rr + 4, ry - rr + 8, shut, t);
+        hourglass(g, rx + rr + 4, ry - rr + 8, sc.x.v === 'fuB' ? still : shut, t);
+        // fuA: your home and your savings, which the lawsuit would take
+        inFrame(g, 290, 58, 30, home * (1 - box * 0.55), o => {
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 260, 78, 320, 78);
+          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.3; o.fillRect(272, 56, 28, 22); o.strokeRect(272, 56, 28, 22);
+          o.beginPath(); o.moveTo(268, 56); o.lineTo(286, 42); o.lineTo(304, 56); o.closePath(); o.fill(); o.stroke(); o.strokeRect(282, 66, 8, 12);
+          for (let k = 0; k < 4; k++) { o.beginPath(); o.ellipse(310, 75 - k * 3.4, 6, 2, 0, 0, Math.PI * 2); o.fill(); o.stroke(); }
+        }, box > 0.5);
         // the agreement you signed, pinned to the wall
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.3; g.fillRect(338, 46, 40, 52); g.strokeRect(338, 46, 40, 52);
         g.strokeStyle = GRAPH; g.lineWidth = 1; for (let y = 54; y < 80; y += 5) line(g, 343, y, 373, y);
@@ -1361,11 +1466,20 @@
         // you
         const stand = box > 0.5;
         if (!stand) chair(g, 300, 190, 1, 210, 1);
+        // fuB: one of them is your grandmother
+        thread(g, 260, 62, rx + rr - 2, ry - 6, 8, ment * 0.6, true);
+        inFrame(g, 290, 58, 30, ment, o => {
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 260, 78, 320, 78);
+          chair(o, 292, 66, 1, 78, 1);
+          drawPerson(o, 292, 66, { look: Object.assign({}, npcLook(573), { eyes: 'sleepy' }), scale: 0.6, t: reduce ? 0 : t * 0.6, sit: true, dir: lerp(-0.4, 0.3, still) });
+        });
+        heart(g, 318, 34, 8, ment * (1 - still * 0.5));
+        thread(g, 296, 156, 290, 90, 10, ment * (1 - still * 0.5) * 0.8);
         drawPerson(g, stand ? 302 : 300, stand ? 210 : 190, { me: true, scale: 0.9, t, sit: !stand, dir: lerp(-0.6, -0.2, shut), rArm: [lerp(-4, 3, shut), lerp(-2, 5, shut)], lArm: [lerp(-10, -3, shut), lerp(-2, 5, shut)] });
       },
     },
 
-    // ---------------------------------------------------------------- D10 The Returning Favor
+    // ---------------------------------------------------------------- D10 The Housing List
     favor: {
       base(v) { sc.x.v = v; sset({ up: 0, no: 0 }); },
       acts: { 'D10-A': { up: 1 }, 'D10-B': { no: 1 } },
@@ -1389,21 +1503,20 @@
         g.strokeStyle = INK; g.lineWidth = 1.2; for (const y of [60, 82]) for (const x of [286, 318]) { g.strokeRect(x, y, 22, 4); line(g, x, y + 4, x, y + 10); line(g, x + 22, y + 4, x + 22, y + 10); }
         g.restore();
         // the woman who took you in when you had nowhere to go, and her grandson
-        const her = Object.assign({}, npcLook(581), { eyes: 'sleepy' }), son = npcLook(583);
-        inFrame(g, 176, 56, 32, 1, o => {
-          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 144, 80, 208, 80);
-          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.3; o.fillRect(180, 34, 22, 46); o.strokeRect(180, 34, 22, 46);
-          o.strokeStyle = GRAPH; o.lineWidth = 1; for (const an of [-2.6, -3.0, 2.8]) line(o, 191 + Math.cos(an) * 14, 56 + Math.sin(an) * 14, 191 + Math.cos(an) * 20, 56 + Math.sin(an) * 20);
-          drawPerson(o, 191, 80, { look: her, scale: 0.5, t: 0, dir: -0.5, lArm: [-8, 0] });
-          drawPerson(o, 166, 80, { me: true, scale: 0.42, t: 0, dir: 0.5 });
-          o.strokeStyle = GRAPH; for (let k = 0; k < 7; k++) line(o, 150 + k * 6, 40 + (k % 3) * 9, 148 + k * 6, 46 + (k % 3) * 9);
+        const her = Object.assign({}, npcLook(581), { eyes: 'sleepy' }), son = npcLook(586);
+        inFrame(g, 178, 60, 40, 1, o => { // years ago: her open door, and you on the step
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 138, 90, 218, 90);
+          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.4; o.fillRect(184, 32, 28, 58); o.strokeRect(184, 32, 28, 58);
+          drawPerson(o, 198, 90, { look: her, scale: 0.62, t: 0, dir: -0.5, lArm: [-10, -2] });
+          drawPerson(o, 164, 90, { me: true, scale: 0.5, t: 0, dir: 0.5 });
+          o.strokeStyle = GRAPH; for (let k = 0; k < 6; k++) line(o, 146 + k * 6, 36 + (k % 3) * 10, 144 + k * 6, 42 + (k % 3) * 10);
         });
         // the counter between you
         const yx = 164;
         drawPerson(g, yx, 210, { me: true, scale: 0.9, t, dir: lerp(0.6, 0.3, no), lArm: [lerp(-3, -14, up), lerp(5, -12, up)] });
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.rect(186, 160, 64, 7); g.fill(); g.stroke(); g.beginPath(); g.rect(192, 167, 52, 43); g.fill(); g.stroke();
         drawPerson(g, 282, 210, { look: her, scale: 0.86, t: reduce ? 0 : t * 0.6, dir: lerp(-0.6, -0.1, no) });
-        drawPerson(g, 326, 210, { look: son, scale: 0.9, t, phase: 583, dir: -0.5 });
+        drawPerson(g, 326, 210, { look: son, scale: 0.9, t, phase: 586, dir: -0.5 });
         thread(g, yx + 10, 172, 270, 172, 18, 0.85, no > 0.5);
         say(g, yx + 8, 124, 40, yx + 4, 146, no);
       },
@@ -1411,15 +1524,28 @@
 
     // ---------------------------------------------------------------- D11 The Silent Witness
     witness: {
-      base(v) { sc.x.v = v; sset({ ask: 1, whole: 0, part: 0, refuse: 0 }); },
-      acts: { 'D11-A': { whole: 1, ask: 0 }, 'D11-B': { part: 1, ask: 0 }, 'D11-C': { refuse: 1, ask: 0 } },
+      base(v) {
+        sc.x.v = v;
+        sset({ ask: 1, whole: 0, part: 0, refuse: 0, jail: 0, held: 0, jury: 0, blame: 0 });
+        if (v === 'fuA') sset({ ask: 0, whole: 1 });
+        if (v === 'fuB') sset({ ask: 0 });
+      },
+      shift(v) {
+        if (v === 'fuA') sto({ jail: 1 }, 0.9);
+        if (v === 'fuB') sto({ jury: 1 }, 0.9);
+      },
+      acts: {
+        'D11-A': { whole: 1, ask: 0 }, 'D11-B': { part: 1, ask: 0 }, 'D11-C': { refuse: 1, ask: 0 },
+        'D11-FUA-A': { held: 1 }, 'D11-FUA-B': { whole: 0, part: 1, jail: 0.35 },
+        'D11-FUB2-A': { whole: 1 }, 'D11-FUB2-B': { blame: 1 },
+      },
       async act(a) { await actor(this.acts, 0.9)(a); },
       draw(g, t) {
-        const ask = V('ask'), whole = V('whole'), part = V('part'), refuse = V('refuse');
+        const ask = V('ask'), whole = V('whole'), part = V('part'), refuse = V('refuse'), jail = V('jail'), held = V('held'), jury = V('jury'), blame = V('blame');
         indoor(g);
         // the courtroom: columns, the bench, the witness stand
         g.strokeStyle = HAIR; g.lineWidth = 1; for (const x of [40, 120, 280, 360]) { g.strokeRect(x - 8, 20, 16, 182); line(g, x - 12, 20, x + 12, 20); }
-        const judge = npcLook(591), bro = npcLook(593);
+        const judge = npcLook(591), bro = npcLook(593), other = npcLook(597);
         drawPerson(g, 200, 104, { look: judge, scale: 0.85, t, sit: true, dir: lerp(0.3, 0.6, refuse) });
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.7; g.beginPath(); g.rect(140, 112, 120, 98); g.fill(); g.stroke();
         g.beginPath(); g.rect(134, 106, 132, 7); g.fill(); g.stroke();
@@ -1428,21 +1554,54 @@
         // what goes on the record
         const rec = Math.max(whole, part);
         if (rec > 0.01) {
-          paper(g, 236, 92, 26, 30, 0.05, rec);
-          g.save(); g.globalAlpha = rec; g.translate(236, 92); g.rotate(0.05); g.strokeStyle = INK; g.lineWidth = 1.2;
+          paper(g, 112, 86, 26, 30, -0.05, rec);
+          g.save(); g.globalAlpha = rec; g.translate(112, 86); g.rotate(-0.05); g.strokeStyle = INK; g.lineWidth = 1.2;
           line(g, -8, -6, 8, -6); line(g, -8, 6, 8, 6);
           if (whole > 0.5) line(g, -8, 0, 8, 0); else { g.setLineDash([1.5, 3]); line(g, -8, 0, 8, 0); }
           g.restore();
         }
         // your brother at the defence table
+        drawPerson(g, 70, 190, { look: bro, scale: 0.88, t, sit: true, dir: lerp(lerp(0.6, 0.8, refuse), 0.2, held * jail) });
         desk(g, 26, 114, 176);
-        drawPerson(g, 70, 190, { look: bro, scale: 0.88, t, sit: true, dir: lerp(0.6, 0.8, refuse) });
+        // fuA: where your answer would likely send him, a door with a barred window
+        inFrame(g, 52, 62, 30, jail, o => {
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 22, 84, 82, 84);
+          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.4; o.fillRect(40, 46, 24, 38); o.strokeRect(40, 46, 24, 38);
+          barred(o, 45, 52, 14, 10, 1);
+        }, held < 0.5);
+        thread(g, 62, 150, 52, 92, 6, jail * 0.6, true);
+        // fuB: the other man, hurt and unable to work, who the court may decide started it
+        inFrame(g, 340, 62, 30, jury, o => {
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 310, 84, 370, 84);
+          chair(o, 332, 72, 1, 84, 1);
+          drawPerson(o, 332, 72, { look: other, scale: 0.55, t, sit: true, dir: -0.3, mood: whole > 0.5 ? null : 'worried' });
+          o.strokeStyle = INK; o.lineWidth = 1.6; line(o, 356, 84, 352, 56); o.beginPath(); o.arc(355, 56, 3, Math.PI, 0); o.stroke();
+        });
+        // what he'd get for his injuries: nothing, unless you say it
+        envelope(g, 378, 104, jury * whole, 0.6);
+        // the court's eye: towards the other man, or (if you say it) towards your brother
+        if (jury > 0.01) {
+          g.save(); g.strokeStyle = INK; g.lineWidth = 1.2; g.lineCap = 'round';
+          g.globalAlpha = jury * (1 - whole) * (0.45 + blame * 0.5); g.setLineDash(blame > 0.5 ? [] : [3, 4]);
+          g.beginPath(); g.moveTo(226, 86); g.quadraticCurveTo(272, 40, 308, 58); g.stroke();
+          g.globalAlpha = jury * whole * 0.85; g.setLineDash([]);
+          g.beginPath(); g.moveTo(170, 96); g.quadraticCurveTo(120, 110, 90, 146); g.stroke();
+          g.restore();
+        }
         // you, in the witness stand (C: you step down and accept the charge)
-        const yx = lerp(320, 378, refuse), stand = refuse < 0.2;
-        drawPerson(g, yx, 206, { me: true, scale: 0.9, t, dir: lerp(-0.7, -0.4, refuse), moving: refuse > 0.05 && refuse < 0.95, walk: t * 3 });
-        g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.rect(290, 170, 62, 40); g.fill(); g.stroke(); g.beginPath(); g.rect(286, 165, 70, 6); g.fill(); g.stroke();
-        thread(g, (stand ? 310 : yx - 10), 160, 82, 156, 40, 0.85, whole > 0.5);
-        talk(g, yx - 14, 150, 260, 114, Math.max(whole, part), t, 12);
+        const yx = lerp(320, 378, refuse), stand = refuse < 0.2, yy = lerp(184, 208, clamp01(refuse * 3));
+        drawPerson(g, yx, yy, { me: true, scale: 0.9, t, dir: lerp(-0.7, -0.4, refuse), moving: refuse > 0.05 && refuse < 0.95, walk: t * 3 });
+        g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.rect(290, 180, 62, 30); g.fill(); g.stroke(); g.beginPath(); g.rect(286, 175, 70, 6); g.fill(); g.stroke();
+        thread(g, (stand ? 310 : yx - 10), stand ? 150 : 170, 82, 156, 40, 0.85, whole > 0.5);
+        talk(g, yx - 14, 140, 262, 112, Math.max(whole, part), t, 12);
+        // B: "I didn't see", a closed eye
+        if (part > 0.01) {
+          bubble(g, yx - 22, 108, 30, 22, yx - 12, 124, part);
+          g.save(); g.globalAlpha = Math.min(1, part); g.strokeStyle = INK; g.lineWidth = 1.4; g.lineCap = 'round';
+          g.beginPath(); g.arc(yx - 22, 104, 7, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke();
+          for (const an of [0.3, 0.5, 0.7]) { const a2 = an * Math.PI; line(g, yx - 22 + Math.cos(a2) * 7, 104 + Math.sin(a2) * 7, yx - 22 + Math.cos(a2) * 10, 104 + Math.sin(a2) * 10); }
+          g.restore();
+        }
         inFrame(g, 340, 62, 30, refuse, o => {
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 310, 84, 370, 84);
           o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.4; o.fillRect(328, 46, 24, 38); o.strokeRect(328, 46, 24, 38);

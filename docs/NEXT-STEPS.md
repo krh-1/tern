@@ -4,7 +4,7 @@
 
 ## Where things stand
 
-**The game is built and live.** All five worlds are playable in `game/` and on storych.art (every push to `main` redeploys it):
+**The game is built and live.** All five worlds are playable in `game/` and on storych.art (push to `main`, then rebuild storych.art; see README → Deploy):
 
 | World | Questions | Opens when | Content status |
 |---|---|---|---|

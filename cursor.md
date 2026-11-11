@@ -17,7 +17,7 @@ A calm, ink-on-paper game of hard moral choices. You walk a map of five worlds (
 - **Calm, ink on paper, no wayfinding.** Black and white only; little motion; scenes change before the words; no arrows to unseen stops; no progress numbers.
 - **Never shift an earlier world's layout** (its street control points and random sequence are fixed).
 - **Plans on disk** for substantial work (`game/plan-*.md`); tell Ken before delegating, with the done-check.
-- **A push to `main` is a release** (storych.art redeploys automatically).
+- **`main` is what ships:** storych.art's build pulls it. The auto-rebuild on push fails until `VERCEL_TOKEN` is set; rebuild with `vercel redeploy` (see README).
 - **"Done" needs proof:** node checks plus a headless Chrome run with no console errors (see ARCHITECTURE → Testing).
 
 ## After every session

@@ -358,3 +358,8 @@ This is the institutional memory of the codebase across agent sessions and conte
 **Context:** The button "Read more about you" sat right above a different section titled "More about you" (review item 8). Ken: "Yes, rename it" (2026-11-10).
 **Discovery:** Two labels that differ by one word read as the same thing, so players expect the button to open the section right below it.
 **Action:** The chip section (portrait lines 4 to 8) is "Also true of you"; the button and its detail view keep "Read more about you". Don't reuse "more about you" for any other label. Earlier entries that say "More about you" for the chips mean this section.
+
+### 2026-11 — Deploying: the Auto-Rebuild Never Ran
+**Context:** Ken asked to deploy the park rewrite to storych.art/tern (2026-11-10).
+**Discovery:** The site is hamada-world on Vercel, and its `prebuild` (`scripts/sync-content.mjs --tern-only`) downloads this repo's `main` from GitHub and copies `game/` without `.md` files. The GitHub workflow that should rebuild it on every push has failed on every push since 2026-10-03, because the `VERCEL_TOKEN` secret was never added. So pushes reached GitHub but not the site until someone rebuilt it by hand.
+**Action:** To release: push to `main`, then `vercel redeploy <latest production deployment URL> --target production --scope team_EQGS2uczGs5QOazkhAIixbRv` (find the URL with `vercel ls hamada-world --prod`). Check the build log shows `Tern REMOTE … source=github:krh-1/tern@main`, then confirm a new string is live. Adding `VERCEL_TOKEN` to the repo's secrets would make the workflow work; that's Ken's call, since it's a credential.

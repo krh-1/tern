@@ -153,7 +153,7 @@ Ken commits. Agents commit only when asked.
 | `fix/[name]` | Bug fixes. |
 | `content/[name]` | New questions, notes, tendencies. |
 
-storych.art's build pulls `main`, so whatever is on `main` ships at the next rebuild. The automatic rebuild on push (`.github/workflows/deploy-storychart.yml`) fails until the `VERCEL_TOKEN` secret is set; until then, rebuild with `vercel redeploy` (see README). The game is static files.
+Every push to `main` rebuilds storych.art through `.github/workflows/deploy-storychart.yml`, and the build pulls `main`, so a push is a release. The game is static files. The game is static files.
 
 ---
 

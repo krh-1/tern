@@ -72,4 +72,4 @@ cursor.md, .cursor/rules/  # agent instructions for Cursor
 
 ## Deploying
 
-storych.art/tern is the hamada-world site on Vercel; its build pulls this repo's `main` from GitHub (`.md` files excluded). To release: push to `main`, then rebuild storych.art (`vercel redeploy <latest production URL> --target production`). `.github/workflows/deploy-storychart.yml` is meant to do the rebuild on every push, but it fails until the `VERCEL_TOKEN` secret is added in the GitHub repo settings. The game is plain static files, so any static host could serve the `game/` folder.
+storych.art/tern is the hamada-world site on Vercel; its build pulls this repo's `main` from GitHub (`.md` files excluded). Every push to `main` triggers `.github/workflows/deploy-storychart.yml`, which tells Vercel to rebuild storych.art, so a push is a release. The workflow needs the `VERCEL_TOKEN` repository secret (a Vercel token scoped to the kens-projects team). If it fails, rebuild by hand: `vercel redeploy <latest production URL> --target production`. The game is plain static files, so any static host could serve the `game/` folder.

@@ -1,6 +1,6 @@
 # When Tern main ships, redeploy storych.art (hamada-world) Production so the
 # build-time sync pulls this tip into /tern — no manual Peanut redeploy.
-# Primary: Vercel Redeploy API (Origin-linked projects have no Deploy Hooks).
+# Primary: Vercel API, a new deployment from the latest production one (same as `vercel redeploy`) (Origin-linked projects have no Deploy Hooks).
 # Optional fallback: STORYCHART_DEPLOY_HOOK / VERCEL_DEPLOY_HOOK if Git-connected later.
 name: Deploy storych.art
 
@@ -73,8 +73,8 @@ jobs:
             -X POST \
             -H "Authorization: Bearer ${VERCEL_TOKEN}" \
             -H "Content-Type: application/json" \
-            "https://api.vercel.com/v13/deployments/${DEP_ID}/redeploy?${TEAM_QS}" \
-            -d '{"target":"production"}')
+            "https://api.vercel.com/v13/deployments?forceNew=1&${TEAM_QS}" \
+            -d "{\"name\":\"hamada-world\",\"deploymentId\":\"${DEP_ID}\",\"target\":\"production\"}")
           echo "Redeploy HTTP status: $redeploy_code"
           if [ "$redeploy_code" -lt 200 ] || [ "$redeploy_code" -ge 300 ]; then
             echo "::error::Redeploy failed (HTTP $redeploy_code)."

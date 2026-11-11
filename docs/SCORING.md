@@ -50,7 +50,7 @@ For each axis, over a set of questions:
 - **total:** the sum of `possible()` over all questions in the set.
 - **lean** = score ÷ got × 1.6, clamped to -1 … 1. It's how far the compass bar fills toward one side. The 1.6 factor stretches the bar, so a player who answers consistently reaches its end without picking the strongest option every time.
 - **confidence** = got ÷ total: how much of the possible evidence for this axis is in.
-- **letter:** the positive letter if score ≥ 0, else the negative letter. A tie goes to the positive letter.
+- **letter:** the positive letter if score > 0, the negative letter if score < 0. **An exact tie (score 0) goes to the side of the most recent answer that moved this axis** (Ken, 2026-11-10): the latest question answered (its `order`), and within it the latest step. `tied` is true for such an axis. If nothing has moved the axis yet, the letter is the positive one. `toward` and `away` follow the letter, and the aura leans a hair toward the letter's side so its colour matches. Redoing an answer makes it the most recent, so it can settle a tie. Within the code, only park answers count, so later worlds never change it.
 - **touched:** how many answered questions can move this axis (their `possible()` is above zero), whether or not the picked answer moved it.
 
 The compass is scored over every question in the game, so it learns from all worlds.
@@ -75,9 +75,9 @@ Each shown line carries its evidence (the supporting answers you picked) and its
 
 ## 7. Headline, description, protect and trade
 
-- **Headline:** the text of the top line. It shows at 4 park answers. When it changes later, the panel marks it as changed.
+- **Headline:** the text of the top line. It shows at 4 park answers, or at the first answer after that once a line has enough support (its arrival screen waits for it). The current headline holds while it is still tied for strongest (`opts.keep` in `compute`), so a tie-break never swaps it; it changes only when another line overtakes it, and the panel then marks it as changed.
 - **Description:** lines 2 and 3, joined.
-- **More about you:** up to 5 more lines after the headline (so lines 2 and 3 appear both in the description and here).
+- **Also true of you:** up to 5 more lines after the description (lines 4 to 8), so no line is shown twice. "Read more about you" explains lines 1 to 8.
 - **You protect:** the `protect` phrases of the shown lines, in order, without repeats, up to 4.
 - **You'll trade away:** their `trade` phrases, without repeats and without anything already in "You protect", up to 4.
 
@@ -101,7 +101,7 @@ Unlocks trigger on how many questions you've answered, never on which ones. Clos
 |---|---|
 | 1 | Your first answer note |
 | 2 | Your compass |
-| 4 | Your one-line summary (the headline) |
+| 4 | Your one-line summary (the headline; only marked as seen once a headline actually exists, so its arrival screen still comes) |
 | 6 | What you protect |
 | 8 | Where you're torn (only marked as seen once a tension actually exists) |
 | 10 | Your whole compass |
@@ -141,13 +141,13 @@ A player answers four park questions:
 | Question | Picks |
 |---|---|
 | Q1 The Trolley | Q1-A (pull), Q1-FUA-B (not if it's my mother), Q1-FUB-B (not my child, even for 100) |
-| B09 The 2 A.M. Call | B09-A (cover for my sibling), B09-FUA-B (stay quiet even when an innocent person is arrested) |
+| B09 The 2 A.M. Call | B09-A (cover for my sibling), B09-FUA-B (keep quiet even when an innocent person is arrested) |
 | D8 The Waiting List | D8-A (make the call) |
-| B02 The Deathbed Question | B02-B ("Yes, it's doing well"), B02-FU-B (his peace matters more than the promise) |
+| B02 The Deathbed Question | B02-B (tell him it's doing well), B02-FU-B (still tell him, though he asked never to be lied to) |
 
-**`OR` axis.** Picks: Q1-A `+3 × 1`, B02-B `+2 × 1`, B02-FU-B `+2 × 1.5`. Score = 3 + 2 + 3 = **8**. Answered questions that can move `OR`: Q1 (`possible` 9) and B02 (6.5), so got = 15.5 and touched = 2. Lean = 8 ÷ 15.5 × 1.6 = **0.83** toward Outcomes. Confidence = 15.5 ÷ 190.5 (all 75 questions) = 0.08.
+**`OR` axis.** Picks: Q1-A `+3 × 1`, B02-B `+2 × 1`, B02-FU-B `+2 × 1.5`. Score = 3 + 2 + 3 = **8**. Answered questions that can move `OR`: Q1 (`possible` 6: the trunk's 3 plus the 100-strangers follow-up's 2 × 1.5) and B02 (5), so got = 11 and touched = 2. Lean = 8 ÷ 11 × 1.6 = 1.16, capped at **1.00** toward Outcomes. Confidence = 11 ÷ 188 (all 75 questions) = 0.06.
 
-**All axes:** O (lean 0.83), I (-1.00), H (1.00), L (1.00), D (-1.00). Every axis is touched by 2 or more questions, so all five bars show. The code would read `OIHLD`, but it stays hidden until all 12 park questions are answered.
+**All axes:** O (lean 1.00), I (-1.00), H (1.00), L (1.00), D (-1.00). Four axes are touched by 2 or more questions and show on the compass. `SD` is touched only by B09 (D8 no longer moves it), so its bar waits. The code would read `OIHLD`, but it stays hidden until all 12 park questions are answered.
 
 **Lines.** `bend-for-love` has 5 supporting picks (B09-A, B09-FUA-B, D8-A, Q1-FUA-B, Q1-FUB-B) from 3 questions, none against: strength 5. `own-first` also reaches 5, but has priority 4 against `bend-for-love`'s 2, so it comes second. Then `soften-truth` and `comfort-at-end` (strength 3 each).
 
@@ -156,7 +156,7 @@ A player answers four park questions:
 - You protect: family, family and friends, people's feelings, people's peace of mind. You'll trade away: rules, fairness to strangers, the full truth, the full facts. (These unlock at 6 park answers.)
 - Tensions picked: Q1-A + Q1-FUA-B, and Q1-A + D8-A. (These unlock at 8.)
 - Unlocked now: notes, compass, headline. Next: "What you protect", 2 dots, 0 filled.
-- Calling: **B13 Two Worlds**, because Collective/Individual has the lowest confidence and B13 can move it most.
+- Calling: **B21 The Million-Dollar Button**, because Collective/Individual has the lowest confidence and B21 can move it most (7.5).
 
 To rerun this: load the five content files and `portrait.js` in node and call `compute(TERN_CONTENT, answers)`.
 
@@ -165,6 +165,8 @@ To rerun this: load the five content files and `portrait.js` in node and call `c
 - Nudges, step weights, tendencies and tensions live in `game/content*.js`. They are instrument changes: get Ken's say-so, then run `npm run export:questions` so `docs/QUESTIONS.md` matches.
 - Any new answer needs a `did` line; any new tendency needs a `detail` and a `share` line (or a deliberate decision to leave `share` out).
 - A rule change in `portrait.js` (thresholds, ladders, ordering) must be reflected here in the same change.
+- **Honesty first, balance as a check** (Ken, 2026-11-10, for every world). An answer moves a pair only if choosing it really says something about that pair. Never add a push just to even out the numbers. Then check each question for pushes with no honest opposite, and trace the most common path through it: a person on that path should get the letter they'd expect.
+- After any nudge or tendency change, run `npm run simulate` (random players: letter shares, summary changes, empty unlocks, lines that never appear) and, for the park, `npm run simulate:crowd` (estimated real answer rates; the rates are guesses, so update them when a question changes).
 
 ---
 

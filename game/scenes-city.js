@@ -420,17 +420,22 @@
     twodrivers: {
       base(v) {
         sc.x.v = v;
-        sset({ eq: 0, worse: 0, sent: 0, pt: 0, pb: 0 });
-        if (v === 'fu') sset({ eq: 1 });
+        sset({ eq: 0, worse: 0, sent: 0, pt: 0, pb: 0, sober: 0 });
+        if (v === 'fuA') sset({ eq: 1 });
+        if (v === 'fuB') sset({ worse: 1 });
       },
-      shift(v) { if (v === 'fu') sto({ sent: 1 }, 0.9); },
+      shift(v) {
+        if (v === 'fuA') sto({ sent: 1 }, 0.9);
+        if (v === 'fuB') sto({ sober: 1 }, 0.9); // a sober driver, no glasses, stopped at the same ball
+      },
       acts: {
         'B12-A': { eq: 1 }, 'B12-B': { worse: 1 },
-        'B12-FU-A': { pt: 3, pb: 3 }, 'B12-FU-B': { pt: 3, pb: 1 },
+        'B12-FUA-A': { pt: 3, pb: 3 }, 'B12-FUA-B': { pt: 3, pb: 1 },
+        'B12-FUB-A': { worse: 1, sober: 0.45 }, 'B12-FUB-B': { worse: 0, eq: 1 },
       },
       async act(a) { await actor(this.acts, 1.0)(a); },
       draw(g, t) {
-        const eq = V('eq'), worse = V('worse'), sent = V('sent'), pt = V('pt'), pb = V('pb');
+        const eq = V('eq'), worse = V('worse'), sent = V('sent'), pt = V('pt'), pb = V('pb'), sober = V('sober');
         const panel = (y0, y1, fn) => {
           g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.5; g.beginPath(); g.roundRect(12, y0, 236, y1 - y0, 10); g.fill(); g.stroke();
           g.save(); g.beginPath(); g.roundRect(13, y0 + 1, 234, y1 - y0 - 2, 9); g.clip(); fn(); g.restore();
@@ -477,6 +482,13 @@
           thread(g, 248, i ? 180 : 64, ex + (i ? 0 : -10), ey + 30, 4, 0.4, true);
         });
         drawPerson(g, 368, 214, { me: true, scale: 0.9, t, dir: -0.6, lArm: [lerp(-3, -10, settle), lerp(5, -4, settle)] });
+        // fuB: the same moment with a sober driver: no glasses, a car in outline, stopped at the same ball
+        inFrame(g, 330, 40, 32, sober, o => {
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 298, 58, 362, 58);
+          car(o, 318, 58, { s: 0.42, dash: true });
+          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.1; ellipse(o, 348, 54, 3.4, 3.4); o.fill(); o.stroke();
+        }, true);
+        thread(g, 298, 46, 180, 84, 10, sober * 0.5, true);
       },
     },
 
@@ -650,18 +662,22 @@
     mistake: {
       base(v) {
         sc.x.v = v;
-        sset({ go: 0, sorry: 0, keep: 0, doubt: 0 });
+        sset({ go: 0, sorry: 0, keep: 0, doubt: 0, friend: 0 });
       },
-      shift(v) { if (v === 'fu') sto({ doubt: 1 }, 0.9); },
+      shift(v) {
+        if (v === 'fuA') sto({ friend: 1 }, 0.9); // since then: one of your closest friends
+        if (v === 'fuB') sto({ doubt: 1 }, 0.9);
+      },
       acts: {
         'B05-A': { go: 1, sorry: 1 }, 'B05-B': { keep: 1 },
-        'B05-FU-A': { go: 1, sorry: 1 }, 'B05-FU-B': { keep: 1 },
+        'B05-FUA-A': { go: 1, sorry: 1 }, 'B05-FUA-B': { keep: 1 },
+        'B05-FUB-A': { go: 1, sorry: 1 }, 'B05-FUB-B': { keep: 1 },
       },
       async act(a) {
         await actor(this.acts, 1.2, async (id, m) => { if (m.go) { sto({ go: 1 }, 1.3); await sleep(900); sto({ sorry: 1 }, 1.4); } else sto(m, 1.0); })(a);
       },
       draw(g, t) {
-        const go = V('go'), sorry = V('sorry'), keep = V('keep'), doubt = V('doubt');
+        const go = V('go'), sorry = V('sorry'), keep = V('keep'), doubt = V('doubt'), friend = V('friend');
         indoor(g);
         const co = npcLook(451);
         // years ago: the shared project, your mistake, their name on it
@@ -684,7 +700,10 @@
         paper(g, 90, 166, 20, 7, 0, 1);
         chair(g, 300, 188, -1, 210, 1); chair(g, 98, 188, 1, 210, 1);
         drawPerson(g, 300, 188, { look: co, scale: 0.88, t, sit: true, dir: lerp(lerp(0.3, -0.2, doubt), -0.8, go), mood: doubt > 0.5 && go < 0.5 ? 'worried' : null });
-        // fu: a thought they let slip: the step they missed, still a question
+        // fuA: the two of you are close friends now, a thread and a heart between your desks
+        thread(g, 116, 150, 286, 150, 16, friend * 0.8 * (1 - go));
+        heart(g, 201, 128, 12, friend * (1 - go), false);
+        // fuB: a thought they let slip: the step they missed, still a question
         if (doubt > 0.01) {
           bubble(g, 330, 112, 40, 30, 312, 136, doubt * (1 - sorry));
           g.save(); g.globalAlpha = doubt * (1 - sorry); g.strokeStyle = INK; g.lineWidth = 1.2; line(g, 318, 124, 318, 100); line(g, 328, 124, 328, 100);
@@ -776,17 +795,22 @@
     callup: {
       base(v) {
         sc.x.v = v;
-        sset({ serve: 0, refuse: 0, leave: 0, out: 1, in_: 0, fight: 0, sit: 0, lead: 0 });
+        sset({ serve: 0, refuse: 0, leave: 0, out: 1, in_: 0, fight: 0, sit: 0, lead: 0, bridge: 0, order: 0 });
+        if (v === 'fuA') sset({ serve: 1 });
         if (v === 'fuB') sset({ out: 0 });
       },
-      shift(v) { if (v === 'fuB') { sto({ in_: 1 }, 0.8); sto({ lead: 1 }, 0.7); } },
+      shift(v) {
+        if (v === 'fuA') sto({ bridge: 1 }, 0.8); // the bridge the villagers cross to the only hospital
+        if (v === 'fuB') { sto({ in_: 1 }, 0.8); sto({ lead: 1 }, 0.7); }
+      },
       acts: {
         'B32-A': { serve: 1 }, 'B32-B': { refuse: 1 }, 'B32-C': { leave: 1 },
+        'B32-FUA-A': { order: 1 }, 'B32-FUA-B': { refuse: 1 },
         'B32-FUB-A': { serve: 1 }, 'B32-FUB-B': { sit: 1 },
       },
       async act(a) { await actor(this.acts, 0.9)(a); },
       draw(g, t) {
-        const serve = V('serve'), refuse = V('refuse'), leave = V('leave'), out = V('out'), inw = V('in_'), sit = V('sit'), lead = V('lead');
+        const serve = V('serve'), refuse = V('refuse'), leave = V('leave'), out = V('out'), inw = V('in_'), sit = V('sit'), lead = V('lead'), bridge = V('bridge'), order = V('order');
         indoor(g);
         // the front door
         door(g, 18, 98, 44, 210, Math.max(leave, serve) * 0.8, { pane: true });
@@ -838,6 +862,21 @@
           o.lineWidth = 2; line(o, 79, 64, 105, 60); o.lineWidth = 1.3;
           line(o, 114, 76, 114, 36); o.fillRect(114, 36, 11, 8); o.strokeRect(114, 36, 11, 8);
         });
+        // fuA: a river, the bridge over it, the hospital on the near bank, a villager crossing.
+        // Following the order: the bridge goes faint and the villager waits on the far bank. Nothing is shown breaking.
+        inFrame(g, 344, 56, 34, bridge, o => {
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 310, 76, 378, 76); line(o, 310, 82, 378, 82);
+          for (const [x, y] of [[340, 79], [358, 79]]) line(o, x, y, x + 5, y);
+          o.strokeStyle = INK; o.lineWidth = 1.3; line(o, 308, 66, 334, 66); line(o, 366, 66, 380, 66);
+          o.fillStyle = PAPER; o.lineWidth = 1.3; o.fillRect(314, 44, 18, 22); o.strokeRect(314, 44, 18, 22);
+          o.lineWidth = 1.6; line(o, 323, 49, 323, 57); line(o, 319, 53, 327, 53);
+          o.save(); o.globalAlpha = 1 - order * 0.75; if (order > 0.5) o.setLineDash([2, 3]);
+          o.strokeStyle = INK; o.lineWidth = 1.4; line(o, 332, 61, 370, 61);
+          o.beginPath(); o.moveTo(334, 68); o.quadraticCurveTo(351, 52, 368, 68); o.stroke();
+          o.lineWidth = 1; for (let x = 338; x < 368; x += 8) line(o, x, 61, x, 56); line(o, 336, 56, 368, 56);
+          o.restore();
+          drawPerson(o, lerp(352, 372, ease(clamp01(order))), lerp(61, 66, ease(clamp01(order))), { scale: 0.26, t, phase: 479, dir: lerp(-0.6, -0.2, order) });
+        });
         // B: the cost you accept, a door with a barred window
         inFrame(g, 96, 52, 30, refuse, o => {
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 66, 74, 126, 74);
@@ -851,18 +890,22 @@
     changed: {
       base(v) {
         sc.x.v = v;
-        sset({ pros: 0, drop: 0, hurt: 0 });
+        sset({ pros: 0, drop: 0, hurt: 0, conf: 0 });
       },
-      shift(v) { if (v === 'fu') sto({ hurt: 1 }, 0.9); },
+      shift(v) {
+        if (v === 'fuA') sto({ conf: 1 }, 0.9); // no new evidence: he walked into a police station on his own
+        if (v === 'fuB') sto({ hurt: 1 }, 0.9);
+      },
       acts: {
         'B33-A': { pros: 1 }, 'B33-B': { drop: 1 },
-        'B33-FU-A': { pros: 1 }, 'B33-FU-B': { drop: 1 },
+        'B33-FUA-A': { pros: 1 }, 'B33-FUA-B': { drop: 1 },
+        'B33-FUB-A': { pros: 1 }, 'B33-FUB-B': { drop: 1 },
       },
       async act(a) {
         await actor(this.acts, 0.9)(a);
       },
       draw(g, t) {
-        const pros = V('pros'), drop = V('drop'), hurt = V('hurt');
+        const pros = V('pros'), drop = V('drop'), hurt = V('hurt'), conf = V('conf');
         pavement(g);
         // the school, its little bell tower
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.lineJoin = 'round';
@@ -905,10 +948,18 @@
           o.strokeStyle = INK; o.lineWidth = 1.6; line(o, 252, 76, 248, 50); o.beginPath(); o.arc(251, 50, 3, Math.PI, 0); o.stroke();
           folder(o, 254, 32, 0, 1);
         });
-        // you, with the new evidence
+        // fuA: no new evidence. He walks up to a police station door on his own.
+        inFrame(g, 236, 52, 34, conf, o => {
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 202, 78, 270, 78);
+          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.4; o.fillRect(228, 34, 38, 44); o.strokeRect(228, 34, 38, 44);
+          o.strokeRect(240, 54, 14, 24); o.lineWidth = 1.1; o.strokeRect(234, 40, 26, 9);
+          txt(o, 'POLICE', 247, 44.8, 6, 1, SANS(6));
+          drawPerson(o, 226, 78, { look: man, scale: 0.42, t, dir: 0.7 });
+        });
+        // you, with the new evidence (fuA: there is none, only his confession)
         const yx = lerp(270, 250, pros);
         drawPerson(g, yx, 214, { me: true, scale: 0.9, t, dir: lerp(-0.6, -0.3, drop), rArm: [lerp(6, 3, drop), lerp(-6, 5, drop)] });
-        folder(g, lerp(yx + 22, yx + 26, drop), lerp(184, 206, drop), pros, 1);
+        folder(g, lerp(yx + 22, yx + 26, drop), lerp(184, 206, drop), pros, 1 - conf * 0.85);
       },
     },
 
@@ -986,15 +1037,19 @@
 
     // ---------------------------------------------------------------- B35 The True Story
     truestory: {
-      base(v) { sc.x.v = v; sset({ post: 0, keep: 0, kids: 0 }); },
-      shift(v) { if (v === 'fu') sto({ kids: 1 }, 0.9); },
+      base(v) { sc.x.v = v; sset({ post: 0, keep: 0, kids: 0, coach: 0 }); },
+      shift(v) {
+        if (v === 'fuA') sto({ kids: 1 }, 0.9);
+        if (v === 'fuB') sto({ coach: 1 }, 0.9); // they coach a children's team now
+      },
       acts: {
         'B35-A': { post: 1 }, 'B35-B': { keep: 1 },
-        'B35-FU-A': { post: 1 }, 'B35-FU-B': { keep: 1 },
+        'B35-FUA-A': { post: 1 }, 'B35-FUA-B': { keep: 1 },
+        'B35-FUB-A': { post: 1 }, 'B35-FUB-B': { keep: 1 },
       },
       async act(a) { await actor(this.acts, 0.9)(a); },
       draw(g, t) {
-        const post = V('post'), keep = V('keep'), kids = V('kids');
+        const post = V('post'), keep = V('keep'), kids = V('kids'), coach = V('coach');
         moon(g, 48, 34, 9, 1); stars(g, [[90, 22], [130, 44], [22, 70]], 1);
         pavement(g);
         // the newsstand
@@ -1012,12 +1067,17 @@
           const p = clamp01(post * 2 - (r * 4 + c) * 0.1);
           if (p > 0.01) { g.save(); g.globalAlpha = p; g.fillStyle = INK; g.fillRect(x + 3, y + 8, 18, 4); g.strokeStyle = INK; g.strokeRect(x + 3, y + 14, 8, 4); g.restore(); }
         }
-        // the person who did it, in a round window (fu: and their two teenage kids)
+        // the person who did it, in a round window (fuA: and their two teenage kids; fuB: the young team they coach, and a ball)
         const who = npcLook(491);
         inFrame(g, 186, 56, 36, 1, o => {
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 150, 82, 222, 82);
-          drawPerson(o, lerp(186, 172, kids), 84, { look: who, scale: 0.6, t, dir: 0.2 });
+          drawPerson(o, lerp(186, 172, Math.max(kids, coach)), 84, { look: who, scale: 0.6, t, dir: lerp(0.2, 0.5, coach) });
           faded(o, kids, c => { drawPerson(c, 194, 84, { scale: 0.46, t, phase: 492, dir: -0.3 }); drawPerson(c, 210, 84, { scale: 0.44, t, phase: 493, dir: -0.4 }); });
+          faded(o, coach, c => {
+            c.fillStyle = PAPER; c.strokeStyle = INK; c.lineWidth = 1.1; ellipse(c, 187, 80, 3.2, 3.2); c.fill(); c.stroke();
+            drawPerson(c, 200, 75, { scale: 0.26, t, phase: 497, dir: -0.3 }); // one a step further back
+            drawPerson(c, 196, 84, { scale: 0.3, t, phase: 495, dir: -0.4 }); drawPerson(c, 205, 84, { scale: 0.28, t, phase: 496, dir: -0.5 });
+          });
         });
         // the bench: the one you love, and you with your phone
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.rect(58, 192, 130, 5); g.fill(); g.stroke();
@@ -1302,7 +1362,7 @@
       },
     },
 
-    // ---------------------------------------------------------------- D3 The Informant
+    // ---------------------------------------------------------------- D3 The Worst Shifts
     shifts: {
       base(v) { sc.x.v = v; sset({ rep: 0, let_: 0 }); },
       acts: { 'D3-A': { rep: 1 }, 'D3-B': { let_: 1 } },
@@ -1334,7 +1394,7 @@
         }
         // the HR door
         door(g, 16, 96, 42, 210, 0, { pane: true });
-        // your colleague, who helped build your career, pinning up the week
+        // your manager, who helped build your career, pinning up the week
         const men = npcLook(551), mate = Object.assign({}, npcLook(553), { eyes: 'sleepy' });
         drawPerson(g, 214, 210, { look: men, scale: 0.92, t, dir: lerp(-0.4, -0.8, rep), lArm: [-6, -16] });
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.2; g.fillRect(186, 150, 12, 12); g.strokeRect(186, 150, 12, 12); moon(g, 192, 156, 3.5, 1);
@@ -1349,7 +1409,7 @@
       },
     },
 
-    // ---------------------------------------------------------------- D5 The Unearned Advantage
+    // ---------------------------------------------------------------- D5 The Mentor's Favor
     hiring: {
       base(v) { sc.x.v = v; sset({ pickA: 0, pickB: 0 }); },
       acts: { 'D5-A': { pickA: 1 }, 'D5-B': { pickB: 1 } },
@@ -1481,11 +1541,22 @@
 
     // ---------------------------------------------------------------- D10 The Housing List
     favor: {
-      base(v) { sc.x.v = v; sset({ up: 0, no: 0 }); },
-      acts: { 'D10-A': { up: 1 }, 'D10-B': { no: 1 } },
+      base(v) {
+        sc.x.v = v; sset({ up: 0, no: 0, fam: 0, plea: 0 });
+        if (v === 'fuB') sset({ no: 1 });
+      },
+      shift(v) {
+        if (v === 'fuA') sto({ fam: 1 }, 0.9); // the family at the top of the list, in their damp apartment
+        if (v === 'fuB') sto({ plea: 1 }, 0.9); // she answers you, and the old memory comes forward
+      },
+      acts: {
+        'D10-A': { up: 1 }, 'D10-B': { no: 1 },
+        'D10-FUA-A': { up: 1 }, 'D10-FUA-B': { no: 1 },
+        'D10-FUB-A': { up: 1, no: 0, plea: 0 }, 'D10-FUB-B': { plea: 0 },
+      },
       async act(a) { await actor(this.acts, 0.8)(a); },
       draw(g, t) {
-        const up = V('up'), no = V('no');
+        const up = V('up'), no = V('no'), fam = V('fam'), plea = V('plea');
         indoor(g);
         // the waiting list on the wall: families, in order. Her grandson is last.
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.5; g.fillRect(18, 30, 92, 170); g.strokeRect(18, 30, 92, 170);
@@ -1504,13 +1575,23 @@
         g.restore();
         // the woman who took you in when you had nowhere to go, and her grandson
         const her = Object.assign({}, npcLook(581), { eyes: 'sleepy' }), son = npcLook(586);
-        inFrame(g, 178, 60, 40, 1, o => { // years ago: her open door, and you on the step
+        inFrame(g, 178, 60, 40, 1 - fam, o => { // years ago: her open door, and you on the step
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 138, 90, 218, 90);
           o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.4; o.fillRect(184, 32, 28, 58); o.strokeRect(184, 32, 28, 58);
           drawPerson(o, 198, 90, { look: her, scale: 0.62, t: 0, dir: -0.5, lArm: [-10, -2] });
           drawPerson(o, 164, 90, { me: true, scale: 0.5, t: 0, dir: 0.5 });
           o.strokeStyle = GRAPH; for (let k = 0; k < 6; k++) line(o, 146 + k * 6, 36 + (k % 3) * 10, 144 + k * 6, 42 + (k % 3) * 10);
         });
+        // fuA: the family at the top of the list: a parent and a small child in a room with a damp patch on the wall
+        inFrame(g, 178, 60, 40, fam, o => {
+          o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 138, 90, 218, 90);
+          o.strokeStyle = GRAPH; o.lineWidth = 1; o.beginPath(); o.moveTo(150, 36); o.quadraticCurveTo(160, 28, 170, 34); o.quadraticCurveTo(176, 42, 168, 48); o.quadraticCurveTo(158, 54, 152, 46); o.quadraticCurveTo(144, 42, 150, 36); o.stroke();
+          for (const [x, y] of [[156, 52], [164, 51]]) line(o, x, y, x, y + 7);
+          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.2; o.fillRect(194, 34, 18, 18); o.strokeRect(194, 34, 18, 18); line(o, 203, 34, 203, 52);
+          drawPerson(o, 190, 90, { scale: 0.55, t, phase: 588, dir: -0.4 });
+          drawPerson(o, 166, 90, { scale: 0.34, t, phase: 589, dir: 0.4 });
+        });
+        thread(g, 102, lerp(row(0), row(1), u) + 7.5, 140, 66, 8, fam * 0.7 * (1 - u), true);
         // the counter between you
         const yx = 164;
         drawPerson(g, yx, 210, { me: true, scale: 0.9, t, dir: lerp(0.6, 0.3, no), lArm: [lerp(-3, -14, up), lerp(5, -12, up)] });
@@ -1518,7 +1599,10 @@
         drawPerson(g, 282, 210, { look: her, scale: 0.86, t: reduce ? 0 : t * 0.6, dir: lerp(-0.6, -0.1, no) });
         drawPerson(g, 326, 210, { look: son, scale: 0.9, t, phase: 586, dir: -0.5 });
         thread(g, yx + 10, 172, 270, 172, 18, 0.85, no > 0.5);
-        say(g, yx + 8, 124, 40, yx + 4, 146, no);
+        say(g, yx + 8, 124, 40, yx + 4, 146, no * (1 - plea));
+        // fuB: her answer, and a thread back to the day she took you in
+        say(g, 300, 128, 44, 290, 146, plea);
+        thread(g, 270, 150, 206, 92, 10, plea * 0.6, true);
       },
     },
 
@@ -1570,15 +1654,13 @@
           barred(o, 45, 52, 14, 10, 1);
         }, held < 0.5);
         thread(g, 62, 150, 52, 92, 6, jail * 0.6, true);
-        // fuB: the other man, hurt and unable to work, who the court may decide started it
+        // fuB: the other man, hurt and unable to work, who the court may blame for his own injuries
         inFrame(g, 340, 62, 30, jury, o => {
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 310, 84, 370, 84);
           chair(o, 332, 72, 1, 84, 1);
           drawPerson(o, 332, 72, { look: other, scale: 0.55, t, sit: true, dir: -0.3, mood: whole > 0.5 ? null : 'worried' });
           o.strokeStyle = INK; o.lineWidth = 1.6; line(o, 356, 84, 352, 56); o.beginPath(); o.arc(355, 56, 3, Math.PI, 0); o.stroke();
         });
-        // what he'd get for his injuries: nothing, unless you say it
-        envelope(g, 378, 104, jury * whole, 0.6);
         // the court's eye: towards the other man, or (if you say it) towards your brother
         if (jury > 0.01) {
           g.save(); g.strokeStyle = INK; g.lineWidth = 1.2; g.lineCap = 'round';

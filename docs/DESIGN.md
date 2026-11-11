@@ -16,6 +16,7 @@
 
 ### 0.1 Palette and type
 - **Pure black and white. No accent colour.** One look only (no dark mode variant).
+- **One exception: your aura** (§0.8), the glow behind the player's character. It is the only colour in the game (Ken's ruling, 2026-10-06).
 
 | Token | Hex | Use |
 |---|---|---|
@@ -65,6 +66,7 @@ The character style is **the Puff family**: small, puffy, abstract folk. The neu
 5. **Nothing centred just under the eyes.** Bands, dots and patterns there read as a mouth. Keep body patterns low and off-centre.
 6. **Name and look only.** No descriptions, traits, stats or "carries" lines. They could prime how someone answers (AGENTS.md "Avatars Must Not Prime Answers"). Names are short, made-up sounds.
 7. **Everyone in the question scenes is a puff too,** but plain and undecorated. Each keeps one shape for the whole scene and never shares the player's shape, so "you" always stands out. The player's chosen character is "you" inside every scene.
+8. **Never mark a character's body to show the player's results** (Ken's ruling, 2026-10-07). Anything printed on the body reads as skin: lines as stretch marks, dots as measles. Results show *around* the character instead (the aura, §0.8).
 
 **Current roster:** Mof (classic puff, sleepy, the neutral one, and the app icon) · Nib (round, glasses, striped lower half) · Sumi (small, all ink, shy side-glance) · Ro (soft rounded square, one big roving eye, curious) · Zig (tall stack, low zigzag band) · Zo (smooth oval, ink band across the eyes) · Tri (soft rounded triangle, arched brows, grin, periodic hop) · Duo (lopsided, split half ink / half paper, mismatched eyes, sway). Nib's glasses are the one known object, kept by Ken's choice.
 
@@ -73,6 +75,18 @@ The character style is **the Puff family**: small, puffy, abstract folk. The neu
 - Heading: **"Choose One"**. A large animated profile of the selected character plus the grid: **2×4 grid to the right in landscape; 4×2 grid below in portrait.** The selected tile is marked with the park's pennant. Hover previews on desktop; arrow keys and Enter work.
 - Buttons: **Start walking** and **Surprise me** (random pick). Starting fades the modal away into the park.
 - **Changing character later** (from the panel's "Change character" link, or by tapping your own figure) reopens the same modal with **Keep walking**. It never touches answers ("Same answers, new look.").
+
+### 0.8 The aura: your fingerprint (ratified by Ken, 2026-10-06)
+**Why:** players should carry something that is unmistakably theirs and grows as they reveal themselves, so they get attached to their character. It lives *around* the character, never on it: anything printed on the body reads as skin (lines as stretch marks, dots as measles).
+
+- **What it is:** a soft watercolour glow behind your character, **blended from your five compass letters** (Ken chose the blend over a two-colour version, 2026-10-06). Each of the ten letters has its own muted pigment; your five sit around you as one continuous blend, like the sheen on an opal, not a striped rainbow. Code: `game/aura.js`; prototype and the directions that were rejected: `prototypes/fingerprint.html`.
+- **What shapes it:** each pair contributes the colour of the letter you lean toward. The stronger the lean, the more room and colour that letter gets; a pair near the middle shows softly but still in real colour (a grey glow reads as dust or smoke). A colour joins when its pair appears on your compass (two of your questions have touched it). A hidden per-save **seed** turns the blend and shapes its edge, so two people with identical answers still differ.
+- **Palette:** O ochre · R indigo · C rust · I sky · H rose · T teal · L plum · P sage · S slate · D violet. Muted, and deliberately **not in spectrum order** (that would read as a rainbow flag). **Never yellow-green** (a cartoon smell cloud) and **never true red** (anger).
+- **How it grows:** nothing before the second answer. A pale wash at the first unlocks, gaining a colour each time a pair appears on your compass; it settles through the park; it's fully yours when your code appears (12 park answers). Each later world adds a wider, fainter wash as its unlocks arrive.
+- **When it changes:** only at unlock moments (whenever the portrait reveals something new or a world opens), easing over about two seconds. Never right after an answer that unlocks nothing, never inside a question. After "Answer again", the change waits for the next unlock.
+- **Where it shows:** behind you on the map, in character select (it stays with you when you change character: it belongs to you, not the character), and on the share card image. **Not in question scenes** (Ken's ruling, 2026-10-07): scenes are part of the instrument, and the aura must never sit beside a choice you're making.
+- **Never explained.** No legend, no label, no "your aura means…". Explaining which pair drives which quality would teach players to steer it, and every compass must look equally good.
+- **Calm:** it never pulses or moves on its own. It's drawn once into a small image and reused until it changes.
 
 ---
 
@@ -111,7 +125,7 @@ What carries it:
 | "You are a Utilitarian thinker." | "You aim for the greater good." |
 | "You are The Iron Idealist." | "You keep your word." |
 | "Processing your responses..." | No loading state. Transition directly. |
-| "Tendencies", "Your headline" | "More about you", "Your summary" |
+| "Tendencies", "Your headline" | "Also true of you", "Your summary" |
 
 ---
 
@@ -224,7 +238,7 @@ Aim for about **3.5 s** from answer to follow-up. Longer feels like a stall (D4'
 | **Your code** | The five letters and one line explaining them | 12 park answers |
 | **Share your result** | A box with **Send to a friend** | 12 park answers |
 | **Chapters** | One per later world: its one-line summary, how you change there, what you do there | That world's ladder |
-| **More about you** | Other tendencies, as chips | 4 park answers, once there's more than one |
+| **Also true of you** | Other tendencies, as chips | 4 park answers, once there's more than one |
 | **You protect / You'll trade away** | Two short lists | 6 park answers |
 | **Your compass** | Five pairs as bars from the middle ("Rules ↔ Outcomes"), each appearing once two of your questions touch it | 2 park answers; all five at 10 |
 | **Where you're torn** | Up to three tensions between your own answers | 8 park answers, and only once a real tension exists |
@@ -234,7 +248,7 @@ Aim for about **3.5 s** from answer to follow-up. Longer feels like a stall (D4'
 **Read more about you** opens an extra section under the summary: each tendency with what it means and the answers behind it ("Your answers", "Pointing the other way"), then each compass pair ("You lean clearly toward rules.") with the answers pulling each way. Facts from the player's own choices, no new judgment.
 
 **The bottom line** of the panel always says what's next:
-- a world that just opened and has no answers yet: "The City is open · Show me" (replays the look-over);
+- a world that just opened, where you haven't answered or stood yet: "The City is open · Go to the City" (replays the look-over, which ends on the same choice);
 - otherwise the next unlock and its dots: "Next: What you protect ●●○";
 - at the very end: "You've walked every world".
 
@@ -262,9 +276,9 @@ Arrival screens are slower than anything else in the game: a paper veil fades in
 | Moment | When | What it shows |
 |---|---|---|
 | **Your summary** | 4 park answers | "So far", your summary, its description, "This can change as you answer more.", **Keep walking** |
-| **Your code** | 12 park answers | "You answered every question in the park", the five letters **one at a time, left to right** (each fades in over 0.3 s, 0.5 s apart), your summary, the radar chart, the letter legend, a line that the Neighborhood is open and your code won't change there; **Send your code to a friend** (main) and **Keep walking** |
-| **A chapter** | A later world's last ladder step | The chapter name, its summary, how you change there, "Your portrait has a new chapter.", and what's next ("Past the City, the fog is lifting over the Coast."); **Send to a friend** and **Keep walking** |
-| **The look-over** | Right after the reveal screens, when a world opens | See below |
+| **Your code** | 12 park answers | "You answered every question in the park", the five letters **one at a time, left to right** (each fades in over 0.3 s, 0.5 s apart), your summary, the radar chart, the letter legend, a line that the Neighborhood is open and your code won't change there; **Send your code to a friend** (main) and **Continue** |
+| **A chapter** | A later world's last ladder step | The world's report: the chapter name, its summary, how you change there, up to three more lines about what you do there, "Your portrait has a new chapter.", "Stops you haven't answered in the City stay open." (if any are left), and what's next ("Past the City, the fog is lifting over the Coast."); **Send to a friend** and **Continue** |
+| **The look-over** | After the player taps Continue on the report (or closes sharing), when a world opens | See below |
 | **The ending** | The Observatory's chapter | "You've walked every world. Your portrait is as full as it gets, and you can always answer a question again." |
 
 The code reveal is non-negotiable: never show all five letters at once.
@@ -278,9 +292,10 @@ The code reveal is non-negotiable: never show all five letters at once.
    - "The City is open, where the main street leaves the Neighborhood."
    - "The Coast is open, where the avenue leaves the City."
    - "The Observatory is open, up the trail south of the Coast."
-5. About 4 s later the view fades back to the player. A tap or key skips it.
+5. About 3 s later a small card rises at the bottom of the map with that line and two buttons: **Go to the City** (main) and **Stay in the Neighborhood** ("on the Coast", "at the Observatory"). A tap or key before the card skips ahead to it; Escape means Stay.
+6. **Go** (Ken's ruling, 2026-10-07): the view is already on the entrance, so there's no second fade. Your character fades in just inside the entrance with one small hop, and the view eases from the wide look to your normal zoom (about 1.4 s). If you were already close by, you simply walk in. **Stay**: the view fades back to you, as before.
 
-No camera slides across the map, no bursts. It never walks the character there. "Show me" in the panel replays it until the player answers a stop in that world.
+Nothing moves until the player chooses: the report waits for Continue, the card waits for Go or Stay. A world opens at two-thirds of the previous one, so Stay matters: the unanswered stops stay open, and the worlds are connected, so you can always walk back. There's no fast way back, by design. No camera slides across the map, no bursts. "Go to the City" in the panel's bottom line replays the look-over until you've answered a stop there or are standing in it.
 
 ### 5.8 Sharing
 
@@ -317,11 +332,12 @@ Message and card copy live in `content.js` → `shareCopy`.
 | Arrival screen veil | 0.8 s |
 | Arrival screen lines | first at 0.9 s, then every 0.5 s, each fading over 1 s |
 | Code letters | one every 0.5 s, each fading over 0.3 s |
-| Look-over | fade to paper about 0.7 s, hold about 4 s, fade back about 0.9 s |
+| Look-over | fade to paper about 0.7 s, about 3 s of fog lifting, then the choice card (0.8 s rise); Stay fades back about 0.9 s |
+| Go to a world | character fades in over 0.7 s with one hop; the view settles over about 1.4 s |
 | Fog lifting | slow ease over several seconds |
 | Zoom | eased, never snaps |
 
-**Reduced motion** (`prefers-reduced-motion`): ambient motion stops and figures hold still; scenes jump to their end states; panel dissolves, arrival-screen staggers and the look-over's fades are instant.
+**Reduced motion** (`prefers-reduced-motion`): ambient motion stops and figures hold still; scenes jump to their end states; panel dissolves, arrival-screen staggers and the look-over's fades are instant; "Go to" is a plain cut, with no hop or easing.
 
 ---
 
@@ -357,7 +373,7 @@ Pinch on a phone, pinch or scroll on a trackpad, `+` / `-` on a keyboard. 0.6× 
 ---
 
 ## 11. What this is not
-- **No colour accents, no dark mode, no raster illustrations, no AI image generation** without Ken's ruling.
+- **No colour accents** (the aura, §0.8, is the one ruled exception), **no dark mode, no raster illustrations, no AI image generation** without Ken's ruling.
 - **No progress numbers.** No question counts, steps or percentages. Dots only.
 - **No points, badges, streaks, leaderboards, confetti or celebrations.** The insight is the reward.
 - **No wayfinding arrows**, compasses or edge pointers.

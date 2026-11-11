@@ -17,6 +17,7 @@ Three layers, kept apart on purpose:
 |---|---|---|
 | **Instrument** (content) | `game/content.js`, `game/content-<world>.js` | The questions, follow-ups, scoring nudges, notes and the portrait's statement library. This is measurement, not UI copy. |
 | **Portrait engine** | `game/portrait.js` | Pure logic: answers in, portrait out. No DOM. Runs in the browser and in node. |
+| **Aura** | `game/aura.js` | The player's aura: turns the portrait into the glow's settings (`target`: leans, which pairs are known, unlock progress) and draws the blend of the player's five letters (`draw`). Runs in the browser and in node. |
 | **Game engine and scenes** | `game/index.html`, `game/scenes*.js` | The map, the player, the question card, the portrait panel, unlocks, reveals, share and save. Scenes are code-drawn on a canvas. |
 
 ---
@@ -32,6 +33,7 @@ game/
 ├── content-coast.js            # world 4: 12 questions
 ├── content-observatory.js      # world 5: 18 questions
 ├── portrait.js                 # scoring and portrait logic (window.TernPortrait, or module.exports in node)
+├── aura.js                     # the player's aura (window.TernAura, or module.exports in node); see DESIGN §0.8
 ├── scenes.js                   # code-drawn scenes for the park (window.TERN_SCENES)
 ├── scenes-<world>.js           # one scene pack per later world (pushed onto window.TERN_SCENE_PACKS)
 ├── manifest.webmanifest, icons/  # home-screen install (app icon is Mof)
@@ -46,7 +48,7 @@ Elsewhere:
 - `prototypes/trolley-walk.html`: the original park prototype the engine was forked from (history; the game is now the reference).
 - `scripts/illustrations/`, `docs/ILLUSTRATION-GENERATION.md`: the image-generation pipeline, **on hold** (scenes are drawn in code).
 
-**Script load order** (in `index.html`): `content.js`, then each `content-<world>.js` in world order (each appends to `window.TERN_CONTENT`), then `portrait.js`, then `scenes.js` and each `scenes-<world>.js`.
+**Script load order** (in `index.html`): `content.js`, then each `content-<world>.js` in world order (each appends to `window.TERN_CONTENT`), then `portrait.js`, then `aura.js`, then `scenes.js` and each `scenes-<world>.js`.
 
 ---
 
@@ -188,9 +190,10 @@ When a world opens, `lookOver(region)` runs once, after any reveal screens:
 2. It comes back framed on the new world's entrance (`LOOKS[id].at`), zoomed out enough to show a landmark the player already knows.
 3. The fog lifts while that world's "?" bubbles rise one by one, west to east.
 4. One line of plain directions shows (`LOOKS[id].line`, for example "The Neighborhood is open, past the cabin and through the gate.").
-5. After about 4 seconds, the view fades back to the player. A tap or key skips it.
+5. After about 3 seconds, `askGo()` shows the choice card (`#lookc`): **Go to <world>** or **Stay <in/on/at> <where you stand>**. A tap or key before it skips ahead; Escape is Stay. `lookOver` returns `'go'` or `'stay'`.
+6. Go calls `travelTo(region)`: the player is placed at `REGIONS[].arrive` (on the road just inside the entrance, clear of buildings and stops), fades in with a hop (`player.appear`, `player.arrive`), and the camera and zoom ease from the look to the player (`settle` slows the zoom). Within 9 map units, the player walks in instead. It saves at once. Stay fades back to the player.
 
-Until the player answers a stop in that world, the panel's bottom line reads "<World> is open · Show me", which replays the look-over. It never walks the character there.
+`afterAnswer` waits for any share sheet opened from the report to close (`untilShareClosed`) before the look-over, and stops after a Go if several worlds opened at once. Until the player answers a stop in that world or stands in it (`worldAt`, tracked as `standingIn`), the panel's bottom line reads "<World> is open · Go to <world>", which replays the look-over. Any new world needs an `arrive` point; check it with `__tern.arrivals()`.
 
 ### Zoom
 - Pinch on a phone, pinch or scroll on a trackpad, `+` and `-` on a keyboard. Range 0.6× to 1.8×, always centred on the player, eased (no snapping), saved with the game.

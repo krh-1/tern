@@ -6,10 +6,10 @@ alwaysApply: false
 
 # Tern: Game Feel and UI
 
-- **Look:** pure black and white on paper, code-drawn isometric map (`docs/DESIGN.md` §0). No colour accents, dark mode, raster illustrations or AI image generation.
+- **Look:** pure black and white on paper, code-drawn isometric map (`docs/DESIGN.md` §0). No colour accents, dark mode, raster illustrations or AI image generation. The one exception is the player's aura (`game/aura.js`, DESIGN §0.8), a blend of their five letter colours behind their character; never in question scenes, never explained to players.
 - **Calm is a rule:** less motion by default; wind only through trees and leaves; water and paths never move; one slow ripple per stop; respect reduced motion.
 - **No wayfinding:** no arrows or pointers to unseen stops. A newly opened world is shown once by the look-over, never pointed at.
 - **Scenes change before the words** on every follow-up. Answer-to-follow-up time stays near 3.5 s.
-- **Characters:** the Puff family (Mof, Nib, Sumi, Ro, Zig, Zo, Tri, Duo), name and look only. People inside scenes are plain puffs that never share the player's shape. Nothing in a scene may make one answer look right.
+- **Characters:** the Puff family (Mof, Nib, Sumi, Ro, Zig, Zo, Tri, Duo), name and look only. People inside scenes are plain puffs that never share the player's shape. Nothing in a scene may make one answer look right. Never mark a character's body to show results (it reads as skin).
 - **Phone feel:** sheets follow the finger; cards glide to new heights, never snap.
 - No progress numbers, ever. The code reveals letter by letter.

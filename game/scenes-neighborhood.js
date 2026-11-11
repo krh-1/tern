@@ -1,6 +1,6 @@
 // Tern — code-drawn scenes for the Neighborhood (world 2). Same contract and style as scenes.js.
 // Ink on paper, calm motion, harm never shown. Relationships are a thin thread and relative size.
-// Contract: see game/plan.md and game/plan-neighborhood.md. Variants are step keys ('trunk', 'fu', 'fuA', 'fuB').
+// Contract: see game/plan.md and game/plan-neighborhood.md. Variants are step keys ('trunk', 'fu', 'fuA', 'fuB', 'fuAA').
 (window.TERN_SCENE_PACKS = window.TERN_SCENE_PACKS || []).push(function (h) {
   const { sc, V, sset, sto, hopY, sleep, lerp, clamp01, reduce, INK, PAPER, GRAPH, HAIR, ellipse, line, txt, bubble, heart, paper, steam, marks, hourglass, scribble, parkBack, indoor, drawPerson, npcLook, ridgeY } = h;
 
@@ -217,13 +217,6 @@
     g.save(); g.globalAlpha = Math.min(1, a); g.strokeStyle = INK; g.lineWidth = 1.2; g.lineCap = 'round';
     line(g, x - r, y, x + r, y); line(g, x, y - r, x, y + r); g.restore();
   }
-  function die(g, x, y, rot, a) {
-    if (a <= 0.01) return;
-    g.save(); g.globalAlpha = Math.min(1, a); g.translate(x, y); g.rotate(rot);
-    g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.4; g.beginPath(); g.roundRect(-7, -7, 14, 14, 3); g.fill(); g.stroke();
-    g.fillStyle = INK; for (const [dx, dy] of [[-3.5, -3.5], [0, 0], [3.5, 3.5]]) { ellipse(g, dx, dy, 1.3, 1.3); g.fill(); }
-    g.restore();
-  }
   // a loved dog: soft body, one floppy ear, a collar. lie: 0 standing … 1 lying down
   function dog(g, x, y, o) {
     const s = o.s || 1, d = o.dir || 1, lie = o.lie || 0, t = o.t || 0;
@@ -389,57 +382,70 @@
         const goL = V('goL'), goR = V('goR'), wakeD = V('wakeD'), wakeS = V('wakeS'), cause = V('cause');
         g.strokeStyle = INK; g.lineWidth = 1.4; line(g, 0, 210, 400, 210);
         g.strokeStyle = HAIR; g.lineWidth = 1; for (let x = -40; x < 460; x += 52) line(g, x, 210, x - 22, 250);
-        // the house, opened up like a doll's house: two rooms and a hallway between
+        // the apartment building, opened up like a doll's house: your apartment downstairs, another floor above, a stairwell between
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.8; g.lineJoin = 'round';
-        g.beginPath(); g.moveTo(46, 98); g.lineTo(200, 42); g.lineTo(354, 98); g.closePath(); g.fill(); g.stroke();
-        g.beginPath(); g.rect(60, 98, 280, 112); g.fill(); g.stroke();
-        g.lineWidth = 1.4; for (const wx of [150, 250]) { g.beginPath(); g.rect(wx - 2.5, 98, 5, 112); g.fill(); g.stroke(); }
-        g.strokeStyle = HAIR; g.lineWidth = 1; for (let x = 72; x < 340; x += 22) line(g, x, 203, x + 8, 203);
-        // the fire, kept calm: a haze under the ceiling and a few slow wisps over the roof
+        g.beginPath(); g.rect(60, 40, 280, 170); g.fill(); g.stroke();
+        g.beginPath(); g.rect(54, 34, 292, 6); g.fill(); g.stroke(); // flat roof with a parapet
+        g.lineWidth = 1.4;
+        g.beginPath(); g.rect(60, 123, 132, 5); g.fill(); g.stroke(); // the upper floor, left of the stairwell
+        g.beginPath(); g.rect(240, 123, 100, 5); g.fill(); g.stroke(); // the upper floor, right of the stairwell
+        g.beginPath(); g.rect(160, 128, 5, 36); g.fill(); g.stroke(); // your apartment's wall, with its open door below
+        g.beginPath(); g.rect(250, 40, 5, 38); g.fill(); g.stroke(); // the upper apartment's wall, with its open door below
+        // the stairs, rising from the hallway outside your door to the floor above
+        g.strokeStyle = INK; g.lineWidth = 1.3; g.beginPath(); g.moveTo(200, 210);
+        for (let k = 0; k < 7; k++) { const y0 = 210 - k * 12; g.lineTo(200 + k * 6.5, y0 - 12); g.lineTo(200 + (k + 1) * 6.5, y0 - 12); }
+        g.stroke(); line(g, 200, 210, 245.5, 126);
+        g.strokeStyle = HAIR; g.lineWidth = 1; for (let x = 72; x < 160; x += 22) line(g, x, 203, x + 8, 203); for (let x = 262; x < 336; x += 22) line(g, x, 118, x + 8, 118);
+        // a few windows on the floors that aren't opened up
+        g.strokeStyle = GRAPH; g.lineWidth = 1; for (const [wx, wy] of [[84, 60], [126, 60], [292, 146]]) { g.strokeRect(wx, wy, 18, 22); line(g, wx + 9, wy, wx + 9, wy + 22); }
+        // the fire, kept calm: a haze under each ceiling and a few slow wisps over the roof
         g.save(); g.strokeStyle = GRAPH; g.lineWidth = 1; g.globalAlpha = 0.7;
-        for (const yy of [106, 113]) { g.beginPath(); for (let x = 62; x <= 338; x += 4) { const y = yy + Math.sin(x * 0.07 + yy) * 1.6; x > 62 ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); }
+        for (const yy of [46, 53, 134, 141]) { g.beginPath(); for (let x = 62; x <= 338; x += 4) { const y = yy + Math.sin(x * 0.07 + yy) * 1.6; x > 62 ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); }
         g.restore();
-        smoke(g, 150, 68, t, 1, 0); smoke(g, 248, 66, t, 1, 0.5);
-        // a warm round window in the gable
-        g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.3; ellipse(g, 200, 76, 8, 8); g.fill(); g.stroke();
-        g.strokeStyle = GRAPH; g.lineWidth = 1; line(g, 192, 76, 208, 76); line(g, 200, 68, 200, 84);
-        // left room: your dog on its cushion
+        smoke(g, 150, 28, t, 1, 0); smoke(g, 268, 26, t, 1, 0.5);
+        // downstairs, in your apartment: your dog on its cushion
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.3; ellipse(g, 100, 205, 30, 5); g.fill(); g.stroke();
         const dx = lerp(98, 102, wakeD);
         dog(g, dx, 205, { s: 0.95, dir: 1, lie: 1 - wakeD, happy: wakeD > 0.5, t, hop: wakeD > 0.5 ? hopY() + (reduce ? 0 : Math.max(0, Math.sin(t * 3)) * 2 * wakeD) : 0 });
-        // right room: a stranger, asleep on the floor
-        g.fillStyle = PAPER; g.strokeStyle = GRAPH; g.lineWidth = 1; ellipse(g, 302, 206, 34, 5); g.stroke();
-        sleeper(g, 308, 206, 0.95, wakeS, t);
+        // upstairs: a stranger, asleep on the floor
+        g.fillStyle = PAPER; g.strokeStyle = GRAPH; g.lineWidth = 1; ellipse(g, 300, 122, 32, 4.5); g.stroke();
+        sleeper(g, 304, 122, 0.9, wakeS, t);
         // fu: a spent match by their hand, tied back to the haze
         if (cause > 0.01) {
-          g.save(); g.globalAlpha = cause; g.strokeStyle = INK; g.lineWidth = 1.4; line(g, 264, 207, 274, 204);
-          g.fillStyle = INK; ellipse(g, 275, 203.6, 2.2, 1.8); g.fill();
+          g.save(); g.globalAlpha = cause; g.strokeStyle = INK; g.lineWidth = 1.4; line(g, 262, 122, 272, 119);
+          g.fillStyle = INK; ellipse(g, 273, 118.6, 2.2, 1.8); g.fill();
           g.strokeStyle = GRAPH; g.lineWidth = 1; g.setLineDash([2, 3]);
-          g.beginPath(); g.moveTo(275, 199); g.quadraticCurveTo(286, 150, 272, 118); g.stroke(); g.restore();
+          g.beginPath(); g.moveTo(273, 114); g.quadraticCurveTo(284, 84, 272, 58); g.stroke(); g.restore();
         }
-        // you, in the hallway
-        const yx = 200 - goL * 60 + goR * 64;
-        drawPerson(g, yx, 210, { me: true, scale: 0.9, t, dir: goR * 0.8 - goL * 0.8, lArm: [lerp(-3, -11, goL), lerp(5, 0, goL)], rArm: [lerp(3, 11, goR), lerp(5, 0, goR)] });
-        thread(g, yx - 8, 176, dx + 14, 188, 16, 0.5 * (1 - goR));
+        // you, in the hallway at the foot of the stairs: left into your apartment, or up the stairs
+        const up = ease(clamp01(goR / 0.7)), along = clamp01((goR - 0.7) / 0.3);
+        const yx = lerp(188, 247, up) + along * 22 - goL * 64, yy = lerp(210, 126, up);
+        drawPerson(g, yx, yy, { me: true, scale: 0.9, t, dir: goR * 0.8 - goL * 0.8, lArm: [lerp(-3, -11, goL), lerp(5, 0, goL)], rArm: [lerp(3, 11, goR), lerp(5, 0, goR)] });
+        thread(g, yx - 8, yy - 34, dx + 14, 188, 16, 0.5 * (1 - goR));
       },
     },
 
     // ---------------------------------------------------------------- B43 The Apology They Want
     apology: {
       base(v) {
-        sset({ want: 1, sorry: 0, peace: 0, firm: 0, others: 0, gossip: 0, letgo: 0, straight: 0 });
-        if (v === 'fu') sset({ want: 0, peace: 1 });
+        sset({ want: 1, sorry: 0, peace: 0, firm: 0, others: 0, gossip: 0, letgo: 0, straight: 0, sides: 0, hold: 0 });
+        if (v === 'fuA') sset({ want: 0, peace: 1 });
+        if (v === 'fuB') sset({ want: 0, firm: 1 });
         sc.x.v = v;
       },
-      shift(v) { if (v === 'fu') { sto({ others: 1 }, 1.0); sto({ gossip: 1 }, 0.8); } },
+      shift(v) {
+        if (v === 'fuA') { sto({ others: 1 }, 1.0); sto({ gossip: 1 }, 0.8); }
+        if (v === 'fuB') { sto({ others: 1 }, 1.0); sto({ sides: 1, gossip: 1 }, 0.8); } // months on: the other neighbors gather on their side
+      },
       acts: {
         'B43-A': { sorry: 1, peace: 1, want: 0 }, 'B43-B': { firm: 1, want: 0 },
-        'B43-FU-A': { letgo: 1, gossip: 0 }, 'B43-FU-B': { straight: 1, gossip: 0 },
+        'B43-FUA-A': { letgo: 1, gossip: 0 }, 'B43-FUA-B': { straight: 1, gossip: 0 },
+        'B43-FUB-A': { hold: 1, gossip: 0.4 }, 'B43-FUB-B': { sorry: 1, peace: 1, gossip: 0, sides: 0.3 },
       },
       async act(a) { await actor(this.acts, 1.2)(a); },
       draw(g, t) {
         const want = V('want'), sorry = V('sorry'), peace = V('peace'), firm = V('firm'), others = V('others'), gossip = V('gossip'), letgo = V('letgo'), straight = V('straight');
-        const fu = sc.x.v === 'fu';
+        const fu = sc.x.v === 'fuA', fuB = sc.x.v === 'fuB', sides = V('sides'), hold = V('hold');
         street(g);
         houseSide(g, -40, 96, 214, 104, { door: 14, win: [[-18 + 40, 128]] });
         houseSide(g, 346, 96, 214, 104, { door: 362 });
@@ -456,16 +462,16 @@
           g.stroke(); g.restore();
         }
         if (peace > 0.01) { g.save(); g.globalAlpha = peace; g.strokeStyle = INK; g.lineWidth = 1.2; g.beginPath(); for (let x = 178; x <= 224; x += 2) { const y = 124 + Math.sin((x - 178) / 46 * Math.PI * 2) * 3; x > 178 ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); g.restore(); }
-        // the neighbor, and (fu) the other neighbors they talk to
-        const nx = fu ? 258 : 284;
-
-        drawPerson(g, nx, 214, { scale: 0.9, t, phase: 91, dir: fu ? lerp(0.8, -0.6, Math.max(letgo, straight)) : lerp(lerp(-0.7, 0.7, firm), -0.8, peace), lArm: [lerp(-3, -9, want), lerp(5, -2, want)] });
+        // the neighbor, and (fu) the other neighbors they talk to. fuB: they've turned their back on you and stand with the others.
+        const nx = fu || fuB ? 258 : 284;
+        thread(g, nx + 8, 176, 318, 180, 8, sides * others * 0.8, true);
+        drawPerson(g, nx, 214, { scale: 0.9, t, phase: 91, dir: fu ? lerp(0.8, -0.6, Math.max(letgo, straight)) : fuB ? lerp(0.8, -0.8, peace) : lerp(lerp(-0.7, 0.7, firm), -0.8, peace), lArm: [lerp(-3, -9, want), lerp(5, -2, want)] });
         talk(g, nx + 14, 168, 292, 166, gossip * others, t, 10);
         talk(g, nx + 14, 168, 324, 166, gossip * others, t + 0.4, 18);
         say(g, nx + 12, 126, 58, nx + 2, 150, want, 'sorry?');
         // you
         const yx = lerp(124, 156, straight);
-        drawPerson(g, yx, 214, { me: true, scale: 0.9, t, dir: fu ? lerp(0.7, -0.7, letgo) : lerp(0.7, -0.6, firm), hop: hopY() });
+        drawPerson(g, yx, 214, { me: true, scale: 0.9, t, dir: fu ? lerp(0.7, -0.7, letgo) : fuB ? lerp(lerp(0.7, -0.6, hold), 0.8, peace) : lerp(0.7, -0.6, firm), hop: hopY() });
         say(g, yx - 8, 126, 50, yx, 150, sorry * (fu ? 0 : 1), 'sorry');
         say(g, yx + 8, 126, 40, yx + 4, 150, straight);
         talk(g, yx + 28, 136, 300, 162, straight, t, 30);
@@ -521,13 +527,18 @@
     // ---------------------------------------------------------------- B44 The Unlocked Phone
     phone: {
       base(v) {
-        sset({ glow: 1, doubt: 1, turn: 0, pick: 0, report: 0, rest: 0 });
-        if (v === 'fu') sset({ glow: 0.15, doubt: 0, turn: 1 });
+        sset({ glow: 1, doubt: 1, turn: 0, pick: 0, report: 0, rest: 0, warn: 0 });
+        if (v === 'fuA') sset({ glow: 0.15, doubt: 0, turn: 1 });
+        if (v === 'fuB') sset({ doubt: 0.5 });
       },
-      shift(v) { if (v === 'fu') { sto({ report: 1 }, 1.0); sto({ doubt: 1 }, 0.8); } },
+      shift(v) {
+        if (v === 'fuA') { sto({ report: 1 }, 1.0); sto({ doubt: 1 }, 0.8); }
+        if (v === 'fuB') { sto({ warn: 1 }, 1.0); sto({ doubt: 1 }, 0.8); }
+      },
       acts: {
         'B44-A': { turn: 1, glow: 0.15, doubt: 0 }, 'B44-B': { pick: 1, glow: 1, doubt: 0 },
-        'B44-FU-A': { pick: 1, turn: 0, glow: 1, doubt: 0 }, 'B44-FU-B': { rest: 1, glow: 0, doubt: 0 },
+        'B44-FUA-A': { pick: 1, turn: 0, glow: 1, doubt: 0 }, 'B44-FUA-B': { rest: 1, glow: 0, doubt: 0 },
+        'B44-FUB-A': { pick: 1, glow: 1, doubt: 0, warn: 0.5 }, 'B44-FUB-B': { turn: 1, glow: 0.15, doubt: 0 },
       },
       async act(a) { await actor(this.acts, 1.3)(a); },
       draw(g, t) {
@@ -577,6 +588,17 @@
           g.restore();
           faded(g, rp, o => { clipCircle(o, cx, cy, r); drawPerson(o, cx - 16, cy + 22, { look: partner, scale: 0.5, t, dir: 0.7 }); drawPerson(o, cx + 16, cy + 22, { scale: 0.5, t, phase: 151, dir: -0.7 }); o.restore(); });
           thread(g, yx - 4, 168, cx + 26, cy + 26, 4, rp * 0.6, true);
+        }
+        // fuB: what your partner once said, remembered, tied to the phone on the table
+        const wn = V('warn');
+        if (wn > 0.01) {
+          const cx = 190, cy = 62, r = 34;
+          frame(g, cx, cy, r, wn);
+          clipCircle(g, cx, cy, r); g.globalAlpha = wn;
+          g.strokeStyle = HAIR; g.lineWidth = 1; line(g, cx - r, cy + 22, cx + r, cy + 22);
+          g.restore();
+          faded(g, wn, o => { clipCircle(o, cx, cy, r); drawPerson(o, cx - 10, cy + 22, { look: partner, scale: 0.5, t, dir: 0.5 }); say(o, cx + 12, cy - 12, 28, cx + 2, cy, 1); o.restore(); });
+          thread(g, cx - 4, cy + r, 181, 170, -6, wn * 0.6, true);
         }
       },
     },
@@ -644,23 +666,27 @@
     // ---------------------------------------------------------------- Q3 The Confession
     confession: {
       base(v) {
-        sset({ whisper: 1, lean: 1, tell: 0, out: 0, toward: 0, plea: 0, nod: 0, gone: 0, arrive: 0, months: 0, q: 0, shrug: 0 });
+        sset({ whisper: 1, lean: 1, tell: 0, out: 0, toward: 0, plea: 0, nod: 0, gone: 0, arrive: 0, months: 0, q: 0, shrug: 0, seen: 0 });
         if (v === 'fuA') sset({ whisper: 0, toward: 0.5 });
         if (v === 'fuB') sset({ whisper: 0, lean: 0, out: 1 });
+        if (v === 'fuAA') sset({ whisper: 0, lean: 0, nod: 1 });
         sc.x.v = v;
       },
       shift(v) {
         if (v === 'fuA') { sto({ plea: 1, lean: 1.6 }, 1.0); }
         if (v === 'fuB') { sto({ gone: 1 }, 2.4); sto({ months: 1 }, 1.1); sto({ arrive: 1 }, 1.7); sto({ q: 1 }, 1.0); }
+        // fuAA: months pass, and through the window you see your friend with the person the affair was with
+        if (v === 'fuAA') { sto({ gone: 1 }, 2.4); sto({ months: 1 }, 1.1); sto({ seen: 1 }, 1.0); sto({ nod: 0, toward: 1 }, 1.2); }
       },
       acts: {
         'Q3-A': { tell: 1, whisper: 0 }, 'Q3-B': { out: 1, whisper: 0 },
         'Q3-FUA-A': { tell: 1, plea: 0.4 }, 'Q3-FUA-B': { nod: 1, plea: 0, toward: 0 },
         'Q3-FUB-A': { tell: 1, q: 0.3 }, 'Q3-FUB-B': { shrug: 1, q: 0.3 },
+        'Q3-FUAA-A': { arrive: 1, tell: 1, seen: 0 }, 'Q3-FUAA-B': { nod: 1, toward: 0, seen: 0.5 },
       },
       async act(a) { await actor(this.acts, 1.2)(a); if (a && a.id === 'Q3-FUA-B') sc.x.hop = 1; },
       draw(g, t) {
-        const whisper_ = V('whisper'), lean = V('lean'), tell = V('tell'), out = V('out'), toward = V('toward'), plea = V('plea'), nod = V('nod'), gone = V('gone'), arrive = V('arrive'), months = V('months'), q = V('q'), shrug = V('shrug');
+        const seen = V('seen'), whisper_ = V('whisper'), lean = V('lean'), tell = V('tell'), out = V('out'), toward = V('toward'), plea = V('plea'), nod = V('nod'), gone = V('gone'), arrive = V('arrive'), months = V('months'), q = V('q'), shrug = V('shrug');
         indoor(g);
         const partner = npcLook(171);
         // the café window, and the partner outside it
@@ -669,7 +695,11 @@
         g.save(); g.beginPath(); g.rect(wx + 1, wy + 1, ww - 2, wh - 2); g.clip();
         g.strokeStyle = HAIR; g.lineWidth = 1; line(g, wx, wy + 76, wx + ww, wy + 76);
         tree(g, wx + 112, wy + 80, 0.7, t, 2);
-        faded(g, 1 - clamp01(arrive / 0.4), o => drawPerson(o, wx + 72, wy + 80, { look: partner, scale: 0.55, t, dir: lerp(0.3, -0.8, tell * (1 - gone)) }));
+        faded(g, (1 - clamp01(arrive / 0.4)) * (1 - seen), o => drawPerson(o, wx + 72, wy + 80, { look: partner, scale: 0.55, t, dir: lerp(0.3, -0.8, tell * (1 - gone)) }));
+        if (seen > 0.01) { // fuAA: your friend outside, still tied to someone else
+          faded(g, seen, o => { drawPerson(o, wx + 52, wy + 80, { scale: 0.55, t, phase: 161, dir: 0.6 }); drawPerson(o, wx + 84, wy + 80, { scale: 0.55, t, phase: 175, dir: -0.6 }); });
+          thread(g, wx + 58, wy + 60, wx + 78, wy + 60, 6, seen, false, 1);
+        }
         if (months > 0.01) for (let k = 0; k < 4; k++) { // a few leaves drifting down: months have passed
           const u = reduce ? (k + 0.5) / 4 : (t * 0.16 + k / 4) % 1, lx = wx + 16 + k * 30 + (reduce ? 0 : Math.sin(t * 0.9 + k) * 5), lyy = wy + 6 + u * 70;
           g.save(); g.globalAlpha = months * Math.sin(u * Math.PI); g.translate(lx, lyy); g.rotate(reduce ? k : Math.sin(t * 1.1 + k) * 0.8 + k);
@@ -708,15 +738,19 @@
 
     // ---------------------------------------------------------------- B45 The Friend's Big Break
     bigbreak: {
-      base() { sset({ call: 1, glad: 0, sting: 0, luck: 0, ease: 0, hard: 0 }); },
-      shift(v) { if (v === 'fu') sto({ luck: 1 }, 0.9); },
+      base() { sset({ call: 1, glad: 0, sting: 0, hard: 0, fund: 0, lost: 0, ask: 0, help: 0, no: 0 }); },
+      shift(v) {
+        if (v === 'fuA') { sto({ fund: 1 }, 0.9); sto({ lost: 1 }, 0.8); } // the money you were both up for goes to them
+        if (v === 'fuB') { sto({ ask: 1 }, 1.0); } // they ask for your evenings
+      },
       acts: {
         'B45-A': { glad: 1, call: 0.4 }, 'B45-B': { sting: 1, call: 0.4 },
-        'B45-FU-A': { ease: 1, call: 0.4 }, 'B45-FU-B': { hard: 1, call: 0.4 },
+        'B45-FUA-A': { glad: 1, call: 0.4 }, 'B45-FUA-B': { hard: 1, call: 0.4 },
+        'B45-FUB-A': { help: 1, ask: 0.3, call: 0.4 }, 'B45-FUB-B': { no: 1, ask: 0.3, call: 0.4 },
       },
-      async act(a) { await actor(this.acts, 1.2)(a); if (a && /-(A|FU-A)$/.test(a.id)) sc.x.hop = 1; },
+      async act(a) { await actor(this.acts, 1.2)(a); if (a && ['B45-A', 'B45-FUA-A', 'B45-FUB-A'].includes(a.id)) sc.x.hop = 1; },
       draw(g, t) {
-        const call = V('call'), glad = V('glad'), sting = V('sting'), luck = V('luck'), easy = V('ease'), hard = V('hard');
+        const call = V('call'), glad = V('glad'), sting = V('sting'), hard = V('hard'), fund = V('fund'), lost = V('lost'), ask = V('ask'), help = V('help'), no = V('no');
         street(g);
         // your front stoop: a door and three steps
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.lineJoin = 'round';
@@ -734,7 +768,6 @@
         drawPerson(g, cx - 4, cy + 32, { scale: 0.72, t, phase: 210, dir: -0.3, lArm: [-6, -14], rArm: [6, -14] });
         star(g, cx + 22, cy - 18, 8, 1, false);
         sparkle(g, cx - 26, cy - 14, 3, 0.9); sparkle(g, cx + 30, cy + 8, 2.4, 0.9);
-        if (luck > 0.01) { const u = ease(clamp01(luck)); die(g, lerp(cx + 4, cx + 22, u), lerp(cy - 50, cy + 22, u), (1 - u) * 2.6, 1); }
         g.restore();
         // you, sitting on the step with the phone
         const yx = 166, dn = Math.max(sting, hard);
@@ -742,14 +775,25 @@
         handset(g, yx + 17, lerp(186, 172, call), 0.2, 1);
         marks(g, 'waves', yx + 17, 168, Math.max(0, call - 0.5) * 2, t);
         thread(g, yx + 20, 166, cx - r + 2, cy + 10, 22, 0.9);
+        // fuA: the funding you were both up for drifts from your side into their window
+        if (fund > 0.01) {
+          const u = ease(clamp01(fund)), bx = lerp(214, cx - 18, u), by = lerp(168, cy + 20, u) - Math.sin(u * Math.PI) * 26;
+          bill(g, bx, by, Math.min(1, fund * 1.5), false, -0.1 + u * 0.2, 0.9);
+          bill(g, 214, 168, (1 - u) * 0.5, true, -0.1, 0.9); // where it was: your own project's share, now gone
+        }
+        // fuB: they ask for your help, a few evenings a month
+        query(g, cx - 30, cy - 40, cx - 18, cy - 28, ask * (1 - Math.max(help, no)));
+        if (ask > 0.01) for (let k = 0; k < 3; k++) moon(g, cx - 18 + k * 18, cy + r + 16, 4.5, ask * (1 - no * 0.6));
+        talk(g, yx + 24, 150, cx - r + 6, cy + 14, help, t, 18);
+        say(g, yx + 30, 108, 40, yx + 18, 128, no);
         // what you've wanted for years: the same star, in a thought above you
-        const want = 1 - easy * 0.6;
+        const want = 1 - lost * 0.45;
         g.save(); g.globalAlpha = want; g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.2;
         [[yx - 22, 150, 2.2], [yx - 46, 134, 2.8], [yx - 72, 118, 3.4]].forEach(([x, y, rr]) => { ellipse(g, x, y, rr, rr); g.fill(); g.stroke(); });
         g.lineWidth = 1.4; g.beginPath(); g.roundRect(18, 64, 60, 42, 21); g.fill(); g.stroke(); g.restore();
         star(g, 48, 85, 10, want, hard > 0.5);
         if (dn > 0.01) { g.save(); g.globalAlpha = dn; g.strokeStyle = GRAPH; g.lineWidth = 1.2; g.beginPath(); for (let k = 0; k <= 14; k++) { const x = yx + 8 + k * 1.6, y = 140 - Math.sin(k * 1.3) * 2.4; k ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); g.restore(); }
-        heart(g, yx + 26, 132, 12, Math.max(glad, easy), false);
+        heart(g, yx + 26, 132, 12, glad, false);
       },
     },
 
@@ -843,11 +887,23 @@
 
     // ---------------------------------------------------------------- B10 What We Owe Our Parents
     parents: {
-      base() { sset({ toP: 0, toM: 0 }); },
-      acts: { 'B10-A': { toP: 1 }, 'B10-B': { toM: 1 } },
+      base(v) {
+        sset({ toP: 0, toM: 0, later: 0, ill: 0, stay: 0 });
+        if (v === 'fuA') sset({ toP: 1 });
+        if (v === 'fuB') sset({ toM: 1 });
+      },
+      shift(v) {
+        if (v === 'fuA') sto({ later: 1 }, 0.9); // whoever you might marry, now or later, under your parents' say
+        if (v === 'fuB') sto({ ill: 1 }, 0.9); // one parent, unwell, resting on the swing
+      },
+      acts: {
+        'B10-A': { toP: 1 }, 'B10-B': { toM: 1 },
+        'B10-FUA-A': { toP: 1, later: 1 }, 'B10-FUA-B': { toP: 0, toM: 1, later: 0.3 },
+        'B10-FUB-A': { stay: 1 }, 'B10-FUB-B': { toM: 0, toP: 1 },
+      },
       async act(a) { await actor(this.acts, 1.0)(a); },
       draw(g, t) {
-        const toP = V('toP'), toM = V('toM');
+        const toP = V('toP'), toM = V('toM'), later = V('later'), ill = V('ill'), stay = V('stay');
         street(g);
         // your parents' house: a porch with a swing
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.lineJoin = 'round';
@@ -862,9 +918,16 @@
         { const sw = reduce ? 0 : Math.sin(t * 0.6) * 1.4; // the swing, barely moving
           g.strokeStyle = INK; g.lineWidth = 1; line(g, 22, 100, 22 + sw, 166); line(g, 70, 100, 70 + sw, 166);
           g.fillStyle = PAPER; g.lineWidth = 1.5; g.beginPath(); g.rect(16 + sw, 166, 60, 5); g.fill(); g.stroke(); line(g, 18 + sw, 166, 18 + sw, 150); line(g, 18 + sw, 150, 74 + sw, 150); }
-        // your parents, on the porch
-        const pd = lerp(0.6, -0.6, toM);
-        faded(g, 1 - toM * 0.25, o => { drawPerson(o, 100, 196, { scale: 0.92, t, phase: 170, dir: pd }); drawPerson(o, 134, 196, { scale: 0.92, t, phase: 171, dir: pd }); });
+        // your parents, on the porch (fuB: one of them, unwell, resting on the swing under a blanket)
+        const pd = lerp(0.6, -0.6, toM), pa = 1 - toM * 0.25, sw2 = reduce ? 0 : Math.sin(t * 0.6) * 1.4; // sw2 matches the swing
+        faded(g, pa, o => drawPerson(o, 100, 196, { scale: 0.92, t, phase: 170, dir: pd }));
+        faded(g, pa * (1 - ill), o => drawPerson(o, 134, 196, { scale: 0.92, t, phase: 171, dir: pd }));
+        faded(g, pa * ill, o => {
+          drawPerson(o, 50 + sw2, 166, { scale: 0.92, t: reduce ? 0 : t * 0.5, phase: 171, sit: true, dir: 0.5 });
+          o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.3; o.beginPath(); o.roundRect(38 + sw2, 160, 30, 16, 5); o.fill(); o.stroke();
+          o.strokeStyle = GRAPH; o.lineWidth = 1; for (let x = 44; x < 66; x += 7) line(o, x + sw2, 162, x + sw2, 174);
+        });
+        hourglass(g, 88, 128, ill * pa, t);
         // what they gave: years ago, the three of you
         const mx = 210, my = 58, mr = 30;
         frame(g, mx, my, mr, 1);
@@ -878,9 +941,14 @@
         const px = 336;
         tree(g, 384, 214, 0.9, t, 4);
         faded(g, 1 - toP * 0.25, o => drawPerson(o, px, 214, { scale: 0.9, t, phase: 172, dir: lerp(-0.6, 0.5, toP) }));
+        // fuA: others you might marry one day, faint, and your parents' say reaching over all of them
+        if (later > 0.01) {
+          faded(g, later * 0.5, o => { drawPerson(o, 302, 214, { scale: 0.7, t, phase: 173, dir: -0.4 }); drawPerson(o, 366, 214, { scale: 0.7, t, phase: 174, dir: -0.5 }); });
+          thread(g, 150, 98, 366, 172, 20, later * 0.7, true);
+        }
         // you, tied to both
-        const yx = lerp(lerp(232, 196, toP), 296, toM);
-        drawPerson(g, yx, 214, { me: true, scale: 0.9, t, dir: lerp(lerp(0, -0.8, toP), 0.8, toM) });
+        const yx = lerp(lerp(232, 196, toP), 296, toM) + stay * 8;
+        drawPerson(g, yx, 214, { me: true, scale: 0.9, t, dir: lerp(lerp(lerp(0, -0.8, toP), 0.8, toM), -0.5, ill * (1 - stay) * toM * 0.6) });
         thread(g, yx - 8, 176, 120, 160, 22, 1 - toM * 0.55, toM > 0.5);
         thread(g, yx + 8, 176, px - 8, 176, 18, 1 - toP * 0.55, toP > 0.5);
       },
@@ -889,7 +957,7 @@
     // ---------------------------------------------------------------- Q5 The Inheritance
     inheritance: {
       base(v) {
-        sset({ whisper: 1, hold: 0, split: 0, keep: 0, chair: 0, far: 0, bills: 0 });
+        sset({ whisper: 1, hold: 0, split: 0, keep: 0, chair: 0, far: 0, bills: 0, ask: 0 });
         if (v === 'fuA') sset({ whisper: 0 });
         if (v === 'fuB') sset({ whisper: 0, hold: 1 });
       },
@@ -898,8 +966,8 @@
         if (v === 'fuB') sto({ bills: 1 }, 1.0);
       },
       acts: {
-        'Q5-A': { split: 1, whisper: 0 }, 'Q5-B': { hold: 1, whisper: 0 },
-        'Q5-FUA-A': { hold: 1 }, 'Q5-FUA-B': { split: 1 },
+        'Q5-A': { split: 1, whisper: 0 }, 'Q5-B2': { ask: 1, hold: 1, whisper: 0 },
+        'Q5-FUA2-A': { ask: 1, hold: 1 }, 'Q5-FUA2-B': { split: 1 },
         'Q5-FUB-A': { keep: 1 }, 'Q5-FUB-B': { split: 1 },
       },
       async act(a) { await actor(this.acts, 1.0)(a); },
@@ -951,6 +1019,7 @@
           });
         }
         hourglass(g, sx + sr - 4, sy - sr + 8, far, t);
+        talk(g, yx - 14, 150, sx + sr * 0.6, sy + 12, V('ask'), t, 14); // you tell your sibling what your parent wanted, and ask
         thread(g, yx - 10, 176, sx + sr * 0.7, sy + sr * 0.7, 12, sa * 0.9, far > 0.5);
         // the will: whole, or split down the middle
         const tblX = 381, tblY = 158, handX = yx + 20, handY = 186;

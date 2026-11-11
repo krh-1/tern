@@ -35,6 +35,18 @@
         "dev"
       ],
       "port": 4173
+    },
+    {
+      "name": "tern-prototypes",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8125",
+        "--directory",
+        "prototypes"
+      ],
+      "port": 8125
     }
   ]
 }

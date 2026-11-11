@@ -33,6 +33,7 @@ game/                      # the game
   content.js               # the instrument for the Park, plus axes, tendencies, tensions, worlds, share copy
   content-<world>.js       # the instrument for each later world
   portrait.js              # scoring and portrait logic (also runs in node)
+  aura.js                  # the player's aura: a glow blended from their five compass letters (also runs in node)
   scenes.js, scenes-<world>.js   # code-drawn scenes, one pack per world
   plan*.md                 # build plans, one per world
   <world>-proposals.md     # open content questions per world

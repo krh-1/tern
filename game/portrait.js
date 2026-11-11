@@ -36,27 +36,34 @@
     const fact = id => { const e = idx[id]; return { id, title: e.q.title, did: e.a.did || e.a.text }; };
     return content.axes.map(ax => {
       let score = 0, got = 0, total = 0, touched = 0;
+      let last = null; // the most recent pick that moved this axis: latest question answered, then its latest step
       const pulls = []; // every picked answer that moved this axis, with its weighted push
       qs.forEach(q => {
         const p = possible(q, ax.id);
         total += p;
         if (!answers[q.id] || !p) return;
         got += p; touched++;
-        Object.entries(answers[q.id].picks).forEach(([key, id]) => {
+        Object.entries(answers[q.id].picks).forEach(([key, id], n) => {
           const e = idx[id]; if (!e) return;
           const push = ((e.a.nudges || {})[ax.id] || 0) * stepWeight(e.step, key);
           score += push;
-          if (push) pulls.push(Object.assign(fact(id), { push }));
+          if (!push) return;
+          pulls.push(Object.assign(fact(id), { push }));
+          const rank = (answers[q.id].order || 0) * 100 + n; // picks are stored in the order they were asked
+          if (!last || rank > last.rank) last = { rank, push };
         });
       });
       const lean = got ? Math.max(-1, Math.min(1, score / got * 1.6)) : 0; // -1 … 1 toward neg … pos
+      // An exact tie goes to the side of your most recent answer on this pair (the first letter only if nothing moved it).
+      const tied = score === 0 && !!last;
+      const pos = score > 0 || (score === 0 && (!last || last.push > 0));
       return Object.assign({}, ax, {
-        score, lean, touched, confidence: total ? got / total : 0,
-        letter: score >= 0 ? ax.pos : ax.neg,
+        score, lean, touched, tied, confidence: total ? got / total : 0,
+        letter: pos ? ax.pos : ax.neg,
         known: touched >= 2,
         // the answers that pulled you toward your side (strongest first), and the ones that pulled the other way
-        toward: pulls.filter(x => (x.push > 0) === (score >= 0)).sort((x, y) => Math.abs(y.push) - Math.abs(x.push)),
-        away: pulls.filter(x => (x.push > 0) !== (score >= 0)).sort((x, y) => Math.abs(y.push) - Math.abs(x.push)),
+        toward: pulls.filter(x => (x.push > 0) === pos).sort((x, y) => Math.abs(y.push) - Math.abs(x.push)),
+        away: pulls.filter(x => (x.push > 0) !== pos).sort((x, y) => Math.abs(y.push) - Math.abs(x.push)),
       });
     });
   }
@@ -89,6 +96,9 @@
       return Object.assign({}, t, { strength: sup.length - ag, questions: qs.size, evidence: sup.map(fact), counter: counter.map(fact), order: i });
     }).filter(t => t.strength >= (t.min || 2) && t.questions >= 2)
       .sort((a, b) => b.strength - a.strength || (a.priority || 99) - (b.priority || 99) || a.order - b.order);
+    // opts.keep: the summary the player already has. It holds while it's still tied for strongest, so a tie-break never swaps it.
+    const kept = opts.keep ? tendencies.findIndex(t => t.text === opts.keep) : -1;
+    if (kept > 0 && tendencies[kept].strength === tendencies[0].strength) tendencies.unshift(tendencies.splice(kept, 1)[0]);
 
     const uniq = arr => [...new Set(arr)];
     const protect = uniq(tendencies.flatMap(t => t.protect || [])).slice(0, 4);
@@ -128,7 +138,7 @@
           const toward = best.d > 0 ? best.axis.posLabel : best.axis.negLabel;
           ch.shift = Math.abs(best.d) >= 0.3
             ? { text: `${cap(w.closeTo || 'here')}, you lean more toward ${toward.toLowerCase()} than in your other answers.`, axis: best.axis.id, toward,
-                facts: (best.d > 0 === best.axis.score >= 0 ? best.axis.toward : best.axis.away).slice(0, 3) }
+                facts: (best.d > 0 === (best.axis.letter === best.axis.pos) ? best.axis.toward : best.axis.away).slice(0, 3) }
             : { text: `${cap(w.closeTo || 'here')}, you lean the same way as in your other answers.`, axis: null };
         }
         ch.tendencies = tendencies.filter(t => t.evidence.filter(x => mine.has(idx[x.id].q.id)).length >= 2);

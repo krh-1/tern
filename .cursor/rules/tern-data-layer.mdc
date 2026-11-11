@@ -9,6 +9,8 @@ alwaysApply: false
 - Questions, answers, nudges, notes, `did` lines, tendencies and tensions live only in `game/content.js` (park, axes, worlds, tendency library) and `game/content-<world>.js`. All 75 questions are ratified by Ken: change wording or nudges only with his say-so.
 - Step keys follow the trunk answer: `trunk`, then `fu`, or `fuA`/`fuB`/`fuC`. Answer ids: `B09-A`, `B09-FUA-B`. A replaced follow-up keeps its key and gets new ids with a "2" (`Q11-FUA2-A`).
 - No escape answers; a thoughtful person must hesitate; follow-ups put pressure on both sides where possible.
+- Card wording (Ken, 2026-10-07): the setup is read before the question, so it's full sentences that stand alone and add a missing fact; every follow-up ends in a question; answers are first person with a full stop, same shape, and both carry an equal reason or neither does; plain words, no idioms; titles don't judge. Full list: "Rules every question must meet" in `docs/QUESTIONS.md`.
+- Nudges are honest: an answer moves a pair only if choosing it really says something about that pair; check balance afterwards with `npm run simulate` (and `npm run simulate:crowd` for the park), never add a push just to balance.
 - Every new answer gets nudges, a `note` and a `did` line; every new tendency gets `detail`, `protect`/`trade` and a `share` line (or a deliberate decision to leave it out).
 - A separate skeptic judge reviews every content pass before Ken ratifies it.
 - `docs/QUESTIONS.md` is generated: after any content change run `npm run export:questions`. Never edit it by hand.

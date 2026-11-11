@@ -55,7 +55,7 @@ What it contains, roughly in the order it unlocks:
 - **Answer notes.** One or two sentences after each answer about what that choice suggests.
 - **Your compass.** The five value pairs as bars, each appearing once two of your questions touch it.
 - **Your summary (the headline).** One plain sentence that starts with "You", built from your best-supported tendency, plus a short description. Marked "so far" until the park is done. It can change, and the panel says so when it does.
-- **More about you.** Other tendencies, each backed by at least two answers from at least two questions.
+- **Also true of you.** Other tendencies, each backed by at least two answers from at least two questions.
 - **You protect / You'll trade away.** What you hold onto under pressure, and what you give up first.
 - **Where you're torn.** Pairs of your own answers that pull against each other. Often the most interesting thing Tern can tell you.
 - **Your code.** Five letters, revealed one at a time after the 12 park questions.

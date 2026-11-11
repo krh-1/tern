@@ -656,15 +656,15 @@
 
     // ---------------------------------------------------------------- D2 The Neighbor's Rent
     donor: {
-      base(v) { sc.x.v = v; sset({ far: 0, near: 0, stamp: 0, knock: 0, many: 0 }); },
+      base(v) { sc.x.v = v; sset({ far: 0, near: 0, stamp: 0, knock: 0, doubt: 0 }); },
       shift(v) {
         if (v === 'fuA') sto({ knock: 1 }, 0.7); // your neighbor comes in and asks you, face to face
-        if (v === 'fuB') sto({ many: 1 }, 1.2); // not 200 children far away, but 2,000
+        if (v === 'fuB') sto({ doubt: 1 }, 0.9); // a second notice on your neighbor's door, and a packing box: they may lose the apartment anyway
       },
       acts: {
         'D2-A': { far: 1 }, 'D2-B': { near: 1 },
         'D2-FUA-A': { far: 1 }, 'D2-FUA-B': { near: 1 },
-        'D2-FUB-A': { near: 1 }, 'D2-FUB-B': { far: 1 },
+        'D2-FUB2-A': { near: 1 }, 'D2-FUB2-B': { far: 1 },
       },
       async act(a) {
         await actor(this.acts, 1.0, async (id, m) => {
@@ -673,7 +673,7 @@
         })(a);
       },
       draw(g, t) {
-        const far = V('far'), near = V('near'), stamp = V('stamp'), knock = V('knock'), many = V('many');
+        const far = V('far'), near = V('near'), stamp = V('stamp'), knock = V('knock'), doubt = V('doubt');
         indoor(g);
         // the post office: a window onto the harbor behind the counter, the clerk
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.5; g.fillRect(292, 32, 92, 62); g.strokeRect(292, 32, 92, 62);
@@ -691,10 +691,20 @@
           o.lineWidth = 1.1; ellipse(o, nx + 27, ny + 4, 1.6, 1.6); o.stroke();
           const na = 1 - clamp01((near - 0.7) * 3.3) * 0.9;
           paper(o, nx + 18, ny - 10, 14, 16, -0.05, na); o.save(); o.globalAlpha = na; o.fillStyle = INK; o.fillRect(nx + 13, ny - 16, 10, 2.4); o.restore();
+          // fuB: a second notice drops into place below the first (it stays, paid or not), and an open packing box waits by the door
+          if (doubt > 0.01) {
+            const q = ease(clamp01(doubt)), py = lerp(ny + 2, ny + 10, q);
+            paper(o, nx + 19, py, 14, 12, 0.07, q); o.save(); o.globalAlpha = q; o.fillStyle = INK; o.fillRect(nx + 14, py - 4, 10, 2.2); o.fillRect(nx + 14, py, 6, 1.8); o.restore();
+            const ba = seg(doubt, 0.3, 1);
+            o.save(); o.globalAlpha = ba; o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.2; o.lineJoin = 'round';
+            o.fillRect(nx + 2, ny + 19, 15, 11); o.strokeRect(nx + 2, ny + 19, 15, 11);
+            o.beginPath(); o.moveTo(nx + 2, ny + 19); o.lineTo(nx - 2, ny + 15); o.moveTo(nx + 17, ny + 19); o.lineTo(nx + 21, ny + 15); o.stroke();
+            o.strokeStyle = GRAPH; o.lineWidth = 1; line(o, nx + 9.5, ny + 19, nx + 9.5, ny + 24); o.restore();
+          }
           drawPerson(o, nx - 12, ny + 32, { scale: 0.62, t, phase: 922, dir: lerp(0.3, 0.6, near), mood: near > 0.8 ? null : 'worried' });
           drawPerson(o, nx - 30, ny + 32, { scale: 0.38, t, phase: 923, dir: 0.4 });
         });
-        // far away: about 200 children, each sleeping under a net (fuB: ten times as many, packed in small)
+        // far away: about 200 children, each sleeping under a net
         const cx = 196, cy = 60, cr = 40;
         const nets = (o, rows, cols, gx, gy, x0, y0, sz, a) => {
           if (a <= 0.01) return;
@@ -711,8 +721,7 @@
         };
         inFrame(g, cx, cy, cr, 1, o => {
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, cx - cr, cy + 28, cx + cr, cy + 28);
-          nets(o, 4, 6, 14, 13, cx - 36, cy - 22, 1, 1 - seg(many, 0, 0.4));
-          nets(o, 8, 11, 7.4, 6.8, cx - 38, cy - 28, 0.5, seg(many, 0.4, 0.8));
+          nets(o, 4, 6, 14, 13, cx - 36, cy - 22, 1, 1);
         });
         // fuA: your neighbor comes in through the street door and asks you, face to face
         const kx = lerp(-24, 58, ease(clamp01(knock)));
@@ -864,7 +873,7 @@
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.2;
         for (const [dx, an, r] of [[-8, -0.7, 6], [6, 0.6, 5.5], [-3, -0.2, 5], [3, 0.9, 4.5], [-6, -1.2, 4]]) { g.save(); g.translate(tx + sw + dx * 0.6, 162 + Math.abs(dx) * 0.8); g.rotate(an); g.beginPath(); g.ellipse(0, -r, r * 0.55, r, 0, 0, Math.PI * 2); g.fill(); g.stroke(); g.restore(); }
         for (let k = 0; k < 9; k++) { const an = k / 9 * Math.PI * 2, x = tx + 2 + Math.cos(an) * 24, y = 212 + Math.sin(an) * 5; g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.2; g.beginPath(); g.ellipse(x, y, 5, 3.4, 0, 0, Math.PI * 2); g.fill(); g.stroke(); }
-        // your life: home, and ten parts of your money and comfort. Pressing takes one away for good
+        // your life: home, and ten parts of your income. Pressing takes one away for good
         const hx = 64, hy = 60, hr = 38;
         inFrame(g, hx, hy, hr, 1, o => {
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, hx - hr, hy + 22, hx + hr, hy + 22);
@@ -881,7 +890,7 @@
           o.strokeStyle = GRAPH; o.lineWidth = 1.4; line(o, fx + 22, fy + 28, fx + 22, fy - 4);
           o.fillStyle = PAPER; o.lineWidth = 1.2; for (const [dx, dy, r] of [[22, -14, 13], [10, -8, 9], [33, -6, 9], [18, -26, 8], [30, -22, 8]]) { ellipse(o, fx + dx, fy + dy, r, r); o.fill(); o.stroke(); }
           crowd(o, fx - 14, fy - 2, 7, 3, 8.5, 1, Math.max(press, yes) < 0.5);
-          if (kin > 0.01) { o.save(); o.globalAlpha *= Math.min(1, kin); o.fillStyle = INK; ellipse(o, fx - 31, fy + 16.7, 2.4, 2.4); o.fill(); o.restore(); } // fuB: your great-great-grandchild, among them
+          if (kin > 0.01) { o.save(); o.globalAlpha *= Math.min(1, kin); o.fillStyle = INK; ellipse(o, fx - 31, fy + 16.7, 2.4, 2.4); o.fill(); o.restore(); } // fuB: your family's descendant, among them
         }, Math.max(press, yes) < 0.5);
         sparkle(g, fx - 34, fy - 36, 3, Math.max(press, yes)); sparkle(g, fx + 40, fy - 28, 2.5, Math.max(press, yes));
         txt(g, '200 years', fx, fy + fr + 12, 10, 1, SANS(10));
@@ -1126,21 +1135,21 @@
     // ---------------------------------------------------------------- B19 The Kidney
     kidney: {
       base(v) {
-        sc.x.v = v; sset({ give: 0, back: 0, past: 0, young: 0 });
+        sc.x.v = v; sset({ give: 0, back: 0, past: 0, quick: 0 });
         if (v === 'fuB') sset({ back: 1 }); // you'd said no and turned for the door
       },
       shift(v) {
         if (v === 'fuA') sto({ past: 1 }, 0.9);
-        if (v === 'fuB') sto({ young: 1 }, 1.3); // the stranger is 8 years old
+        if (v === 'fuB') sto({ quick: 1 }, 0.9); // a new method: the six weeks on the calendar shrink to one
       },
       acts: {
         'B19-A': { give: 1 }, 'B19-B': { back: 1 },
         'B19-FUA-A': { give: 1 }, 'B19-FUA-B': { back: 1 },
-        'B19-FUB-A': { give: 1, back: 0 }, 'B19-FUB-B': { back: 1 },
+        'B19-FUB2-A': { give: 1, back: 0 }, 'B19-FUB2-B': { back: 1 },
       },
       async act(a) { await actor(this.acts, 0.8)(a); },
       draw(g, t) {
-        const give = V('give'), back = V('back'), past = V('past'), young = V('young');
+        const give = V('give'), back = V('back'), past = V('past'), quick = V('quick');
         indoor(g);
         // the clinic: a curtain rail, a bed, the stranger waiting
         g.strokeStyle = INK; g.lineWidth = 1.4; line(g, 220, 30, 392, 30);
@@ -1149,16 +1158,16 @@
         line(g, 272, 170, 272, 210); line(g, 380, 170, 380, 210); line(g, 386, 160, 386, 132);
         const who = npcLook(981);
         const pOpts = s_ => ({ look: who, scale: s_, t: reduce ? 0 : t * 0.6, sit: true, dir: -0.5, mood: give > 0.6 ? null : 'worried' });
-        // fuB: the one waiting is a child (the grown-up gives way to a small figure, and a crayon drawing is pinned by the bed)
-        ghost(g, 1 - seg(young, 0, 0.4), 318, 160, pOpts(0.88));
-        ghost(g, seg(young, 0.4, 0.8), 318, 149, pOpts(0.52)); scribble(g, 330, 98, 30, 24, seg(young, 0.5, 0.9));
+        drawPerson(g, 318, 160, pOpts(0.88));
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.3; g.beginPath(); g.roundRect(300, 154, 66, 10, 3); g.fill(); g.stroke();
         hourglass(g, 372, 120, 1 - give, t);
-        // the calendar: six weeks of recovery, filled in if you give
+        // the calendar: six weeks of recovery, filled in if you give (fuB: the last five weeks fade to hairline, leaving one)
         const cx = 120, cy = 44;
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.4; g.fillRect(cx - 4, cy - 14, 72, 74); g.strokeRect(cx - 4, cy - 14, 72, 74);
         g.fillRect(cx - 4, cy - 14, 72, 9); g.strokeRect(cx - 4, cy - 14, 72, 9); g.fillStyle = INK; ellipse(g, cx + 12, cy - 15, 1.8, 1.8); g.fill(); ellipse(g, cx + 52, cy - 15, 1.8, 1.8); g.fill();
-        slots(g, cx, cy, 42, give * 42, 1, 6, 7);
+        const weeks = give * lerp(42, 7, quick);
+        slots(g, cx, cy, 7, weeks, 1, 6, 7);
+        slots(g, cx, cy + 9, 35, weeks - 7, 1 - quick * 0.85, 6, 7);
         // and a small mark that lasts: a thin line running on past the six weeks
         g.save(); g.strokeStyle = INK; g.lineWidth = 1; g.globalAlpha = give; g.setLineDash([2, 3]); line(g, cx, cy + 66, cx + 64 + give * 30, cy + 66); g.restore();
         // the door out, and you
@@ -1187,7 +1196,7 @@
       },
       shift(v) {
         if (v === 'fuA') sto({ many: 1 }, 0.6); // a hundred basement windows
-        if (v === 'fuB') sto({ kids: 1 }, 0.7); // your own children with you, and the poorer, sicker life outside
+        if (v === 'fuB') sto({ kids: 1 }, 0.7); // the people you love with you, and the poorer, sicker life outside
         if (v === 'fuC') sto({ sick: 1 }, 0.6); // freeing the child brings sickness back: the sparkle goes, cots fill a ward
       },
       acts: {
@@ -1215,7 +1224,7 @@
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 102, 58, 154, 58);
           bed(o, 106, 42, 20, 1); bed(o, 130, 42, 20, 1); bed(o, 118, 28, 20, 1, true);
         });
-        // fuB: outside the city: a bare hut on bare ground, where your children would grow up
+        // fuB: outside the city: a bare hut on bare ground, where you and the people you love would live
         inFrame(g, 46, 50, 30, kids, o => {
           o.strokeStyle = HAIR; o.lineWidth = 1; line(o, 16, 66, 76, 66);
           house(o, 32, 66, 26, 18, { faint: true, lw: 1.2 });
@@ -1265,11 +1274,11 @@
         const moving = Math.abs(vx) > 0.15 || (stay > 0.05 && stay < 0.85 && leave < 0.05);
         const ydir = sat ? 0.2 : moving ? (vx < 0 ? -0.8 : 0.7) : (door_ > 0.5 || free > 0.05) ? 0.7 : leave > 0.05 ? -0.8 : 0.3;
         drawPerson(g, sat ? 164 : yx, sat ? 216 : yy, { me: true, scale: 0.86, t, sit: sat, dir: ydir, moving, walk: t * 3, lArm: free > 0.5 || door_ > 0.5 ? [lerp(-3, 10, Math.max(free, door_)), -6] : [-3, 5] });
-        // fuB: your own two children, walking with you (or beside the bench)
+        // fuB: the people you love, a grown-up and a child, walking with you (or beside the bench)
         if (kids > 0.01) {
           const kx = sat ? 196 : yx + 22;
-          ghost(g, kids, kx, 236, { scale: 0.46, t, phase: 998, dir: ydir * 0.6, moving, walk: t * 3 });
-          ghost(g, kids, kx + 14, 236, { scale: 0.38, t, phase: 999, dir: ydir * 0.6, moving, walk: t * 3 });
+          ghost(g, kids, kx + 2, 236, { scale: 0.74, t, phase: 998, dir: ydir * 0.6, moving, walk: t * 3 });
+          ghost(g, kids, kx + 22, 236, { scale: 0.4, t, phase: 999, dir: ydir * 0.6, moving, walk: t * 3 });
         }
       },
     },
@@ -1284,7 +1293,7 @@
         if (v === 'fuC') sset({ me: 1 }); // you've stood up to go
       },
       shift(v) {
-        if (v === 'fuA') { sto({ short: 1 }, 0.8); sto({ home: 1 }, 0.5); } // the short stick is yours; at home, two small children wait
+        if (v === 'fuA') { sto({ short: 1 }, 0.8); sto({ home: 1 }, 0.5); } // the short stick is yours; at home, someone who depends on you completely waits
         if (v === 'fuB') sto({ doc: 1 }, 1.2); // the doctor on board speaks, and the ring moves to you
         if (v === 'fuC') sto({ oars: 1, land: 1 }, 1.2); // the oars, and land far off: the boat needs your strength to get there
       },
@@ -1303,13 +1312,13 @@
         gull(g, 300, 48, 1);
         // fuC: land, far off on the horizon
         if (land > 0.01) { g.save(); g.globalAlpha = Math.min(1, land); g.fillStyle = PAPER; g.strokeStyle = GRAPH; g.lineWidth = 1.1; g.beginPath(); g.moveTo(26, 92); g.quadraticCurveTo(52, 78, 78, 84); g.quadraticCurveTo(100, 76, 132, 92); g.fill(); g.stroke(); g.restore(); }
-        // fuA: home, far away: a cottage, and your two small children waiting by it
+        // fuA: home, far away: a cottage, and someone who depends on you waiting by it
         if (home > 0.01) {
           const hx = 66, hy = 44, hr = 28;
           inFrame(g, hx, hy, hr, home, o => {
             o.strokeStyle = HAIR; o.lineWidth = 1; line(o, hx - hr, hy + 16, hx + hr, hy + 16);
             house(o, hx - 20, hy + 16, 24, 15, { lw: 1.2 });
-            drawPerson(o, hx + 11, hy + 16, { scale: 0.32, t, phase: 1011, dir: 0.4 }); drawPerson(o, hx + 21, hy + 16, { scale: 0.26, t, phase: 1012, dir: 0.3 });
+            drawPerson(o, hx + 14, hy + 16, { scale: 0.34, t, phase: 1011, dir: 0.4 });
           });
         }
         // nine people in a boat for eight; you're one of them. The back row first.
@@ -1360,7 +1369,7 @@
         if (ringA > 0.01) { const q = ease(clamp01(doc)); g.save(); g.globalAlpha = ringA * 0.8; g.strokeStyle = INK; g.lineWidth = 1.1; g.setLineDash([3, 3]); ellipse(g, lerp(304, myX + 2, q), lerp(wl - 46, myY - 26, q), lerp(22, 20, q), lerp(28, 26, q)); g.stroke(); g.restore(); }
         // fuB: the doctor, in the back row, speaking
         say(g, 160, wl - 104 + bob, 40, 162, wl - 86 + bob, clamp01(doc * 1.6) * (1 - Math.max(me, lots)));
-        // fuA "I won't go", fuB "draw lots": you speak up (in fuA, the short stick goes back to the bundle)
+        // fuA "another pick", fuB "pick at random": you speak up (in fuA, the short stick goes back to the bundle)
         say(g, myX + 4, myY - 72, 44, myX + 2, myY - 54, argue);
       },
     },

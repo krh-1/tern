@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "description": "Tern: a calm ink-on-paper game of hard moral choices. Static files in game/; run with python3 -m http.server 8123 --directory game.",
   "scripts": {
-    "export:questions": "node scripts/export-questions.mjs"
+    "export:questions": "node scripts/export-questions.mjs",
+    "simulate": "node scripts/simulate-players.cjs",
+    "simulate:crowd": "node scripts/park-crowd-sim.cjs"
   }
 }

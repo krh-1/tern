@@ -669,8 +669,17 @@
 
     // ---------------------------------------------------------------- B49 Two Lives
     twolives: {
-      base(v) { sc.x.v = v; sset({ left: 0, right: 0 }); },
-      acts: { 'B49-A': { left: 1 }, 'B49-B': { right: 1 } },
+      base(v) {
+        sc.x.v = v;
+        sset({ left: 0, right: 0, anon: 0, on: 0 });
+        if (v === 'fuB') sset({ right: 1 }); // after choosing the life that helps people: you're already on its path
+      },
+      // fuB: the thread that ties you to the thing you made fades; the people who use it later stay
+      shift(v) { if (v === 'fuB') sto({ anon: 1 }, 0.6); },
+      acts: {
+        'B49-A': { left: 1 }, 'B49-B': { right: 1 },
+        'B49-FUB-A': { on: 1 }, 'B49-FUB-B': { right: 0, left: 1 },
+      },
       async act(a) { await actor(this.acts, 1.0)(a); },
       draw(g, t) {
         const L = V('left'), R = V('right');
@@ -717,11 +726,13 @@
             o.beginPath(); o.arc(x, y + 5, 3.4, Math.PI, 0); o.fill(); o.stroke(); ellipse(o, x, y, 2.2, 2.2); o.fill(); o.stroke();
           }
         });
-        // you, at the fork: you take one of the paths
-        const qL = ease(L), qR = ease(R);
-        const yx = lerp(lerp(176, 126, qL), 276, qR), yy = lerp(244, 170, Math.max(qL, qR));
-        const s = lerp(0.9, 0.66, Math.max(qL, qR));
-        drawPerson(g, yx, yy, { me: true, scale: s, t, dir: L > 0.05 ? -0.6 : R > 0.05 ? 0.6 : 0, moving: [L, R].some(k => k > 0.05 && k < 0.95), walk: t * 3 });
+        // follow-up: a fine thread from you, in the hard life, to the thing you made among the people later. It fades: no one will know it was yours
+        if (sc.x.v === 'fuB') thread(g, rx + 26, ry + 24, 318, 138, 6, (1 - V('anon')) * ra * 0.8);
+        // you, at the fork: you take one of the paths (and, in the follow-up, keep going up it, or turn back for the other)
+        const qL = ease(L), qR = ease(R), on = ease(V('on'));
+        const yx = lerp(lerp(176, 126, qL), 276, qR) + on * 14, yy = lerp(244, 170, Math.max(qL, qR)) - on * 8;
+        const s = lerp(0.9, 0.66, Math.max(qL, qR)) - on * 0.08;
+        drawPerson(g, yx, yy, { me: true, scale: s, t, dir: L > 0.05 ? -0.6 : R > 0.05 ? 0.6 : 0, moving: [L, R, V('on')].some(k => k > 0.05 && k < 0.95), walk: t * 3 });
       },
     },
 
@@ -1009,13 +1020,15 @@
     secret: {
       base(v) {
         sc.x.v = v;
-        sset({ tell: 0, keep: 0, gran: 0, carry: 0 });
+        sset({ tell: 0, keep: 0, gran: 0, carry: 0, cousin: 0 });
         if (isFu(v)) sset({ carry: 1 });
       },
-      shift(v) { if (isFu(v)) sto({ gran: 1 }, 0.8); },
+      // fuA (after telling): your grandmother, whose life was built around him. fuB (after keeping it): a cousin writing a book about him
+      shift(v) { if (v === 'fuB') sto({ cousin: 1 }, 0.8); else if (isFu(v)) sto({ gran: 1 }, 0.8); },
       acts: {
         'B08-A': { tell: 1 }, 'B08-B': { keep: 1 },
-        'B08-FU-A': { tell: 1 }, 'B08-FU-B': { keep: 1 },
+        'B08-FUA-A': { tell: 1 }, 'B08-FUA-B': { keep: 1 },
+        'B08-FUB-A': { tell: 1 }, 'B08-FUB-B': { keep: 1 },
       },
       async act(a) {
         await actor(this.acts, 0.8, async (id, m) => {
@@ -1024,7 +1037,7 @@
         })(a);
       },
       draw(g, t) {
-        const tell = V('tell'), keep = V('keep'), gran = V('gran'), carry = V('carry');
+        const tell = V('tell'), keep = V('keep'), gran = V('gran'), carry = V('carry'), cousin = V('cousin');
         indoor(g);
         // your grandfather's photo, a high shelf, and the family at the table talking
         const gp = npcLook(801);
@@ -1034,7 +1047,21 @@
         const turn = ease(tell);
         fam.forEach(([x, ph], i) => drawPerson(g, x, 210, { scale: 0.84, t, phase: ph, dir: lerp(i === 0 ? 0.5 : -0.4, i === 2 ? -0.6 : 0.2, turn) }));
         g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.rect(246, 182, 140, 6); g.fill(); g.stroke(); line(g, 254, 188, 254, 210); line(g, 378, 188, 378, 210);
-        talk(g, 270, 150, 350, 150, (1 - tell) * 0.8, t, 8);
+        talk(g, 270, 150, 350, 150, (1 - tell) * 0.8 * (1 - cousin), t, 8);
+        // follow-up after keeping it: your cousin, under his photo, holding up the book they're writing about him, his medal on its cover.
+        // The story travels from the book to the family as dots; it stops if you open the box on their table.
+        if (cousin > 0.01) {
+          const cx = 196, bkx = cx + 18, bky = 160;
+          ghost(g, cousin, cx, 210, { scale: 0.84, t, phase: 806, dir: lerp(0.5, 0.2, turn), rArm: [12, -10] });
+          faded(g, cousin, o => {
+            o.fillStyle = PAPER; o.strokeStyle = INK; o.lineWidth = 1.4; o.lineJoin = 'round';
+            o.beginPath(); o.rect(bkx - 9, bky - 12, 18, 24); o.fill(); o.stroke();
+            o.lineWidth = 1; line(o, bkx - 6, bky - 12, bkx - 6, bky + 12);
+          });
+          medalAt(g, bkx + 2, bky + 4, cousin);
+          talk(g, bkx + 12, bky - 8, 300, 150, cousin * (1 - tell) * 0.8, t, 14);
+          thread(g, cx - 4, 160, 192, 84, 14, cousin * 0.5 * (1 - tell), true);
+        }
         // follow-up: your grandmother, whose whole life was built around him
         if (gran > 0.01) {
           armchair(g, 196, 186, 210, -1);
@@ -1213,18 +1240,20 @@
     group: {
       base(v) {
         sc.x.v = v;
-        sset({ respect: 0, out: 0, give: 0, step: 0, still: 0 });
-        if (v === 'fuA' || v === 'fu') sset({ respect: 1 });
-        if (v === 'fuB') sset({ out: 1 });
+        sset({ respect: 0, out: 0, give: 0, step: 0, still: 0, cut: 0, push: 0, back: 0 });
+        if (v === 'fuA') sset({ respect: 1 });
+        if (v === 'fuB') sset({ step: 1 }); // after "I try everything": you're beside them, and they're still in the circle
       },
-      shift(v) { if (v === 'fuA' || v === 'fu') sto({ give: 0.45 }, 0.25); },
+      // fuA (after staying out): their savings start going into the group's box. fuB (after pushing): they turn away and say they'll cut you off
+      shift(v) { if (v === 'fuA') sto({ give: 0.45 }, 0.25); else if (v === 'fuB') sto({ cut: 1 }, 0.8); },
       acts: {
         'B38-A': { respect: 1 }, 'B38-B': { out: 1 },
-        'B38-FU-A': { step: 1 }, 'B38-FU-B': { still: 1, give: 1 },
+        'B38-FUA-A': { step: 1 }, 'B38-FUA-B': { still: 1, give: 1 },
+        'B38-FUB-A': { push: 1 }, 'B38-FUB-B': { back: 1 },
       },
       async act(a) { await actor(this.acts, 0.85)(a); },
       draw(g, t) {
-        const respect = V('respect'), out = V('out'), give = V('give'), step = V('step'), still = V('still');
+        const respect = V('respect'), out = V('out'), give = V('give'), step = V('step'), still = V('still'), cut = V('cut'), push = V('push'), back = V('back');
         stars(g, SKY, 0.8); moon(g, 330, 36, 7, 1);
         ridge(g, 118, 1);
         plateau(g, 214, 5);
@@ -1237,15 +1266,30 @@
         log(g, 312, 214, 46);
         drawPerson(g, 312, 200, { scale: 0.72, t, phase: 2404, sit: true, dir: -0.4 });
         // the box at the middle, where the money goes (follow-up)
-        const fuGive = isFu(sc.x.v);
+        const fuGive = sc.x.v === 'fuA', fuCut = sc.x.v === 'fuB';
         if (fuGive) { g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.4; g.fillRect(fx - 9, fy - 30, 18, 14); g.strokeRect(fx - 9, fy - 30, 18, 14); g.fillStyle = INK; g.fillRect(fx - 5, fy - 30, 10, 2); }
         // your sibling: on the log, at ease; or walking out with you, looking back once
         const go1 = seg(out, 0, 0.45), go2 = seg(out, 0.45, 1);
         const sibX = lerp(184, 92, go2);
         log(g, 184, 214, 46);
-        if (go2 < 0.02) drawPerson(g, 184, 200, { scale: 0.74, t, phase: 2405, sit: true, dir: lerp(0.4, -0.5, go1) });
+        if (fuCut) {
+          // they turn their back on you and say it: keep pushing, and they'll cut you off for good
+          drawPerson(g, 184, 200, { scale: 0.74, t, phase: 2405, sit: true, dir: lerp(-0.5, 0.5, ease(cut)) });
+          say(g, 214, 126, 40, 196, 146, cut * (1 - push * 0.5) * (1 - back * 0.5));
+        }
+        else if (go2 < 0.02) drawPerson(g, 184, 200, { scale: 0.74, t, phase: 2405, sit: true, dir: lerp(0.4, -0.5, go1) });
         else drawPerson(g, sibX, 214, { scale: 0.74, t, phase: 2405, dir: go2 > 0.92 ? 0.5 : -0.6, moving: go2 < 0.95, walk: t * 3 });
         sparkle(g, 168, 150, 2.5, 1 - out);
+        if (fuCut) {
+          // you: beside them, still pushing (you speak again), or walking back to the edge of the camp
+          const yx = lerp(148, 66, ease(back)), moving = back > 0.05 && back < 0.95;
+          drawPerson(g, yx, 214, { me: true, scale: 0.9, t, dir: moving ? -0.6 : 0.5, moving, walk: t * 3, rArm: back < 0.05 ? [10, -4] : [3, 7] });
+          say(g, 126, 120, 40, 140, 138, push);
+          // the family thread to them: whole before they say it, broken into dashes after
+          thread(g, yx + 9, 178, 175, 172, 18, 0.75 * (1 - cut));
+          thread(g, yx + 9, 178, 175, 172, 18, 0.75 * cut, true);
+          return;
+        }
         if (fuGive) {
           slots(g, 172, 128, 6, 6 - give * 6, 1, 5, 3);
           const flowing = give < 0.97 && step < 0.2;
@@ -1274,8 +1318,8 @@
       shift(v) { if (isFu(v)) sto({ settle: 1 }, 0.8); },
       acts: {
         'B57-A': { go: 1 }, 'B57-B': { stay: 1 },
-        'B57-FUA-A': { right: 1 }, 'B57-FUA-B': { back: 1 },
-        'B57-FUB-A': { right: 1 }, 'B57-FUB-B': { back: 1 },
+        'B57-FUA2-A': { right: 1 }, 'B57-FUA2-B': { back: 1 }, // right: you stay where you are; back: you ask to move, and bags appear
+        'B57-FUB2-A': { right: 1 }, 'B57-FUB2-B': { back: 1 },
       },
       async act(a) {
         await actor(this.acts, 0.8, async (id, m) => {
@@ -1305,7 +1349,7 @@
           return;
         }
         if (v === 'fuB') {
-          // a year later, still here: they look out at the work they turned down
+          // a year later, still here: a job like the one they turned down opens up in that city, in the round window
           indoor(g);
           nightWindow(g, 290, 30, 90, 70);
           inFrame(g, 335, 132, 24, settle * (0.9 - right * 0.5 + back * 0.1), o => { o.strokeStyle = INK; o.lineWidth = 1.1; for (const [x, w, hh] of [[318, 12, 26], [332, 14, 34], [348, 10, 20]]) o.strokeRect(x, 156 - hh, w, hh); }, true);

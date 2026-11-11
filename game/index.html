@@ -29,6 +29,7 @@
   html, body { height: 100%; }
   body {
     margin: 0; background: var(--paper); color: var(--ink); overflow: hidden;
+    font-variant-numeric: lining-nums; /* the serif's default old-style "1" reads as "ı": "the ı person", "$2oo" */
     font-family: "Quattrocento Sans", "Gill Sans", system-ui, sans-serif;
     touch-action: none; user-select: none; -webkit-user-select: none;
   }
@@ -274,6 +275,22 @@
   .rv .go.ghost { background: none; color: var(--ink); border-color: transparent; text-decoration: underline; text-underline-offset: 3px; font-size: 15px; padding: 6px 14px; }
   .rv .go:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
+  /* the end of a look-over: go to the world that just opened, or stay where you are */
+  .lookc { position: fixed; z-index: 8; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); width: min(400px, calc(100% - 32px));
+    transform: translate(-50%, 16px); opacity: 0; transition: opacity 800ms, transform 800ms cubic-bezier(.2, .75, .2, 1);
+    background: var(--paper); border: 1.5px solid var(--ink); border-radius: 18px; padding: 18px 18px 12px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 12px; box-shadow: 0 12px 40px rgba(20, 20, 20, 0.12); }
+  .lookc.on { opacity: 1; transform: translate(-50%, 0); }
+  .lookc[hidden] { display: none; }
+  .lookc p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink); max-width: 36ch; }
+  .lookc .go { font: inherit; font-size: 16px; padding: 11px 22px; background: var(--ink); color: var(--paper); border: 1.5px solid var(--ink); border-radius: 12px; cursor: pointer; }
+  .lookc .go.ghost { background: none; color: var(--ink); border-color: transparent; text-decoration: underline; text-underline-offset: 3px; font-size: 15px; padding: 6px 14px; }
+  .lookc .go:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  @media (min-width: 900px) and (orientation: landscape) { .lookc { left: calc((100% - var(--pw)) / 2); } }
+  @media not ((min-width: 900px) and (orientation: landscape)) { .lookc { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); } }
+  @media (prefers-reduced-motion: reduce) { .lookc { transition-duration: 1ms; } }
+  .rv .rv-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.45; color: var(--ink); }
+
   /* the share screen: what will be sent, before it's sent */
   .share { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px)); background: rgba(250, 250, 248, .9); opacity: 0; transition: opacity 400ms; overflow: auto; touch-action: pan-y; }
   .share.on { opacity: 1; }
@@ -372,6 +389,8 @@
 
 <section class="reveal" id="reveal" hidden aria-live="polite"><div class="rv" id="rv"></div></section>
 
+<div class="lookc" id="lookc" hidden role="dialog" aria-labelledby="lcLine"><p id="lcLine"></p><div class="rv-acts"><button class="go" id="lcGo" type="button"></button><button class="go ghost" id="lcStay" type="button"></button></div></div>
+
 <section class="share" id="share" hidden role="dialog" aria-modal="true" aria-labelledby="shTitle">
   <div class="sh-panel">
     <div class="sh-head"><p class="sh-k">Send to a friend</p><h2 id="shTitle">Share your result</h2></div>
@@ -394,6 +413,7 @@
 <script src="content-coast.js"></script>
 <script src="content-observatory.js"></script>
 <script src="portrait.js"></script>
+<script src="aura.js"></script>
 <script src="scenes.js"></script>
 <script src="scenes-neighborhood.js"></script>
 <script src="scenes-city.js"></script>
@@ -1275,12 +1295,13 @@
   const shoreX = y => COASTR.shore + 0.35 * Math.sin(y * 0.5) + 0.2 * Math.sin(y * 1.3 + 1);
   const OBSR = { x0: 126, x1: 152, y0: 49.6, y1: 80, dome: { x: 141, y: 65.6 } }; // the Observatory's plateau, south of the Coast
   // Every world past the park is a region further east, opening in this order. Each has its own fog.
+  // `arrive` is where "Go to <world>" puts you: on the road just inside its entrance, clear of buildings and stops.
   const REGIONS = [
-    { id: 'hood', name: 'The Neighborhood', x0: HOOD.x0, x1: HOOD.x1, label: [50.6, 22.6], hint: 'answer every stop in the park', lifting: 'The fog is lifting at the edge of the park.' },
-    { id: 'city', name: 'The City', x0: CITYR.x0, x1: CITYR.x1, label: [90.6, 22.6], hint: 'answer most of the Neighborhood', lifting: 'The fog is lifting past the Neighborhood.' },
-    { id: 'coast', name: 'The Coast', x0: COASTR.x0, x1: COASTR.x1, label: [131, 22.6], hint: 'answer most of the City', lifting: 'The fog is lifting past the City.', soonAt: { x: 141, y: 49.5 } },
+    { id: 'hood', name: 'The Neighborhood', x0: HOOD.x0, x1: HOOD.x1, label: [50.6, 22.6], arrive: [46.4, 25.6], hint: 'answer every stop in the park', lifting: 'The fog is lifting at the edge of the park.' },
+    { id: 'city', name: 'The City', x0: CITYR.x0, x1: CITYR.x1, label: [90.6, 22.6], arrive: [86, 26], hint: 'answer most of the Neighborhood', lifting: 'The fog is lifting past the Neighborhood.' },
+    { id: 'coast', name: 'The Coast', x0: COASTR.x0, x1: COASTR.x1, label: [131, 22.6], arrive: [127, 26], hint: 'answer most of the City', lifting: 'The fog is lifting past the City.', soonAt: { x: 141, y: 49.5 } },
     // the last world sits south of the Coast, up a trail through its woods: its own rectangle to walk in, fogged from the north
-    { id: 'observatory', name: 'The Observatory', x0: OBSR.x0, x1: OBSR.x1, label: [139.5, 54], hint: 'answer most of the Coast', lifting: 'The fog is lifting south of the Coast.',
+    { id: 'observatory', name: 'The Observatory', x0: OBSR.x0, x1: OBSR.x1, label: [139.5, 54], arrive: [138.9, 51.2], hint: 'answer most of the Coast', lifting: 'The fog is lifting south of the Coast.',
       walk: { x0: OBSR.x0 + 0.6, x1: OBSR.x1 - 0.6, y0: 43, y1: OBSR.y1 - 0.6 }, fogArea: { x0: 116, x1: 168, y0: OBSR.y0 + 0.3, y1: 96, edge: 'north' } },
   ];
   const CITY_SOON = { x: 128, y: 22 }; // the clearing the City's woods left for a sketch, before the Coast was built (kept so the City never shifts)
@@ -1438,11 +1459,12 @@
     trolley: {
       base(v) {
         sc.x.trolleyX = -70; sc.x.rolling = false; sset({ lever: 0 });
-        if (v === 'child') sset({ thread: 1, turn: 1, child: 0 }); else sset({ thread: 0, turn: 0, child: 0 });
+        if (v === 'child') sset({ thread: 1, turn: 1, child: 0, many: 0 }); else sset({ thread: 0, turn: 0, child: 0, many: 0 });
       },
       shift(v) {
         if (v === 'mother') { sto({ turn: 1 }, 2.5); sto({ thread: 1 }, 1.4); sc.x.hop = 1; }
         if (v === 'child') { sto({ child: 1 }, 2); sc.x.hop = 1; }
+        if (v === 'crowd') sto({ many: 1 }, 2); // 100 strangers fill the main track; the one on the side track stays a stranger
       },
       async act(a) { if (a.act && a.act.lever) { sto({ lever: 1 }, 12); await sleep(450); } sc.x.rolling = true; await sleep(650); },
       update(dt) { if (sc.x.rolling) sc.x.trolleyX += dt * 70; else sc.x.trolleyX = lerp(sc.x.trolleyX, 118, reduce ? 1 : 1 - Math.exp(-dt * 1.6)); },
@@ -1467,10 +1489,10 @@
           for (let i = 0; i <= upto; i++) { const [x, y] = bez(P, i / n); i ? g.lineTo(x, y) : g.moveTo(x, y); }
           g.stroke();
         }
-        const child = V('child'), five = 1 - child;
+        const child = V('child'), hundred = Math.max(child, V('many')), five = 1 - hundred;
         if (five > 0.01) { g.save(); g.globalAlpha = five; [296, 316, 336, 356, 376].forEach((x, i) => drawPerson(g, x, 173, { scale: 0.5, t, phase: i * 1.3, dir: -0.8 })); g.restore(); }
-        if (child > 0.01) {
-          g.save(); g.globalAlpha = child; g.strokeStyle = INK; g.fillStyle = PAPER; g.lineWidth = 1;
+        if (hundred > 0.01) {
+          g.save(); g.globalAlpha = hundred; g.strokeStyle = INK; g.fillStyle = PAPER; g.lineWidth = 1;
           for (let r = 0; r < 5; r++) for (let c = 0; c < 20; c++) {
             const x = 252 + c * 7.4 + (r % 2) * 3.7, y = 152 + r * 8 + (reduce ? 0 : Math.sin(t * 3 + c + r) * 0.6);
             ellipse(g, x - 1.7, y + 2.2, 2, 2); g.fill(); g.stroke(); ellipse(g, x + 1.7, y + 2.2, 2, 2); g.fill(); g.stroke();
@@ -1908,9 +1930,9 @@
     try { Object.assign(SCENES, pack(sceneKit)); } catch (e) { console.error('[Tern] scene pack', e); }
   });
   // the two prototype scenes that carry over use their own variant names
-  const VARIANTS = { trolley: { trunk: 'trunk', fu: 'mother', fuA: 'mother', fuB: 'child' }, promotion: { trunk: 'door', fu: 'need', fuA: 'need', fuB: 'need' } };
+  const VARIANTS = { trolley: { trunk: 'trunk', fu: 'mother', fuA: 'mother', fuAA: 'child', fuB: 'crowd' }, promotion: { trunk: 'door', fu: 'need', fuA: 'need', fuB: 'need' } };
   const LEGACY_ACTS = { // what the two carried-over scenes do for each answer
-    'Q1-A': { lever: 1 }, 'Q1-FUA-A': { lever: 1 }, 'Q1-FUB-A': { lever: 1 },
+    'Q1-A': { lever: 1 }, 'Q1-FUA-A': { lever: 1 }, 'Q1-FUB-A': { lever: 1 }, 'Q1-FUB2-A': { lever: 1 },
     'Q6-A': { step: 1 }, 'Q6-B': { yield: 1 }, 'Q6-FUA-A': { step: 1 }, 'Q6-FUA-B': { yield: 1 }, 'Q6-FUB-A': { yield: 1 }, 'Q6-FUB-B': { step: 1 },
   };
   const variantOf = (q, key) => (VARIANTS[q.scene] && VARIANTS[q.scene][key]) || key;
@@ -2395,7 +2417,7 @@
   const spread = () => { const [a, b] = [...fingers.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
   cv.addEventListener('pointerdown', ev => {
     fingers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
-    if (look) { skipLook(); return; } // a tap during a look-over skips it
+    if (look) { skipLook(); return; } // a tap during a look-over skips ahead to the choice
     if (cardOpen) return;
     if (fingers.size >= 2) {
       if (!pinch) { pinch = { d: spread(), z: zoomT }; player.tx = player.ty = null; player.path = null; marker = null; }
@@ -2431,7 +2453,7 @@
   cv.addEventListener('gesturechange', ev => { ev.preventDefault(); if (!cardOpen && !fingers.size) { zoomTo(gz * ev.scale); zoomed(); } });
   addEventListener('keydown', e => {
     if (cardOpen || selecting || !document.getElementById('share').hidden) return;
-    if (look) { skipLook(); return; }
+    if (look) { if (look.asking) { if (e.key === 'Escape') lcAnswer('stay'); } else skipLook(); return; }
     if (e.key === '+' || e.key === '=') { zoomTo(zoomT * 1.2); zoomed(); return; }
     if (e.key === '-' || e.key === '_') { zoomTo(zoomT / 1.2); zoomed(); return; }
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) { keys.add(e.key); e.preventDefault(); moved(); }
@@ -3553,6 +3575,15 @@
   const wopen = {}, fog = {}, fogT = {};
   REGIONS.forEach(r => { wopen[r.id] = false; fog[r.id] = fogT[r.id] = 1; });
   const isOpen = n => n.world === 'park' || (wopen[n.world] && fogT[n.world] < 0.5); // stops wake once the fog starts lifting
+  // Which world a map point is in: later worlds sit further east; the Observatory has its own rectangle to the south.
+  function worldAt(x, y) {
+    for (let i = REGIONS.length - 1; i >= 0; i--) { const r = REGIONS[i]; if (r.walk ? y >= r.fogArea.y0 - 0.6 && x >= r.x0 - 1 && x <= r.x1 + 1 : x >= r.x0 - 0.5 && y < 46) return r.id; }
+    return 'park';
+  }
+  let standingIn = null, settle = 0; // settle: seconds left of the gentle zoom after "Go to <world>"
+  const placeName = id => id === 'park' ? 'the park' : (REGIONS.find(r => r.id === id) || { name: '' }).name.replace(/^The /, 'the ');
+  const placeIn = id => ({ coast: 'on ', observatory: 'at ' }[id] || 'in ') + placeName(id); // "on the Coast", "at the Observatory", "in the City"
+  const goLabel = r => `Go to ${placeName(r.id)}`;
   const eastLimit = () => REGIONS.reduce((m, r) => wopen[r.id] && !r.walk ? Math.max(m, r.x1) : m, SIZE);
   // Where you can walk: the park and the open worlds east of it form one strip; a world with its own rectangle adds it.
   function walkAreas() {
@@ -3645,8 +3676,11 @@
     const lift = hillLift(player.x, player.y);
     items.push({ z: lift.hz != null ? Math.max(lift.hz, player.x + player.y) : player.x + player.y, f: () => {
       const p = toScreen(player.x, player.y); const pt = player.point || 0, on = pt > 0 && !player.moving, k = on ? Math.min(1, pt / 0.4, (3.2 - pt) / 0.3) : 0;
-      const hop = on && !reduce ? Math.max(0, Math.sin((3.2 - pt) * Math.PI * 2.2)) * 5 * Math.max(0, (pt - 1.6) / 1.6) : 0;
-      const down = sheet();
+      const ar = player.arrive || 0, hop = ar > 0 && !reduce ? Math.sin((1 - ar / 0.9) * Math.PI) * 6 // the small hop as you arrive somewhere new
+        : on && !reduce ? Math.max(0, Math.sin((3.2 - pt) * Math.PI * 2.2)) * 5 * Math.max(0, (pt - 1.6) / 1.6) : 0;
+      const down = sheet(), fadeIn = player.appear == null ? 1 : player.appear;
+      if (fadeIn < 1) { ctx.save(); ctx.globalAlpha = fadeIn * fadeIn * (3 - 2 * fadeIn); }
+      drawAura(ctx, p.x, p.y - lift.e - hop, 1, myTop());
       drawPerson(ctx, p.x, p.y - lift.e, { me: true, t, moving: player.moving, walk: player.walk, dir: on ? 0.6 : player.dir * 0.7, hop,
         rArm: k ? [3 + 15 * k, down ? 5 + 11 * k : 5 - 32 * k] : undefined });
       if (k > 0.2) { // a small ink spark drifting toward the panel
@@ -3654,6 +3688,7 @@
         ctx.save(); ctx.globalAlpha = k * (1 - u); ctx.strokeStyle = INK; ctx.lineWidth = 1.4;
         line(ctx, sx - 4, sy, sx + 4, sy); line(ctx, sx, sy - 4, sx, sy + 4); ctx.restore();
       }
+      if (fadeIn < 1) ctx.restore();
     } });
     items.sort((a, b) => a.z - b.z).forEach(i => i.f());
     leaves.forEach(l => { if (l.h > 0) drawLeaf(ctx, l, t); });
@@ -3729,6 +3764,10 @@
     if ((kx || ky) && !cardOpen) { const d = Math.hypot(kx, ky); player.path = null; [player.tx, player.ty] = clampPt(player.x + kx / d * 0.5, player.y + ky / d * 0.5); }
     if (steer(player, dt, 3.8, solidAt) && player.path && player.path.length && !cardOpen && !selecting) [player.tx, player.ty] = player.path.shift(); // next corner of the route
     if (player.point > 0) player.point = Math.max(0, player.point - dt);
+    if (player.arrive > 0) player.arrive = Math.max(0, player.arrive - dt);
+    if (player.appear != null && player.appear < 1) player.appear = reduce ? 1 : Math.min(1, player.appear + dt / 0.7);
+    if (settle > 0) settle = Math.max(0, settle - dt);
+    { const here = worldAt(player.x, player.y); if (here !== standingIn) { standingIn = here; if (P) renderNext(); } }
     PW = lerp(PW, PWt, reduce ? 1 : 1 - Math.exp(-dt * 5));
     updateAnimals(dt);
     updateAmbient(dt, T);
@@ -3739,7 +3778,7 @@
     const offTarget = cardOpen ? -Math.min(innerHeight * 0.3, 280) : 0;
     cam.off = lerp(cam.off, offTarget, 1 - Math.exp(-dt * 3));
     const zt = look ? look.z : zoomT;
-    if (Z !== zt) { Z = Math.abs(Z - zt) < 0.002 || reduce ? zt : lerp(Z, zt, 1 - Math.exp(-dt * 12)); applyZoom(); }
+    if (Z !== zt) { Z = Math.abs(Z - zt) < 0.002 || reduce ? zt : lerp(Z, zt, 1 - Math.exp(-dt * (settle > 0 ? 2.5 : 12))); applyZoom(); } // after "Go to", the view settles gently
     if (veil !== veilT) veil = reduce ? veilT : veilT > veil ? Math.min(veilT, veil + dt / 0.7) : Math.max(veilT, veil - dt / 0.9);
     if (marker && (marker.t += dt) > 0.7) marker = null;
     REGIONS.forEach(r => { const id = r.id; if (fog[id] !== fogT[id]) fog[id] = reduce || Math.abs(fog[id] - fogT[id]) < 0.003 ? fogT[id] : lerp(fog[id], fogT[id], 1 - Math.exp(-dt * 0.6)); }); // the fog lifts slowly
@@ -3879,7 +3918,7 @@
 
   // ---------- save (on this device only) ----------
   const SAVE_KEY = 'tern.v1';
-  const state = { char: 0, answers: {}, headline: null, seen: [], pos: null };
+  const state = { char: 0, answers: {}, headline: null, seen: [], pos: null, seed: 0, aura: null }; // aura: the look it's settling toward, replaced only at unlock moments
   function save() {
     state.pos = { x: player.x, y: player.y }; state.zoom = zoomT;
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) { /* private window: play on, just unsaved */ }
@@ -3888,17 +3927,39 @@
     try { const raw = localStorage.getItem(SAVE_KEY); if (raw) Object.assign(state, JSON.parse(raw)); } catch (e) { /* start fresh */ }
     const ids = new Set(QUESTIONS.map(q => q.id));
     Object.keys(state.answers).forEach(id => { if (!ids.has(id)) delete state.answers[id]; });
+    const q1 = state.answers.Q1 && state.answers.Q1.picks; // 2026-11 park rewrite: the child step moved from fuB to fuAA; the mother step now follows only "I pull the lever"
+    if (q1) {
+      if (q1.fuB && /^Q1-FUB-[AB]$/.test(q1.fuB)) { q1.fuAA = q1.fuB; delete q1.fuB; }
+      if (q1.trunk === 'Q1-B' && q1.fuA) delete q1.fuA;
+    }
     nodes.forEach(n => { n.done = !!state.answers[n.id]; });
+    if (!state.seed) state.seed = 1 + Math.floor(Math.random() * 1e6); // makes your aura yours, even if someone answers exactly as you did
     REGIONS.forEach(r => { wopen[r.id] = openedWorlds().includes(r.id); fog[r.id] = fogT[r.id] = wopen[r.id] ? 0 : 1; });
   }
+  // ---------- the aura (game/aura.js): a glow behind you, blended from your compass letters ----------
+  let auraShown = null; // what's drawn now, easing toward state.aura
+  const auraCache = { c: document.createElement('canvas'), key: '' };
+  const myTop = () => (CHARACTERS.find(c => c.look === myLook) || CHARACTERS[0]).top || 44;
+  function drawAura(g, x, y, s, top) { // drawn once into a small canvas and reused until it changes
+    const A = auraShown; if (!A || A.level < 0.001) return;
+    const m = g.getTransform(), k = Math.hypot(m.a, m.b), bw = 46 * s, bh = 52 * s, cy = top * 0.5 * s;
+    const key = [k.toFixed(3), s, top, state.seed, A.level.toFixed(3), ...A.lean.map(v => v.toFixed(3)), ...(A.known || []).map(v => v.toFixed(3)), ...A.prog.map(v => v.toFixed(3))].join();
+    const C = auraCache.c;
+    if (key !== auraCache.key) {
+      auraCache.key = key; C.width = Math.ceil(bw * 2 * k); C.height = Math.ceil(bh * 2 * k);
+      const cg = C.getContext('2d'); cg.setTransform(k, 0, 0, k, 0, 0); cg.clearRect(0, 0, bw * 2, bh * 2);
+      TernAura.draw(cg, bw, bh + cy, s, top, A, state.seed);
+    }
+    g.drawImage(C, x - bw, y - cy - bh, bw * 2, bh * 2);
+  }
   const openedWorlds = () => (state.seen || []).filter(k => k.startsWith('world:')).map(k => k.slice(6));
-  const portraitNow = () => TernPortrait.compute(CONTENT, state.answers, { opened: openedWorlds() });
+  const portraitNow = () => TernPortrait.compute(CONTENT, state.answers, { opened: openedWorlds(), keep: state.headline }); // keep: your summary holds while it's still tied for strongest
   let resetting = false;
   addEventListener('pagehide', () => { if (!selecting && !resetting) save(); });
 
   // ---------- the portrait panel ----------
   const pEl = document.getElementById('portrait'), pBody = document.getElementById('pBody'), pNext = document.getElementById('pNext');
-  pNext.addEventListener('click', e => { const b = e.target.closest('[data-look]'); if (b) lookOver(REGIONS.find(r => r.id === b.dataset.look)); }); // "Show me" replays the look-over
+  pNext.addEventListener('click', e => { const b = e.target.closest('[data-look]'); if (b && !cardOpen) lookOver(REGIONS.find(r => r.id === b.dataset.look)); }); // "Go to <world>" replays the look-over, which ends on the same choice
   const pHandle = document.getElementById('pHandle'), pHandleText = document.getElementById('pHandleText');
   let P = null, headlineChanged = false, detailOpen = false;
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -3977,8 +4038,9 @@
     if (P.has('code')) h += `<section data-k="code" class="p-sec${f('code')}"><h3>Your code</h3><p class="code">${P.code}</p><p class="p-desc">${esc(CONTENT.codeLine || 'One letter for each line of your compass.')}</p></section>`;
     if (P.complete) h += `<section data-k="share" class="p-sec share-cta${f('code')}"><h3>Share your result</h3><p class="p-desc">Send a friend your code and a few lines about you. When they play, compare codes.</p><button class="p-share" id="pShare" type="button">Send to a friend</button></section>`;
     h += chaptersHTML(f);
-    const tl = P.tendencies.slice(P.has('headline') ? 1 : 0, 6);
-    if (P.has('headline') && tl.length) h += `<section data-k="tend" class="p-sec${f('tend')}"><h3>More about you</h3><div class="chips">${tl.map(t => `<span class="chip">${esc(t.text)}</span>`).join('')}</div></section>`;
+    const above = P.has('headline') && P.headline ? 3 : 0; // the summary and its two description lines are already shown
+    const tl = P.tendencies.slice(above, above + 5);
+    if (P.has('headline') && tl.length) h += `<section data-k="tend" class="p-sec${f('tend')}"><h3>Also true of you</h3><div class="chips">${tl.map(t => `<span class="chip">${esc(t.text)}</span>`).join('')}</div></section>`;
     if (P.has('protect') && (P.protect.length || P.trade.length)) {
       h += `<section data-k="protect" class="p-sec${f('protect')}"><div class="pt"><div><b>You protect</b>${esc(P.protect.join(', ') || '—')}</div><div><b>You'll trade away</b>${esc(P.trade.join(', ') || '—')}</div></div></section>`;
     }
@@ -3994,19 +4056,22 @@
       `<details${i === 0 ? ' open' : ''}><summary>${esc(n.title)}</summary>${n.lines.map(l => `<p class="n"><i>${esc(String(l.answer).replace(/[.!?…]+$/, ''))}.</i> ${esc(l.note)}</p>`).join('')}</details>`).join('')}</section>`;
     h += `<section data-k="tools" class="p-tools">${P.count && !P.complete ? '<button class="link" id="pShareSoFar" type="button">Share what you have so far</button>' : ''}<button class="link" id="pChar" type="button">Change character</button><button class="link" id="pReset" type="button">Start over</button><button class="link" id="pPrivacy" type="button">Privacy</button></section>`;
     const changed = morph(h, !!fresh);
-    // what's next: a place that has opened but you haven't answered in yet, then the next unlock, as dots
-    const fresh1 = REGIONS.filter(r => wopen[r.id] && !nodes.some(n => n.world === r.id && n.done)).pop();
-    if (fresh1) pNext.innerHTML = `<span>${esc(fresh1.name)} is open</span><button class="link" type="button" data-look="${fresh1.id}">Show me</button>`;
-    else if (P.next && P.next.dots) {
-      const dots = '●'.repeat(P.next.filled) + '○'.repeat(P.next.dots - P.next.filled);
-      pNext.innerHTML = `<span>Next: ${esc(P.next.name)}</span><span class="dots" aria-label="${P.next.dots - P.next.filled} more to go">${dots}</span>`;
-    } else if (P.next) pNext.innerHTML = `<span>Next: ${esc(P.next.name)}</span><span class="dots">${P.next.soon ? 'opening soon' : ''}</span>`;
-    else pNext.innerHTML = P.worlds.every(w => w.open && w.unlocked.length === w.ladder.length) ? `<span>You've walked every world</span>` : '';
+    renderNext();
     pHandleText.textContent = P.has('headline') && P.headline ? P.headline : P.count ? 'You, so far' : 'You, so far';
     bindTools();
     nodes.forEach(n => { n.calling = n.id === P.calling; });
     void so;
     return changed;
+  }
+  // The portrait's bottom line. First, a place that has opened but you haven't answered in or stood in yet; then the next unlock, as dots.
+  function renderNext() {
+    const fresh1 = REGIONS.filter(r => wopen[r.id] && r.id !== standingIn && !nodes.some(n => n.world === r.id && n.done)).pop();
+    if (fresh1) pNext.innerHTML = `<span>${esc(fresh1.name)} is open</span><button class="link" type="button" data-look="${fresh1.id}">${esc(goLabel(fresh1))}</button>`;
+    else if (P.next && P.next.dots) {
+      const dots = '●'.repeat(P.next.filled) + '○'.repeat(P.next.dots - P.next.filled);
+      pNext.innerHTML = `<span>Next: ${esc(P.next.name)}</span><span class="dots" aria-label="${P.next.dots - P.next.filled} more to go">${dots}</span>`;
+    } else if (P.next) pNext.innerHTML = `<span>Next: ${esc(P.next.name)}</span><span class="dots">${P.next.soon ? 'opening soon' : ''}</span>`;
+    else pNext.innerHTML = P.worlds.every(w => w.open && w.unlocked.length === w.ladder.length) ? `<span>You've walked every world</span>` : '';
   }
   // A chapter per later world, built up by that world's own unlocks: how you change there, what you do there, and its summary.
   function chaptersHTML(f) {
@@ -4039,12 +4104,12 @@
   }
   function detailHTML() {
     let h = `<section data-k="detail" class="p-sec detail" id="pDetail"><h3>What your answers show</h3>`;
-    h += P.tendencies.slice(0, 6).map(t => `<div class="d-item"><h4>${esc(t.text)}</h4>${t.detail ? `<p>${esc(t.detail)}</p>` : ''}`
+    h += P.tendencies.slice(0, 8).map(t => `<div class="d-item"><h4>${esc(t.text)}</h4>${t.detail ? `<p>${esc(t.detail)}</p>` : ''}`
       + factList('Your answers', t.evidence) + factList('Pointing the other way', t.counter) + '</div>').join('');
     if (P.has('compass')) {
       const axes = P.axes.filter(a => P.has('allBars') || a.known);
       if (axes.length) h += `<h3 class="d-part">How you lean</h3>` + axes.map(a => {
-        const mid = Math.abs(a.lean) < 0.15, pos = a.score >= 0, side = pos ? a.posLabel : a.negLabel, other = pos ? a.negLabel : a.posLabel;
+        const mid = Math.abs(a.lean) < 0.15, pos = a.letter === a.pos, side = pos ? a.posLabel : a.negLabel, other = pos ? a.negLabel : a.posLabel;
         const meaning = mid ? `<p><b>${esc(leanWords(a))}</b></p><p><b>${esc(a.negLabel)}:</b> ${esc(a.negDetail)}</p><p><b>${esc(a.posLabel)}:</b> ${esc(a.posDetail)}</p>`
           : `<p><b>${esc(leanWords(a))}</b> ${esc(pos ? a.posDetail : a.negDetail)}</p>`;
         return `<div class="d-item"><h4>${esc(a.negLabel)} or ${esc(a.posLabel.toLowerCase())}</h4>${meaning}`
@@ -4135,6 +4200,7 @@
     g.fillStyle = 'rgba(20,20,20,0.06)'; ellipse(g, Wc / 2, gy + 6, 150, 30); g.fill();
     g.strokeStyle = GRAPH; g.lineWidth = 3;
     [[-120, gy - 6], [110, gy + 2]].forEach(([dx, y]) => { const x = Wc / 2 + dx; line(g, x - 10, y, x - 16, y - 22); line(g, x, y, x, y - 28); line(g, x + 10, y, x + 16, y - 22); });
+    TernAura.draw(g, Wc / 2, gy, fs, ch.top || 44, state.aura, state.seed);
     drawPerson(g, Wc / 2, gy, { me: true, scale: fs, t: 0, dir: 0 });
     let y = gy + (leadLines.length ? gap : 0);
     g.fillStyle = INK; g.font = `500 64px ${SERIF}`;
@@ -4257,8 +4323,9 @@
     headlineChanged = !!(state.headline && P.has('headline') && P.headline && P.headline !== state.headline);
     if (headlineChanged && !fresh.includes('headline')) fresh.push('headline');
     if (P.has('headline') && P.headline) state.headline = P.headline;
-    // "where you're torn" waits until a real tension exists
-    state.seen.push(...newly.filter(k => k !== 'tension' || P.tensions.length), ...opening.map(id => 'world:' + id));
+    // "where you're torn" waits until a real tension exists, and the summary (with its own screen) until a line has enough support
+    state.seen.push(...newly.filter(k => (k !== 'tension' || P.tensions.length) && (k !== 'headline' || P.headline)), ...opening.map(id => 'world:' + id));
+    if (newly.length || opening.length || !state.aura) state.aura = TernAura.target(P); // the aura only changes when something unlocks
     save();
     showPanel();
     const changed = renderPortrait(fresh);
@@ -4270,11 +4337,12 @@
     if (newly.includes('headline') && P.headline) await revealHeadline();
     if (newly.includes('code')) await revealCode();
     for (const w of P.worlds) if (newly.includes(w.id + ':chapter')) await revealChapter(w);
-    for (const r of REGIONS.filter(r => opening.includes(r.id))) await lookOver(r); // after the reveal screens, we look over at the place that just opened
+    if (opening.length) await untilShareClosed(); // if the report screen led to sharing, the look-over waits until that's done
+    for (const r of REGIONS.filter(r => opening.includes(r.id))) if (await lookOver(r) === 'go') break; // after the reveal screens, we look over at the place that just opened
   }
 
   // The look-over: once a new place opens, the map fades to paper, comes back on that place while its fog lifts
-  // and its stops announce themselves, then fades back to you. No arrow points the way; you see the place once.
+  // and its stops announce themselves, then asks: go there now, or stay where you are. No arrow points the way.
   const LOOKS = {
     hood: { at: [45, 24.5], w: 720, line: 'The Neighborhood is open, past the cabin and through the gate.' }, // framed so the cabin is in view
     observatory: { at: [139.5, 50.5], w: 720, line: 'The Observatory is open, up the trail south of the Coast.' }, // framed on the trail's sign, with the Coast's last cottages in view
@@ -4285,7 +4353,7 @@
   const veilTo = v => new Promise(res => { veilT = v; const chk = () => Math.abs(veil - v) < 0.005 ? res() : requestAnimationFrame(chk); chk(); });
   function skipLook() { if (look && !look.skip) { look.skip = true; if (lookDone) lookDone(); } }
   async function lookOver(r) {
-    if (look) return;
+    if (look) return 'busy';
     const L = LOOKS[r.id] || { at: [r.x0 + 3, r.label[1]], w: 720, line: `${r.name} is open.` };
     player.tx = player.ty = null; player.path = null; keys.clear(); if (sheet()) setSheet(false);
     look = { x: L.at[0], y: L.at[1], z: Z, skip: false };
@@ -4295,13 +4363,41 @@
     fogT[r.id] = 0; wopen[r.id] = true;
     // its "?" bubbles rise one after another, west to east, as the paper clears
     nodes.filter(n => n.world === r.id && !n.done).sort((a, b) => a.flag[0] - b.flag[0]).forEach((n, i) => { n.seenAt = T + (reduce ? 0 : 0.9 + i * 0.35); });
-    veilTo(0); say(L.line, 7000);
-    await new Promise(res => { lookDone = res; if (look.skip) res(); else setTimeout(res, 4200); });
-    lookDone = null;
+    veilTo(0);
+    // let the fog lift and the bubbles rise (a tap skips ahead), then ask
+    await new Promise(res => { lookDone = res; if (look.skip) res(); else setTimeout(res, reduce ? 300 : 2800); });
+    lookDone = null; look.asking = true;
+    if (await askGo(r, L.line) === 'go') { travelTo(r); return 'go'; }
     await veilTo(1);
     look = null; Z = zoomT; applyZoom(); cam.x = player.x; cam.y = player.y;
     await veilTo(0);
+    return 'stay';
   }
+  const lcEl = document.getElementById('lookc'), lcGo = document.getElementById('lcGo'), lcStay = document.getElementById('lcStay');
+  let lcDone = null;
+  function lcAnswer(v) { if (lcDone) { const d = lcDone; lcDone = null; d(v); } }
+  lcGo.addEventListener('click', () => lcAnswer('go'));
+  lcStay.addEventListener('click', () => lcAnswer('stay'));
+  function askGo(r, line) {
+    return new Promise(res => {
+      document.getElementById('lcLine').textContent = line;
+      lcGo.textContent = goLabel(r); lcStay.textContent = `Stay ${placeIn(worldAt(player.x, player.y))}`;
+      lcEl.hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => lcEl.classList.add('on')));
+      setTimeout(() => lcGo.focus({ preventScroll: true }), reduce ? 0 : 400);
+      lcDone = v => { lcEl.classList.remove('on'); setTimeout(() => { lcEl.hidden = true; }, reduce ? 0 : 800); res(v); };
+    });
+  }
+  // "Go to <world>": you appear just inside its entrance, on the view you're already looking at, and the camera settles on you.
+  // If you're already close by, you simply walk in.
+  function travelTo(r) {
+    const [ax, ay] = freeNear(...clampPt(r.arrive[0], r.arrive[1]));
+    player.tx = player.ty = null; player.path = null; keys.clear();
+    if (!reduce && dist(player.x, player.y, ax, ay) < 9) walkTo(ax, ay);
+    else { player.x = ax; player.y = ay; player.appear = 0; player.arrive = 0.9; player.dir = 1; }
+    settle = 1.4; look = null; // the camera and zoom ease from the wide view to you
+    save();
+  }
+  const untilShareClosed = () => new Promise(res => { const chk = () => shEl.hidden ? res() : setTimeout(chk, 250); setTimeout(chk, 700); });
   function drawVeil() {
     if (veil < 0.002) return;
     ctx.save(); ctx.globalAlpha = veil * veil * (3 - 2 * veil); ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H); ctx.restore();
@@ -4341,7 +4437,7 @@
       + `<h2 style="font-size:clamp(22px,4.4vw,30px)">${esc(P.headline || '')}</h2>${radarSVG()}`
       + `<p>${P.axes.map(a => `<b>${a.letter}</b> ${esc(a.letter === a.pos ? a.posLabel : a.negLabel)}`).join(' · ')}</p>`
       + `<p>The Neighborhood is open, with questions about the people closest to you. Your code won't change there. It comes from the park, where everyone answers the same questions.</p>`
-      + `<div class="rv-acts"><button class="go" type="button" data-share>Send your code to a friend</button><button class="go ghost" type="button">Keep walking</button></div>`);
+      + `<div class="rv-acts"><button class="go" type="button" data-share>Send your code to a friend</button><button class="go ghost" type="button">Continue</button></div>`);
     // letters arrive one at a time, left to right: ~300ms each, ~200ms apart
     await sleep(1300);
     const spans = [...document.querySelectorAll('#letters span')];
@@ -4356,9 +4452,12 @@
   }
   function revealChapter(w) {
     const lead = w.headline || (w.shift && w.shift.text) || '';
+    const more = (w.tendencies || []).filter(t => t.text !== lead).slice(0, 3); // what you do here
+    const left = nodes.some(n => n.world === w.id && !n.done); // a world opens before you've answered all of it
     return arrive(`<p class="k">${esc(w.chapter || w.name)}</p><h2>${esc(lead)}</h2>`
       + (w.headline && w.shift ? `<p>${esc(w.shift.text)}</p>` : '')
-      + `<p>Your portrait has a new chapter. ${esc(nextWorldLine(w))}</p><div class="rv-acts"><button class="go" type="button" data-share>Send to a friend</button><button class="go ghost" type="button">Keep walking</button></div>`);
+      + (more.length ? `<ul class="rv-list">${more.map(t => `<li>${esc(t.text)}</li>`).join('')}</ul>` : '')
+      + `<p>Your portrait has a new chapter. ${left ? esc(`Stops you haven't answered ${placeIn(w.id)} stay open. `) : ''}${esc(nextWorldLine(w))}</p><div class="rv-acts"><button class="go" type="button" data-share>Send to a friend</button><button class="go ghost" type="button">Continue</button></div>`);
   }
 
   // ---------- scene loop ----------
@@ -4425,6 +4524,7 @@
       const c = CHARACTERS[selIdx], s = Math.min(h * 0.72 / (c.top || 46), w / 50), gx = w / 2, gy = h * 0.84;
       g.strokeStyle = HAIR; g.lineWidth = 1;
       g.beginPath(); for (let x = 0; x <= w; x += 6) { const y = ridgeY(x * 400 / w, h * 0.34, h * 0.06, 0.02, 2); x ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
+      TernAura.draw(g, gx, gy, s, c.top || 44, auraShown, state.seed); // your aura belongs to you, not the character
       const ps = s * 0.34;
       [[0.14, 0.62, 1], [0.24, 0.56, 0.8], [0.84, 0.6, 1.1]].forEach(([fx, fy, k]) => drawPine(g, { x: w * fx, y: h * fy }, { s: ps * k, ph: fx * 9 }, t));
       g.fillStyle = 'rgba(20,20,20,0.05)'; ellipse(g, gx, gy, s * 24, s * 6); g.fill();
@@ -4506,6 +4606,7 @@
   let last = performance.now(), T = 0, skip = false;
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000); last = now; T += dt;
+    if (state.aura && !TernAura.settled(auraShown, state.aura)) auraShown = TernAura.ease(auraShown, state.aura, reduce ? 1 : 1 - Math.exp(-dt / 0.7));
     if (!selEl.hidden) drawSelect(T);
     if (!titleEl.hidden) drawTitle(T);
     updateWorld(dt);
@@ -4522,7 +4623,9 @@
       g.fillStyle = PAPER; if (round) { g.beginPath(); g.arc(size / 2, size / 2, size / 2, 0, 7); g.fill(); } else g.fillRect(0, 0, size, size);
       drawPerson(g, size / 2, size * (div ? 0.74 : 0.84), { look: CHARACTERS[0].look, scale: size / (div || (size < 48 ? 44 : 58)), t: 1, dir: 0 });
       return c.toDataURL('image/png');
-    }, poke: () => { player.point = 3.2; }, wipe: () => { resetting = true; try { localStorage.removeItem(SAVE_KEY); } catch (e) {} location.reload(); }, open: id => { const n = nodes.find(n => n.id === id); if (n) { player.x = n.stand[0]; player.y = n.stand[1]; openCard(n); } } };
+    }, poke: () => { player.point = 3.2; }, sceneNow: () => Object.assign({}, sc.v),
+    arrivals: () => REGIONS.map(r => ({ id: r.id, at: r.arrive, solid: solidAt(r.arrive[0], r.arrive[1]), world: worldAt(r.arrive[0], r.arrive[1]), nearestStop: Math.min(...nodes.map(n => dist(r.arrive[0], r.arrive[1], n.stand[0], n.stand[1]))) })),
+    here: () => ({ x: player.x, y: player.y, world: worldAt(player.x, player.y), looking: !!look, inWall: solidAt(player.x, player.y) }), wipe: () => { resetting = true; try { localStorage.removeItem(SAVE_KEY); } catch (e) {} location.reload(); }, open: id => { const n = nodes.find(n => n.id === id); if (n) { player.x = n.stand[0]; player.y = n.stand[1]; openCard(n); } } };
 
   // Coming back: skip the character select and pick up where you left off.
   load();
@@ -4535,6 +4638,8 @@
     setTimeout(() => say('Welcome back.', 2500), 600);
   }
   renderPortrait();
+  if (P.count && (!state.aura || !state.aura.known)) { state.aura = TernAura.target(P); save(); } // older saves (before the blend) get theirs from where they stand now
+  auraShown = state.aura && JSON.parse(JSON.stringify(state.aura));
   if (P.count) showPanel();
   resize();
   requestAnimationFrame(frame);

@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Character Fingerprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500&family=Quattrocento+Sans:wght@400;700&display=swap">
+<style>
+  :root { --paper: #FAFAF8; --ink: #141414; --graph: #6E6E6A; --hair: #DCDCD7; --trail: #EDEDE8; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: "Quattrocento Sans", "Gill Sans", system-ui, sans-serif; font-size: 16px; line-height: 1.55; }
+  main { max-width: 1040px; margin: 0 auto; padding: 48px 16px 96px; }
+  h1, h2, h3 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 600; line-height: 1.15; margin: 0; }
+  h1 { font-size: 44px; }
+  h2 { font-size: 30px; margin: 64px 0 6px; padding-top: 22px; border-top: 1px solid var(--hair); }
+  h3 { font-size: 24px; margin: 0 0 4px; }
+  .dateline { color: var(--graph); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; margin: 6px 0 26px; }
+  p { margin: 0 0 12px; max-width: 70ch; }
+  .lede { font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-size: 22px; line-height: 1.4; max-width: 60ch; }
+  .note { color: var(--graph); font-size: 14px; }
+  .summary { border: 1px solid var(--ink); padding: 20px 22px; margin: 18px 0 8px; background: #fff; }
+  .summary ol, .summary ul { margin: 8px 0 12px; padding-left: 20px; }
+  .summary li { margin-bottom: 6px; max-width: 72ch; }
+  .rec { display: inline-block; font-family: "Quattrocento Sans", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; border: 1px solid var(--ink); padding: 1px 6px; margin-right: 6px; vertical-align: 3px; }
+  nav.toc { font-size: 14px; color: var(--graph); margin-top: 14px; }
+  nav.toc a { color: var(--ink); margin-right: 14px; }
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .strip { display: grid; gap: 0; min-width: 680px; }
+  .cell { text-align: center; font-size: 12px; color: var(--graph); line-height: 1.3; }
+  .cell canvas { display: block; margin: 0 auto; }
+  .cell b { display: block; color: var(--ink); font-weight: 700; font-size: 12px; }
+  .rowlabel { font-size: 12px; color: var(--graph); text-align: right; padding-right: 8px; align-self: center; }
+  .concept { margin: 40px 0 10px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--graph); margin: 2px 0 10px; }
+  .meta b { color: var(--ink); }
+  table { border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; width: 100%; max-width: 760px; }
+  th, td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-weight: 700; color: var(--graph); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }
+  .play { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(280px, 380px); gap: 24px; align-items: start; margin-top: 14px; }
+  @media (max-width: 760px) { .play { grid-template-columns: 1fr; } h1 { font-size: 36px; } }
+  .stage { border: 1px solid var(--hair); background: var(--paper); }
+  .stage canvas { display: block; width: 100%; }
+  .ctl { font-size: 14px; }
+  .ctl label { display: block; margin: 10px 0 2px; }
+  .pair { display: grid; grid-template-columns: 78px 1fr 78px; gap: 8px; align-items: center; font-size: 13px; margin: 6px 0; }
+  .pair span:first-child { text-align: right; }
+  input[type=range] { width: 100%; accent-color: var(--ink); }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }
+  .seg button, .btn { font: inherit; font-size: 13px; background: var(--paper); color: var(--ink); border: 1px solid var(--ink); padding: 5px 10px; cursor: pointer; border-radius: 0; }
+  .seg button[aria-pressed=true] { background: var(--ink); color: var(--paper); }
+  .stagecap { font-size: 13px; color: var(--graph); padding: 8px 12px; border-top: 1px solid var(--hair); min-height: 38px; }
+  ul.rules { padding-left: 20px; } ul.rules li { margin-bottom: 8px; max-width: 72ch; }
+  .decide { padding: 0; list-style: none; }
+  .decide li { border-left: 2px solid var(--ink); padding: 4px 0 4px 14px; margin: 0 0 16px; max-width: 76ch; }
+  .decide li strong { display: block; font-family: "Cormorant Garamond", Georgia, serif; font-size: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Character Fingerprint</h1>
+  <div class="dateline">Tern · design exploration, round two · 6 October 2026 · nothing in the game has changed</div>
+  <p class="lede">Something of yours that appears slowly around your character as you answer, shaped by your compass. Two people never get the same one.</p>
+
+  <div class="summary">
+    <p><strong>What changed since round one.</strong> You found Grain read as stretch marks, and warned that circles could read as measles. The deeper lesson: <em>anything printed on the body reads as skin</em>, so every pattern on the body risks a skin condition. This round moves the fingerprint <strong>off the body</strong>: a glow around you, a little object that floats with you, the marks you leave as you walk. I checked each idea for what it could be mistaken for, and dropped the ones that failed (listed near the end with the reasons).</p>
+    <p><span class="rec">Recommendation</span><strong>Aura.</strong> A soft watercolour glow behind your character, in two colours chosen by your compass. It starts as a faint wash after your first answers, is clearly yours by the time your code appears, and grows wider and richer in each later world. Auras are something people already enjoy reading and comparing ("what's your aura?"), it's the only idea that still shows clearly at walking size on the map, and it never touches the character. It does bring colour into a black-and-white world, which is your call.</p>
+    <p><strong>If you'd rather keep pure ink: Mobile.</strong> A tiny Calder-style mobile: cut-paper shapes hanging from fine balanced arms, floating beside your character. It gains a shape at each step. It's charming and keeps the world black and white, but it's busier and harder to see on the map.</p>
+    <p>Your calls (details at the end):</p>
+    <ol>
+      <li><strong>Which direction</strong>: Aura (recommended), Mobile, or Trail (the marks your steps leave).</li>
+      <li><strong>Colour</strong>: Aura only works in colour. Choosing it means the fingerprint becomes the one coloured thing in the world.</li>
+      <li><strong>When it changes</strong>: only at unlock steps (recommended), never right after a single answer, so players can't steer it.</li>
+    </ol>
+    <nav class="toc"><a href="#blend">One colour per letter</a><a href="#grow">How it grows</a><a href="#three">Three directions</a><a href="#roster">Every character</a><a href="#map">At map size</a><a href="#play">Try it</a><a href="#dropped">Tried and dropped</a><a href="#rules">Rules it keeps</a><a href="#decide">Your calls</a></nav>
+  </div>
+
+  <h2 id="blend">One colour per letter (round three)</h2>
+  <p>Your idea: give each of the ten letters its own colour, and let your aura blend your five. Each letter gets one muted pigment. Your five sit around you as one soft, continuous blend, more like the sheen on an opal than a striped rainbow. The stronger you lean on a pair, the more room and colour its letter gets; a pair near the middle shows only faintly. A colour joins your aura when its pair appears on your compass, so the aura literally fills in as your compass does.</p>
+  <p class="note">The ten colours (for us only, never shown to players as a key):</p>
+  <div id="swatches" style="display:flex;flex-wrap:wrap;gap:8px 18px;margin:6px 0 18px;font-size:13px"></div>
+  <div class="scroll"><div class="strip" id="blendStrip"></div></div>
+  <p class="note" style="margin-top:10px">How it fills in, for one player (RCHPS):</p>
+  <div class="scroll"><div class="strip" id="blendGrow"></div></div>
+  <table style="margin-top:18px">
+    <tr><th></th><th>Now (in the game): two colours</th><th>Blend: one colour per letter</th></tr>
+    <tr><td>Colour comes from</td><td>A mix of four pairs, one point on a colour wheel</td><td>Each of your five letters directly</td></tr>
+    <tr><td>Two different codes</td><td>Can land on similar colours</td><td>Always differ in at least one colour</td></tr>
+    <tr><td>Friends comparing</td><td>"Mine's plum"</td><td>"We both have the teal, that's our H"</td></tr>
+    <tr><td>Reads as</td><td>A calm, two-tone glow</td><td>An opal sheen; busier, more personal</td></tr>
+    <tr><td>Risk</td><td>Less personal</td><td>Letters gain colours, so a few players may lean toward the colour they like; full spectrum order would read as a rainbow flag, so the order is mixed and the tones muted</td></tr>
+  </table>
+
+  <h2 id="grow">How it grows</h2>
+  <p>Mof with an Aura, for one sample compass, at the moments it changes. It only changes at unlock steps (the same moments the portrait panel reveals something), and eases in over about two seconds.</p>
+  <div class="scroll"><div class="strip" id="growStrip"></div></div>
+  <p class="note">Early on it's pale and generic; it becomes more yours as the evidence builds. Through the park it finds its two colours and its shape. Each later world adds a wider, fainter wash, so a player who has walked every world carries a fuller glow than one who has just finished the park.</p>
+
+  <h2 id="three">Three directions</h2>
+  <p>Each reads the same five value pairs, but turns them into different qualities. Six sample compasses, at <strong>park done</strong> (12 answers, when your code appears) and <strong>every world walked</strong> (all 75). The five letters are the code, shown here only to tell the samples apart.</p>
+  <div id="concepts"></div>
+
+  <h2 id="roster">On every character</h2>
+  <p>All three directions sit outside the body, so they work the same on every character, including Sumi's all-ink body and the characters that already wear a pattern (Nib, Zig). Shown at the end of the game, one compass per column.</p>
+  <div class="scroll"><div class="strip" id="rosterStrip"></div></div>
+
+  <h2 id="map">At map size</h2>
+  <p>The real walking size on the map (no zoom), with the closest map zoom (1.8×) beside it. Aura stays obvious. Mobile becomes a small cluster of specks. Trail is faint but noticeable, mostly because it moves with you.</p>
+  <div class="scroll"><div class="stage" id="mapStage" style="min-width:680px"></div></div>
+
+  <h2 id="play">Try it</h2>
+  <p>Move the compass and the answer count and watch it shift; changes ease in slowly, as they would in the game. "Walk" sends the character around a loop: the Trail appears behind it and the Mobile sways. "Another player" keeps the compass and answers but changes the seed, to show two people with identical answers still differ.</p>
+  <div class="play">
+    <div class="stage"><canvas id="playCanvas"></canvas><div class="stagecap" id="playCap"></div></div>
+    <div class="ctl">
+      <label>Direction</label><div class="seg" id="segConcept"></div>
+      <label>Character</label><div class="seg" id="segChar"></div>
+      <label>Compass</label><div id="pairs"></div>
+      <label>Answers so far</label><input type="range" id="answers" min="0" max="75" value="12">
+      <div class="seg" style="margin-top:10px"><button class="btn" id="btnWalk">Walk</button><button class="btn" id="btnSeed">Another player</button><button class="btn" id="btnGame">Play the whole game</button><button class="btn" id="btnRandom">Random compass</button></div>
+    </div>
+  </div>
+
+  <h2 id="dropped">Tried and dropped</h2>
+  <p>Every idea was checked for what it could be mistaken for. These failed:</p>
+  <table>
+    <tr><th>Idea</th><th>What it read as</th></tr>
+    <tr><td>Patterns on the body (round one: Grain, Strata, Speckle, Stitch)</td><td>Skin: stretch marks, measles, stubble; or clothing (a sweater, a basket)</td></tr>
+    <tr><td>Seal: an engraved emblem on the ground under you</td><td>A doily or rug; with some compasses, a puddle</td></tr>
+    <tr><td>Hand: the outline itself drawn in your own brush</td><td>A sticker's die-cut border; its loose brush ends looked like cracks</td></tr>
+    <tr><td>Loose floating shapes (before they hung from a mobile)</td><td>Flying debris, like something had burst</td></tr>
+    <tr><td>Trail marks as small arcs, then as upright waves</td><td>Arrows (which also break the no-wayfinding rule), then cartoon smell lines; now waves lie along the path, or clean slashes</td></tr>
+    <tr><td>Also considered, not drawn: a shaped shadow, an orbit of marks, a personal glyph, a constellation</td><td>Uncanny (a shadow that isn't yours), cartoon dizziness, accidental real letters or symbols, a horoscope</td></tr>
+  </table>
+  <div class="scroll"><div class="strip" id="droppedStrip"></div></div>
+
+  <h2 id="rules">Rules it keeps</h2>
+  <ul class="rules">
+    <li><strong>Nothing on the skin.</strong> The character's body is never marked. (Proposed as a standing rule; see your calls.)</li>
+    <li><strong>No negative reads.</strong> No dots or rings on the body, no arrows, no stitches, no cracks, no puddles, no smoke, smell clouds or smell lines. The Aura's colours leave out yellow-green (a cartoon smell cloud) and true red (anger).</li>
+    <li><strong>It must not prime answers.</strong> If players can see which answer makes which change, some will answer for the look they want, and the scoring stops being honest. So it changes only at unlock steps, never right after one answer; nothing explains which pair drives which quality; every compass gets an equally good-looking result; and a hidden seed blurs any one-to-one reading.</li>
+    <li><strong>Calm.</strong> The Aura never pulses. The Mobile sways very slowly. Trail marks stay where they land and fade after a few seconds; they never slide.</li>
+    <li><strong>No wayfinding.</strong> The Trail only shows where you've been, never where to go.</li>
+  </ul>
+
+  <h2 id="decide">Your calls</h2>
+  <ol class="decide">
+    <li><strong>1 · Which direction?</strong><span class="rec">Recommendation</span>Aura. It's the most attachable (people already talk about "their aura"), the clearest on the map and in a shared image, and the least likely to be misread, because it never touches the character. Mobile is the pick if colour is out. Trail works best as an extra on top of either, since it only exists while you walk.</li>
+    <li><strong>2 · Colour?</strong><span class="rec">Recommendation</span>Yes, for the fingerprint only. Everything else stays ink on paper, so your Aura is the one coloured thing in the world, which is exactly what makes it feel like yours. This reverses the ratified black-and-white rule, so it needs your explicit yes.</li>
+    <li><strong>3 · When does it change?</strong><span class="rec">Recommendation</span>Only at unlock steps, easing in slowly, the same moments the portrait panel changes. Never after a single answer, and never inside a question.</li>
+    <li><strong>4 · Where does it show?</strong><span class="rec">Recommendation</span>Everywhere you appear: the map, character select, the question scenes (you're still "you" there) and the share card. It follows you across character changes, because it belongs to you, not the character.</li>
+    <li><strong>5 · Unique per player?</strong><span class="rec">Recommendation</span>Yes. A hidden seed per save means two people with identical answers still differ slightly. "Answer again" keeps the seed, so it shifts but stays recognisably yours.</li>
+    <li><strong>6 · A standing rule: nothing on the skin?</strong><span class="rec">Recommendation</span>Yes. Add to the character rules (DESIGN §0.6): "Never mark the character's body to show the player's results; anything on the body reads as skin."</li>
+  </ol>
+  <p class="note">Prototype: <code>prototypes/fingerprint.html</code>. Plan: <code>prototypes/PLAN-fingerprint.md</code>.</p>
+</main>
+<script>
+(() => {
+  // ---- copied from game/index.html (the Puff family), with one hook added so the fingerprint can draw the body's outline ----
+  const INK = '#141414', PAPER = '#FAFAF8', GRAPH = '#6E6E6A', HAIR = '#DCDCD7', TRAIL = '#EDEDE8', SHADOW = 'rgba(20,20,20,0.10)';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function ellipse(g, x, y, rx, ry) { g.beginPath(); g.ellipse(x, y, Math.max(0.1, rx), Math.max(0.1, ry), 0, 0, Math.PI * 2); }
+  function line(g, x1, y1, x2, y2) { g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); }
+  const CHARACTERS = [
+    { name: 'Mof', look: { style: 'puff', shape: 'puff', eyes: 'sleepy' }, top: 40 },
+    { name: 'Nib', look: { style: 'puff', shape: 'round', glasses: true, sweater: true, eyes: 'dots' }, top: 38 },
+    { name: 'Sumi', look: { style: 'puff', shape: 'tiny', dark: true, eyes: 'side' }, top: 36 },
+    { name: 'Ro', look: { style: 'puff', shape: 'mallow', eyes: 'one' }, top: 36 },
+    { name: 'Zig', look: { style: 'puff', shape: 'stack', fill: 'zigzag', eyes: 'sleepy' }, top: 49 },
+    { name: 'Zo', look: { style: 'puff', shape: 'oval', band: true }, top: 33 },
+    { name: 'Tri', look: { style: 'puff', shape: 'tri', eyes: 'grin', idle: 'hop' }, top: 44 },
+    { name: 'Duo', look: { style: 'puff', shape: 'lopsided', fill: 'split', idle: 'sway' }, top: 40 },
+  ];
+  function core(o, look) {
+    const s = (o.scale || 1) * (look.size || 1), t = o.t || 0, ph = o.phase || 0, d = o.dir || 0;
+    const moving = o.moving && !reduce, walk = o.walk || 0;
+    return {
+      s, t, ph, d, moving, walk,
+      bob: moving ? Math.abs(Math.sin(walk * 2)) * 1.8 * s : (reduce ? 0 : Math.sin(t * 1.6 + ph) * 0.5 * s),
+      sw: moving ? Math.sin(walk * 2) * 4 * s : 0,
+      blink: !reduce && ((t + ph * 3) % 4.6) < 0.12,
+      la: o.lArm || null, ra: o.rArm || null, sit: !!o.sit, sd: d < 0 ? -1 : 1, hop: (o.hop || 0) * s, mood: o.mood, v: look.v, look,
+    };
+  }
+  // body outlines for the Puff family: [x, y, radius] per puff, in figure units above the feet
+  const PUFF_SHAPES = {
+    puff: [[0, -25, 10], [-8, -20, 7.5], [8, -20, 7.5], [-6, -12, 7], [6, -12, 7], [0, -12, 8], [-3, -31, 6], [5, -30, 5.5]],
+    round: [[0, -20, 11.5], [-7, -12, 8], [7, -12, 8], [0, -27, 8.5], [-8.5, -21, 7], [8.5, -21, 7], [0, -10, 8]],
+    tall: [[0, -30, 7.5], [-4, -23, 6.5], [4, -22, 6.5], [0, -14, 7.5], [-6, -12, 5.5], [6, -12, 5.5], [1, -37, 5.5], [-2, -42, 3.8]],
+    wide: [[0, -20, 9], [-9, -17, 8], [9, -17, 8], [-15, -12, 6], [15, -12, 6], [-6, -11, 7], [6, -11, 7], [0, -27, 6.5], [-7, -24, 6], [7, -24, 6]],
+    stack: [[0, -12, 8], [-5, -14, 6], [5, -14, 6], [0, -24, 7.5], [-4.5, -29, 5], [4.5, -30, 5], [0, -35, 6.5], [0, -43, 4.5]],
+    tiny: [[0, -16, 8], [-5, -12, 5.5], [5, -12, 5.5], [0, -23, 5.5], [-4, -20, 4.5], [4, -20, 4.5]],
+    lopsided: [[2, -25, 10], [-8, -18, 7], [9, -21, 8], [-5, -11, 6.5], [7, -11, 7.5], [0, -12, 8], [-1, -32, 5], [8, -31, 6.5], [-11, -13, 4.5]],
+    pear: [[0, -12, 10.5], [-8, -11, 7], [8, -11, 7], [0, -22, 8], [-5, -19, 6], [5, -19, 6], [0, -30, 6], [-3, -27, 4.5], [3, -28, 4.5]],
+    twin: [[-5.5, -27, 7.5], [5.5, -27, 7.5], [0, -18, 10], [-8, -14, 7], [8, -14, 7], [0, -10, 8]],
+    rosette: (() => { const a = [[0, -20, 7.5]]; for (let k = 0; k < 6; k++) { const an = -Math.PI / 2 + k * Math.PI / 3; a.push([Math.cos(an) * 8.5, -20 + Math.sin(an) * 8.5, 6.5]); } return a; })(),
+    fuzz: (() => { const a = [[0, -20, 11.5]]; for (let i = 0; i < 18; i++) { const an = i / 18 * Math.PI * 2; a.push([Math.cos(an) * 11.5, -20 + Math.sin(an) * 11.5, 3.2]); } return a; })(),
+  };
+  function dotEyes(g, fx, y, s, blink, gap, rx, ry, col) {
+    g.fillStyle = col || INK; g.strokeStyle = col || INK;
+    for (const ex of [-gap, gap]) {
+      if (blink) { g.lineWidth = 1 * s; line(g, fx + ex * s - rx * s, y, fx + ex * s + rx * s, y); }
+      else { ellipse(g, fx + ex * s, y, rx * s, ry * s); g.fill(); }
+    }
+  }
+  function blush(g, fx, y, s, gap) { g.fillStyle = 'rgba(20,20,20,0.10)'; for (const ex of [-gap, gap]) { ellipse(g, fx + ex * s, y, 1.9 * s, 1.1 * s); g.fill(); } }
+  function moodMarks(g, fx, ey, s, mood, col) {
+    if (!mood) return;
+    g.strokeStyle = col || INK; g.lineWidth = 1.1 * s;
+    if (mood === 'sad' || mood === 'worried') { line(g, fx - 5.2 * s, ey - 3.8 * s, fx - 1.8 * s, ey - 5 * s); line(g, fx + 1.8 * s, ey - 5 * s, fx + 5.2 * s, ey - 3.8 * s); }
+    if (mood === 'angry') { line(g, fx - 5.2 * s, ey - 5.2 * s, fx - 1.8 * s, ey - 3.8 * s); line(g, fx + 1.8 * s, ey - 3.8 * s, fx + 5.2 * s, ey - 5.2 * s); }
+    if (mood === 'sad') { g.beginPath(); g.arc(fx, ey + 5 * s, 2.1 * s, 1.22 * Math.PI, 1.78 * Math.PI); g.stroke(); }
+    else if (mood === 'worried') { ellipse(g, fx, ey + 3.4 * s, 1.1 * s, 1.2 * s); g.stroke(); }
+    else if (mood === 'angry') line(g, fx - 2.3 * s, ey + 3.4 * s, fx + 2.3 * s, ey + 3.4 * s);
+  }
+  const shadowAt = (g, x, y, rx, ry) => { g.fillStyle = SHADOW; ellipse(g, x, y, rx, ry); g.fill(); };
+  const STYLES = {
+    puff(g, x, y, o, P) {
+      const { s, t, ph, d, sw, moving, walk } = P, L = P.look || {};
+      const float = reduce ? 0 : (moving ? Math.abs(Math.sin(walk * 2)) * 2 : Math.sin(t * 1.1 + ph) * 1.4) * s;
+      const still = !moving && !reduce;
+      let habit = 0;
+      if (L.idle === 'hop' && still) { const u = ((t + ph) % 3.4) / 3.4; habit = u < 0.14 ? Math.sin(u / 0.14 * Math.PI) * 4.5 * s : 0; }
+      if (L.idle === 'sway' && still) { g.translate(x, y); g.rotate(Math.sin(t * 0.9 + ph) * 0.055); g.translate(-x, -y); }
+      const Y = y - P.hop - float - habit, dark = !!L.dark, shape = L.shape || 'puff';
+      const C = shape === 'mallow' || shape === 'oval' || shape === 'tri' ? null : (PUFF_SHAPES[shape] || PUFF_SHAPES.puff);
+      const topY = C ? Math.min(...C.map(([, cy, r]) => cy - r)) : shape === 'oval' ? -28 : shape === 'tri' ? -36 : -34;
+      const bodyPath = () => {
+        g.beginPath();
+        if (C) C.forEach(([cx, cy, r]) => { g.moveTo(x + (cx + r) * s, Y + cy * s); g.arc(x + cx * s, Y + cy * s, r * s, 0, Math.PI * 2); });
+        else if (shape === 'oval') g.ellipse(x, Y - 17 * s, 13 * s, 11 * s, 0, 0, Math.PI * 2);
+        else if (shape === 'tri') { // a soft rounded triangle
+          const A = [x, Y - 39 * s], B = [x + 15 * s, Y - 5 * s], Cc = [x - 15 * s, Y - 5 * s], r = 6 * s;
+          g.moveTo((A[0] + Cc[0]) / 2, (A[1] + Cc[1]) / 2);
+          g.arcTo(A[0], A[1], B[0], B[1], r); g.arcTo(B[0], B[1], Cc[0], Cc[1], r); g.arcTo(Cc[0], Cc[1], A[0], A[1], r); g.closePath();
+        }
+        else g.roundRect(x - 12 * s, Y - 34 * s, 24 * s, 28 * s, 9 * s);
+      };
+      const back = d >= 0 ? -1 : 1;
+      shadowAt(g, x, y, 11 * s, 3.6 * s);
+      g.lineCap = 'round'; g.lineJoin = 'round';
+      // behind the body
+      if (L.ears) {
+        const sway = reduce ? 0 : Math.sin(t * 1.2 + ph) * 0.06;
+        [[-1, -0.18 + sway, false], [1, 0.3 + sway, true]].forEach(([k, rot, flop]) => {
+          g.save(); g.translate(x + k * 5 * s, Y + (topY + 4) * s); g.rotate(rot);
+          g.beginPath();
+          if (flop) { g.moveTo(-3.2 * s, 0); g.quadraticCurveTo(-3.8 * s, -10 * s, 0.5 * s, -12 * s); g.quadraticCurveTo(7 * s, -13 * s, 9.5 * s, -7.5 * s); g.quadraticCurveTo(6 * s, -8 * s, 3.2 * s, -6.5 * s); g.quadraticCurveTo(3.6 * s, -3 * s, 3.2 * s, 0); g.closePath(); }
+          else g.ellipse(0, -8 * s, 3.6 * s, 9.5 * s, 0, 0, Math.PI * 2);
+          g.fillStyle = PAPER; g.fill(); g.strokeStyle = INK; g.lineWidth = 1.6 * s; g.stroke();
+          if (!flop) { g.strokeStyle = GRAPH; g.lineWidth = 0.9 * s; line(g, 0, -3 * s, 0, -13 * s); }
+          g.restore();
+        });
+      }
+      if (L.pack) {
+        g.beginPath(); g.roundRect(x + back * 12 * s - 5 * s, Y - 28 * s, 10 * s, 16 * s, 3 * s);
+        g.fillStyle = PAPER; g.fill(); g.strokeStyle = INK; g.lineWidth = 1.5 * s; g.stroke();
+        g.lineWidth = 1.1 * s; line(g, x + back * 12 * s - 5 * s, Y - 22 * s, x + back * 12 * s + 5 * s, Y - 22 * s);
+      }
+      // legs
+      g.strokeStyle = INK; g.lineWidth = 1.8 * s;
+      if (P.sit) for (const k of [-1, 1]) line(g, x + k * 3 * s, Y - 7 * s, x + (k * 3 + 7 * P.sd) * s, Y - 5 * s);
+      else { line(g, x - 3.5 * s, Y - 8 * s, x - 3.5 * s + sw * 0.6, Y - 1.5 * s); line(g, x + 3.5 * s, Y - 8 * s, x + 3.5 * s - sw * 0.6, Y - 1.5 * s); }
+      // body: overlapping puffs drawn as one soft outline (or a squishy pillow)
+      if (C) {
+        if (!P.hand) { g.fillStyle = INK; for (const [cx, cy, r] of C) { ellipse(g, x + cx * s, Y + cy * s, (r + 1.6) * s, (r + 1.6) * s); g.fill(); } }
+        g.fillStyle = dark ? INK : PAPER; for (const [cx, cy, r] of C) { ellipse(g, x + cx * s, Y + cy * s, r * s, r * s); g.fill(); }
+      } else { bodyPath(); g.fillStyle = PAPER; g.fill(); if (!P.hand) { g.strokeStyle = INK; g.lineWidth = 1.8 * s; g.stroke(); } }
+      if (L.sweater) {
+        g.save(); bodyPath(); g.clip();
+        g.fillStyle = PAPER; g.fillRect(x - 20 * s, Y - 15 * s, 40 * s, 15 * s);
+        g.strokeStyle = GRAPH; g.lineWidth = 0.9 * s; for (let yy = -12.4; yy < -4; yy += 2.6) line(g, x - 20 * s, Y + yy * s, x + 20 * s, Y + yy * s);
+        g.strokeStyle = INK; g.lineWidth = 1.3 * s; g.beginPath();
+        for (let k = -18; k <= 18; k += 2) { const px = x + k * s, py = Y - 15 * s + (k % 4 === 0 ? 0 : 0.8 * s); k === -18 ? g.moveTo(px, py) : g.lineTo(px, py); }
+        g.stroke(); g.restore();
+      }
+      if (L.fill) {
+        g.save(); bodyPath(); g.clip();
+        if (L.fill === 'twotone') { g.fillStyle = INK; g.fillRect(x - 24 * s, Y - 14 * s, 48 * s, 16 * s); }
+        else if (L.fill === 'base') { g.fillStyle = INK; g.fillRect(x - 24 * s, Y - 11 * s, 48 * s, 12 * s); }
+        else if (L.fill === 'split') { g.fillStyle = INK; g.fillRect(x - 24 * s, Y - 50 * s, 24 * s, 52 * s); }
+        else if (L.fill === 'polka') { g.fillStyle = INK; [[-9, -28, 2], [7, -33, 1.7], [10.5, -17, 2.3], [-10, -13.5, 2], [9, -7.5, 2.2], [-4, -6, 1.3], [-4, -33, 1.3]].forEach(([dx, dy, r]) => { ellipse(g, x + dx * s, Y + dy * s, r * s, r * s); g.fill(); }); }
+        else if (L.fill === 'zigzag') {
+          g.strokeStyle = GRAPH; g.lineWidth = 0.9 * s; line(g, x - 24 * s, Y - 11.5 * s, x + 24 * s, Y - 11.5 * s); line(g, x - 24 * s, Y - 5.5 * s, x + 24 * s, Y - 5.5 * s);
+          g.strokeStyle = INK; g.lineWidth = 1.6 * s; g.beginPath();
+          for (let k = -24; k <= 24; k += 2) { const px = x + k * s, py = Y + (k % 4 === 0 ? -10 : -7) * s; k === -24 ? g.moveTo(px, py) : g.lineTo(px, py); }
+          g.stroke();
+        }
+        else if (L.fill === 'checker') { g.fillStyle = INK; const c = 3.2; for (let r = 0; r < 5; r++) for (let q = -8; q < 8; q++) if ((r + q) % 2 === 0) g.fillRect(x + q * c * s, Y + (-14.5 + r * c) * s, c * s, c * s); }
+        else { g.fillStyle = GRAPH; for (let k = 0; k < 22; k++) { const u = Math.sin(k * 12.9898) * 43758.5453, w2 = Math.sin(k * 78.233) * 43758.5453; ellipse(g, x + ((u - Math.floor(u)) - 0.5) * 30 * s, Y + (-36 + (w2 - Math.floor(w2)) * 32) * s, 0.6 * s, 0.6 * s); g.fill(); } }
+        g.restore();
+      }
+      if (P.hand) P.hand(g, x, Y, s, dark, shape); // the fingerprint's own outline, in place of the plain one
+      // puff hands
+      const shY = Y - 18 * s, la = P.la || [-3, 5], ra = P.ra || [3, 5];
+      const reach = { round: 13, tall: 12, fuzz: 15.5, mallow: 14.5, wide: 20, stack: 10.5, tiny: 10, lopsided: 14.5, pear: 12.5, oval: 15.5, twin: 14, rosette: 16.5, tri: 12.5 }[shape] || 14;
+      const hands = [[-1, la], [1, ra]].map(([k, a]) => [x + k * reach * s + a[0] * 0.6 * s + k * sw * 0.3, shY + a[1] * 0.7 * s]);
+      if (L.stick && !P.ra && !P.sit) {
+        const [hx, hy] = hands[1];
+        g.strokeStyle = INK; g.lineWidth = 1.6 * s; line(g, hx + 0.6 * s, hy - 6 * s, hx + 2.6 * s + sw * 0.3, Y);
+        g.beginPath(); g.arc(hx - 0.4 * s, hy - 6 * s, 1.1 * s, Math.PI, 0); g.stroke();
+      }
+      hands.forEach(([hx, hy]) => { ellipse(g, hx, hy, 2.8 * s, 2.6 * s); g.fillStyle = dark || L.fill === 'twotone' ? INK : PAPER; g.fill(); g.strokeStyle = INK; g.lineWidth = 1.4 * s; g.stroke(); });
+      // face
+      const fx = x + d * 3 * s, ey = Y + ({ tall: -26, round: -20, fuzz: -20, mallow: -21, wide: -19, stack: -26, tiny: -17, lopsided: -22, pear: -21, oval: -18, twin: -20, rosette: -20, tri: -16 }[shape] || -21) * s, ink = dark ? PAPER : INK;
+      g.strokeStyle = ink; g.fillStyle = ink; g.lineWidth = 1.4 * s;
+      if (L.band) {
+        g.save(); bodyPath(); g.clip(); g.fillStyle = INK; g.beginPath(); g.roundRect(fx - 11 * s, ey - 3 * s, 22 * s, 6 * s, 3 * s); g.fill(); g.restore();
+      }
+      const eyes = P.mood ? 'mood' : L.band ? 'band' : L.fill === 'split' ? 'split' : (L.eyes || 'sleepy');
+      if (eyes === 'band') dotEyes(g, fx, ey, s, P.blink, 3.6, 1.3, 1.6, PAPER);
+      if (eyes === 'split') for (const ex of [-3.8, 3.8]) {
+        const col = fx + ex * s < x ? PAPER : INK, big = ex < 0; g.fillStyle = col; g.strokeStyle = col;
+        if (P.blink) { g.lineWidth = 1 * s; line(g, fx + ex * s - 1.4 * s, ey, fx + ex * s + 1.4 * s, ey); continue; }
+        if (big) { ellipse(g, fx + ex * s, ey, 2.4 * s, 2.7 * s); g.fill(); ellipse(g, fx + ex * s + 0.4 * s, ey + 0.5 * s, 1.1 * s, 1.2 * s); g.fillStyle = INK; g.fill(); }
+        else { ellipse(g, fx + ex * s, ey + 0.4 * s, 1 * s, 1.2 * s); g.fill(); g.lineWidth = 1.1 * s; line(g, fx + ex * s - 1.8 * s, ey - 3.4 * s, fx + ex * s + 1.8 * s, ey - 4.6 * s); }
+      }
+      if (L.mark) { g.fillStyle = INK; g.beginPath(); g.moveTo(fx, ey - 7.8 * s); g.lineTo(fx + 1.6 * s, ey - 6 * s); g.lineTo(fx, ey - 4.2 * s); g.lineTo(fx - 1.6 * s, ey - 6 * s); g.closePath(); g.fill(); }
+      if (eyes === 'mood') { dotEyes(g, fx, ey, s, P.blink, 3.6, 1.2, 1.5, ink); moodMarks(g, fx, ey, s, P.mood, ink); }
+      else if (eyes === 'sleepy') { for (const ex of [-3.6, 3.6]) { g.beginPath(); g.arc(fx + ex * s, ey - 0.8 * s, 1.8 * s, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke(); } }
+      else if (eyes === 'dots') dotEyes(g, fx, ey, s, P.blink, 3.6, 1.3, 1.6, ink);
+      else if (eyes === 'side') { const glance = reduce ? 1 : Math.tanh(Math.sin(t * 0.35 + ph) * 4); dotEyes(g, fx + glance * 2.4 * s, ey + 0.6 * s, s, P.blink, 3.3, 1.2, 1.5, ink); }
+      else if (eyes === 'one') {
+        const ex = fx, eyy = ey - 1.5 * s;
+        if (P.blink) { g.lineWidth = 1.4 * s; line(g, ex - 4.6 * s, eyy, ex + 4.6 * s, eyy); }
+        else {
+          ellipse(g, ex, eyy, 5 * s, 5.6 * s); g.fillStyle = PAPER; g.fill(); g.strokeStyle = INK; g.lineWidth = 1.5 * s; g.stroke();
+          const px = reduce ? 0 : Math.cos(t * 0.6 + ph) * 1.7 * s, py = reduce ? 0 : Math.sin(t * 0.45 + ph) * 1.1 * s;
+          ellipse(g, ex + px + d * 1.2 * s, eyy + py, 2.5 * s, 2.7 * s); g.fillStyle = INK; g.fill();
+          ellipse(g, ex + px + d * 1.2 * s + 0.9 * s, eyy + py - 1 * s, 0.7 * s, 0.7 * s); g.fillStyle = PAPER; g.fill();
+        }
+      }
+      else if (eyes === 'grin') {
+        dotEyes(g, fx, ey, s, P.blink, 3.8, 1.3, 1.6, ink);
+        g.strokeStyle = ink; g.lineWidth = 1.2 * s; for (const ex of [-3.8, 3.8]) { g.beginPath(); g.arc(fx + ex * s, ey - 2.4 * s, 2.3 * s, 1.2 * Math.PI, 1.8 * Math.PI); g.stroke(); }
+        g.beginPath(); g.arc(fx, ey + 2.6 * s, 2.6 * s, 0, Math.PI); g.closePath(); g.fillStyle = ink; g.fill();
+      }
+      else if (eyes === 'lines') { g.lineWidth = 1.3 * s; for (const ex of [-3.8, 3.8]) line(g, fx + ex * s - 1.6 * s, ey + 0.4 * s, fx + ex * s + 1.6 * s, ey + 0.4 * s); }
+      else if (eyes === 'wink') {
+        g.beginPath(); g.arc(fx - 3.6 * s, ey + 0.8 * s, 1.8 * s, 1.15 * Math.PI, 1.85 * Math.PI); g.stroke();
+        ellipse(g, fx + 3.6 * s, ey, 1.3 * s, 1.6 * s); g.fill();
+      } else if (eyes === 'big' || eyes === 'soot') {
+        const big = eyes === 'soot';
+        for (const ex of [-3.8, 3.8]) {
+          if (P.blink) { line(g, fx + ex * s - 1.8 * s, ey, fx + ex * s + 1.8 * s, ey); continue; }
+          if (big) { ellipse(g, fx + ex * s, ey, 2.7 * s, 3.1 * s); g.fillStyle = PAPER; g.fill(); ellipse(g, fx + ex * s + d * 0.6 * s, ey + 0.7 * s, 1.2 * s, 1.4 * s); g.fillStyle = INK; g.fill(); }
+          else { ellipse(g, fx + ex * s, ey, 1.9 * s, 2.3 * s); g.fillStyle = INK; g.fill(); ellipse(g, fx + ex * s + 0.6 * s, ey - 0.8 * s, 0.6 * s, 0.6 * s); g.fillStyle = PAPER; g.fill(); }
+        }
+      }
+      if (L.smile && !P.mood) { g.strokeStyle = ink; g.lineWidth = 1.2 * s; g.beginPath(); g.arc(fx, ey + 2.4 * s, 2.2 * s, 0.18 * Math.PI, 0.82 * Math.PI); g.stroke(); }
+      if (L.glasses) { g.strokeStyle = INK; g.lineWidth = 1.1 * s; for (const ex of [-3.8, 3.8]) { ellipse(g, fx + ex * s, ey, 3.2 * s, 3.2 * s); g.stroke(); } line(g, fx - 0.6 * s, ey - 0.4 * s, fx + 0.6 * s, ey - 0.4 * s); }
+      if (!dark && !P.mood && !L.band && L.fill !== 'split') blush(g, fx, ey + 2.8 * s, s, 6.2);
+      if (L.freckles) { g.fillStyle = GRAPH; for (const k of [-1, 1]) [[5, 1.6], [6.6, 2.4], [5.4, 3.4]].forEach(([dx, dy]) => { ellipse(g, fx + k * dx * s, ey + dy * s, 0.45 * s, 0.45 * s); g.fill(); }); }
+      // on top
+      const crown = Y + topY * s;
+      if (L.curl) {
+        const sway = reduce ? 0 : Math.sin(t * 1.2 + ph) * 0.8 * s;
+        g.strokeStyle = INK; g.lineWidth = 1.5 * s; g.beginPath(); g.moveTo(x - 1 * s, crown + 1.5 * s);
+        g.quadraticCurveTo(x + 1 * s + sway, crown - 5 * s, x + 4.5 * s + sway, crown - 4 * s); g.quadraticCurveTo(x + 6 * s + sway, crown - 1.5 * s, x + 3 * s + sway, crown - 1.6 * s); g.stroke();
+      }
+      if (L.hat === 'bucket') {
+        const hb = crown + 5 * s;
+        g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.5 * s;
+        g.beginPath(); g.moveTo(x - 8.5 * s, hb); g.bezierCurveTo(x - 8.5 * s, hb - 11 * s, x + 8.5 * s, hb - 11 * s, x + 8.5 * s, hb); g.closePath(); g.fill(); g.stroke();
+        ellipse(g, x, hb, 13.5 * s, 3.1 * s); g.fill(); g.stroke();
+        g.strokeStyle = GRAPH; g.lineWidth = 1 * s; line(g, x - 7.8 * s, hb - 2.8 * s, x + 7.8 * s, hb - 2.8 * s);
+      }
+      if (L.flower) {
+        const sway = reduce ? 0 : Math.sin(t * 1.3 + ph) * 0.12;
+        g.save(); g.translate(x + 2 * s, crown + 1.5 * s); g.rotate(sway);
+        g.strokeStyle = INK; g.lineWidth = 1.2 * s; line(g, 0, 0, 0, -6 * s);
+        g.save(); g.translate(0, -3 * s); g.rotate(0.6); ellipse(g, 2 * s, 0, 2 * s, 1 * s); g.fillStyle = PAPER; g.fill(); g.stroke(); g.restore();
+        for (let k = 0; k < 7; k++) { const an = k / 7 * Math.PI * 2; g.save(); g.translate(0, -10 * s); g.rotate(an); ellipse(g, 0, -3.2 * s, 1.5 * s, 2.6 * s); g.fillStyle = PAPER; g.fill(); g.strokeStyle = INK; g.lineWidth = 1 * s; g.stroke(); g.restore(); }
+        ellipse(g, 0, -10 * s, 1.7 * s, 1.7 * s); g.fillStyle = INK; g.fill();
+        g.restore();
+      }
+      if (L.tuft) {
+        const sway = reduce ? 0 : Math.sin(t * 1.4 + ph) * 0.8 * s;
+        g.fillStyle = PAPER; g.strokeStyle = INK; g.lineWidth = 1.4 * s;
+        [[-1, -6, -8], [0, 1, -10], [1, 6, -7]].forEach(([k, tipx, tipy]) => {
+          const bx = x + k * 2.6 * s, by = crown + 3 * s;
+          g.beginPath(); g.moveTo(bx - 2.2 * s, by); g.quadraticCurveTo(bx + tipx * 0.2 * s, by + tipy * 0.7 * s, x + tipx * s + sway, by + tipy * s);
+          g.quadraticCurveTo(bx + tipx * 0.5 * s + 1 * s, by + tipy * 0.4 * s, bx + 2.2 * s, by); g.closePath(); g.fill(); g.stroke();
+        });
+      }
+    },
+  };
+  // ---------- the fingerprint, round two: off the skin ----------
+  // Anything printed on the body reads as skin (lines as stretch marks, dots as measles), so these live
+  // elsewhere: on the ground under you (Seal), in the marks your steps leave (Trail), and in the ink line
+  // that draws you (Hand). Compass leans run -1..1 toward the second word of each pair:
+  // [Rules→Outcomes, Individual→Collective, Thought→Heart, Principle→Loyalty, Disruption→System].
+  // A per-player seed keeps two people with the same compass from looking identical.
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  const lerp = (a, b, k) => a + (b - a) * k;
+  function rng(seed) { let a = (seed >>> 0) || 1; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  // Unlock steps in total answers, if a player finishes each world before the next.
+  const WORLD_STEPS = [[2, 4, 6, 8, 10, 12], [15, 18, 22], [30, 34, 39], [48, 51, 53], [61, 65, 69]];
+  function growth(answers) {
+    const prog = WORLD_STEPS.map(ws => ws.filter(a => answers >= a).length / ws.length);
+    const later = WORLD_STEPS.slice(1).flat().filter(a => answers >= a).length;
+    return { level: prog[0] * 0.5 + later / 12 * 0.5, prog };
+  }
+  // Early on the mark is generic; it becomes yours as the evidence builds.
+  function traits(lean, level) {
+    const settle = 0.3 + 0.7 * clamp01(level * 1.9);
+    const [OR, CI, HT, LP, SD] = lean.map(v => v * settle);
+    return { OR, CI, HT, LP, SD };
+  }
+  // One muted pigment per player, picked from where the compass sits (only if colour is ruled in).
+  // rust, clay, plum, indigo, slate, teal, sage, ochre. No yellow-green (a cartoon smell cloud) and no true red (anger).
+  const PIGMENTS = [[172, 96, 62], [170, 92, 96], [112, 62, 100], [60, 78, 128], [62, 96, 116], [44, 110, 104], [92, 122, 106], [184, 140, 64]];
+  function pigment(T) {
+    const px = 0.55 * T.OR - 0.45 * T.SD, py = 0.55 * T.HT + 0.45 * T.CI;
+    let a = Math.atan2(py, px); if (a < 0) a += Math.PI * 2;
+    const f = a / (Math.PI * 2) * 8, i = Math.floor(f) % 8, j = (i + 1) % 8, k = f - Math.floor(f);
+    const mag = clamp01(Math.hypot(px, py) * 2.2), dk = 1 - 0.14 * T.LP;
+    return PIGMENTS[i].map((c, n) => Math.round(lerp(lerp(c, PIGMENTS[j][n], k), [112, 100, 88][n], 1 - mag) * dk * 0.9));
+  }
+  function ringColour(angle) { // a colour from the pigment ring, at any angle
+    let a = angle % (Math.PI * 2); if (a < 0) a += Math.PI * 2;
+    const f = a / (Math.PI * 2) * 8, i = Math.floor(f) % 8, j = (i + 1) % 8, k = f - Math.floor(f);
+    return PIGMENTS[i].map((c, n) => lerp(c, PIGMENTS[j][n], k));
+  }
+  const inkOf = (spec, T) => spec.pigment ? pigment(T) : [20, 20, 20];
+  const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+  const stroke = (g, pts) => { g.beginPath(); pts.forEach(([px, py], i) => i ? g.lineTo(px, py) : g.moveTo(px, py)); g.stroke(); };
+
+  // ---- 1. Seal: an engraved emblem on the ground beneath you that draws itself as you answer ----
+  // Like the fine line work on a banknote. The number of lobes comes from the seed alone.
+  function seal(g, x, y, s, T, G, seed, col, alpha) {
+    const r = rng(seed * 31 + 7), n = 5 + Math.floor(r() * 5), rot = r() * Math.PI * 2;
+    const A = 11, sq = 0.5; // radius in figure units; the ground is seen at an angle
+    const out = (T.LP + 1) / 2; // principle: lobes reach outward · loyalty: lobes fold in and nest
+    const irr = clamp01((T.OR + 1) / 2), B = A * lerp(0.1, 0.24, irr); // outcomes: lobes loop back on themselves · rules: simple lobes
+    const facet = clamp01(-T.HT * 1.1); // thought: drawn with a ruler, faceted · heart: soft curves
+    const copies = [1, clamp01(T.CI * 1.4 + 0.05), clamp01(T.CI * 1.4 - 0.55)]; // collective: interlaced copies · individual: one line
+    const drift = clamp01(-T.SD); // disruption: each lap turns a little, so it never quite closes · system: one exact, closed lap
+    const P = (u, v) => [x + u * s, y + v * s * sq];
+    const curve = (t, k, scale, ph) => { // two turning circles, blended between outward and inward lobes
+      const a1 = (1 + n) * t + ph, a2 = (1 - n) * t + ph, pre = drift * 0.2 * t / (Math.PI * 2) + k * Math.PI / n / 1.5 + rot;
+      let u = A * Math.cos(t) + B * (out * Math.cos(a1) + (1 - out) * Math.cos(a2));
+      let v = A * Math.sin(t) + B * (out * Math.sin(a1) + (1 - out) * Math.sin(a2));
+      const c = Math.cos(pre), sn = Math.sin(pre);
+      return [(u * c - v * sn) * scale, (u * sn + v * c) * scale];
+    };
+    const path = (frac, k, scale, ph, laps) => {
+      const T2 = Math.PI * 2 * laps * frac, steps = Math.max(2, Math.ceil(260 * laps * frac)), knots = n * 4;
+      const pts = [];
+      for (let i = 0; i <= steps; i++) {
+        const t = T2 * i / steps;
+        let [u, v] = curve(t, k, scale, ph);
+        if (facet > 0) { // the same curve drawn as straight lines between knots
+          const kt = Math.PI * 2 / knots, t0 = Math.floor(t / kt) * kt, f = (t - t0) / kt;
+          const [u0, v0] = curve(t0, k, scale, ph), [u1, v1] = curve(t0 + kt, k, scale, ph);
+          u = lerp(u, lerp(u0, u1, f), facet); v = lerp(v, lerp(v0, v1, f), facet);
+        }
+        pts.push(P(u, v));
+      }
+      return pts;
+    };
+    g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+    const laps = 1 + drift * 1.4, f0 = clamp01(G.prog[0]);
+    if (f0 > 0) copies.forEach((w, k) => {
+      if (w < 0.02) return;
+      g.strokeStyle = rgba(col, alpha * w * (k ? 0.75 : 0.9)); g.lineWidth = (k ? 0.5 : 0.7) * s;
+      stroke(g, path(f0, k, 1, 0, laps));
+    });
+    // each later world adds one layer, drawn as that world's unlocks arrive
+    const [p1, p2, p3, p4] = G.prog.slice(1);
+    if (p1 > 0) { g.strokeStyle = rgba(col, alpha * 0.7); g.lineWidth = 0.45 * s; stroke(g, path(p1, 0, 0.42, Math.PI / n, 1)); }
+    if (p2 > 0) { // a ring of short rays
+      g.strokeStyle = rgba(col, alpha * 0.6); g.lineWidth = 0.4 * s;
+      const m = n * 5, R0 = A * 1.38;
+      for (let i = 0; i < Math.round(m * p2); i++) { const a = rot + i / m * Math.PI * 2, l = i % 5 === 0 ? 2.4 : 1.3; stroke(g, [P(Math.cos(a) * R0, Math.sin(a) * R0), P(Math.cos(a) * (R0 + l), Math.sin(a) * (R0 + l))]); }
+    }
+    if (p3 > 0) { // a gently waving border
+      g.strokeStyle = rgba(col, alpha * 0.5); g.lineWidth = 0.38 * s;
+      const pts = [], m = Math.ceil(240 * p3);
+      for (let i = 0; i <= m; i++) { const a = rot + i / 240 * Math.PI * 2, R1 = A * 1.62 + 0.55 * Math.sin(a * n * 2); pts.push(P(Math.cos(a) * R1, Math.sin(a) * R1)); }
+      stroke(g, pts);
+    }
+    if (p4 > 0) { g.setLineDash([0.9 * s, 1.1 * s]); g.strokeStyle = rgba(col, alpha * 0.55); g.lineWidth = 0.4 * s; stroke(g, path(p4, 1, 0.72, Math.PI / n / 2, 1)); g.setLineDash([]); }
+    g.restore();
+  }
+
+  // ---- 2. Trail: the marks your steps leave on the ground, fading after a few seconds ----
+  // No dots (measles), no arcs or chevrons (arrows), no ticks across a line (stitches), no upright waves (smell lines).
+  function trailMark(g, px, py, dir, i, s, T, G, seed, col, a) {
+    const r = rng(seed * 101 + i * 7919), j1 = r(), j2 = r(), j3 = r();
+    const soft = clamp01((T.HT + 1) / 2); // heart: soft little arcs · thought: clean slashes
+    const drift = clamp01(-T.SD); // disruption: each mark at its own angle · system: all in line
+    const pair = clamp01(T.LP); // loyalty: marks in pairs · principle: single
+    const two = clamp01(T.CI); // collective: two staggered rows · individual: one row
+    const len = lerp(2.2, 4, clamp01(G.level * 1.8)) * s;
+    // later worlds: every fifth mark becomes an accent that grows richer world by world
+    const acc = i % 5 === 0 ? G.prog[1] + G.prog[2] + G.prog[3] + G.prog[4] : 0;
+    const nx = -Math.sin(dir), ny = Math.cos(dir) * 0.6; // sideways, on the slanted ground
+    const side = two > 0.15 ? (i % 2 ? 1 : -1) * two * 2.6 * s : 0;
+    const cx = px + nx * side + nx * drift * (j1 - 0.5) * 3 * s, cy = py + ny * side + drift * (j2 - 0.5) * 1.6 * s;
+    const ang = dir + lerp(Math.PI / 2 + 0.75, 0.28, soft) + drift * (j3 - 0.5) * 1.1; // soft waves lie along the path (upright waves read as smell lines)
+    const one = (ox, oy, k, w) => { // a short stroke; with heart it becomes a soft wave that points nowhere
+      const L = len * k, ca = Math.cos(ang) * L / 2, sa = Math.sin(ang) * L / 2 * 0.6, b = soft * 0.2 * L, px2 = -Math.sin(ang) * b, py2 = Math.cos(ang) * b * 0.6;
+      g.lineWidth = w * s; g.beginPath(); g.moveTo(cx + ox - ca, cy + oy - sa);
+      g.bezierCurveTo(cx + ox - ca / 3 + px2, cy + oy - sa / 3 + py2, cx + ox + ca / 3 - px2, cy + oy + sa / 3 - py2, cx + ox + ca, cy + oy + sa); g.stroke();
+    };
+    g.strokeStyle = rgba(col, a * lerp(1, 0.62, soft)); g.lineCap = 'round';
+    const k = 1 + Math.min(acc, 1) * 0.5, w = lerp(0.7, 0.45, soft) + Math.min(Math.max(acc - 2, 0), 1) * 0.3;
+    one(0, 0, k, w);
+    const back = 1.1 * s;
+    if (pair > 0.05) one(-Math.cos(dir) * back, -Math.sin(dir) * back * 0.6, pair * 0.8 * k, w * 0.8);
+    if (acc > 1) one(Math.cos(dir) * back, Math.sin(dir) * back * 0.6, 0.6 * Math.min(acc - 1, 1) * k, 0.45);
+  }
+  // Positions of the last steps behind a walker, along a path given as screen points (newest first).
+  function trailSteps(T, n) {
+    const irr = clamp01((T.OR + 1) / 2); // outcomes: a long-short rhythm · rules: even
+    const gaps = []; for (let i = 0; i < n; i++) gaps.push(i % 2 ? 1 - 0.35 * irr : 1 + 0.35 * irr);
+    return gaps;
+  }
+
+  // ---- 3. Hand: the ink line that draws you becomes your own ----
+  // The outline is rebuilt as brush strokes, one per puff of the body.
+  function handOutline(shape) { // runs of points (figure units) along the outside of the body
+    const C = PUFF_SHAPES[shape];
+    if (C && !['mallow', 'oval', 'tri'].includes(shape)) {
+      const runs = [];
+      C.forEach(([cx, cy, r], i) => {
+        const ro = r + 0.8, N = 90, vis = [];
+        for (let k = 0; k < N; k++) {
+          const a = k / N * Math.PI * 2, u = cx + Math.cos(a) * ro, v = cy + Math.sin(a) * ro;
+          vis.push(C.every(([dx, dy, rr], j) => j === i || Math.hypot(u - dx, v - dy) >= rr + 0.75));
+        }
+        const start = vis.indexOf(false); if (start < 0) { runs.push({ c: [cx, cy, ro], a0: 0, a1: Math.PI * 2, closed: true }); return; }
+        let k = start, cur = null;
+        for (let m = 0; m <= N; m++, k = (k + 1) % N) {
+          if (vis[k] && !cur) cur = { c: [cx, cy, ro], a0: k / N * Math.PI * 2 };
+          if (!vis[k] && cur) { let a1 = k / N * Math.PI * 2; if (a1 < cur.a0) a1 += Math.PI * 2; cur.a1 = a1; runs.push(cur); cur = null; }
+        }
+      });
+      return runs.filter(rn => rn.a1 - rn.a0 > 0.15);
+    }
+    // smooth shapes: their outline as one loop, split later into a few strokes
+    const pts = [];
+    for (let k = 0; k < 120; k++) {
+      const t = k / 120 * Math.PI * 2;
+      if (shape === 'oval') pts.push([Math.cos(t) * 13.9, -17 + Math.sin(t) * 11.9]);
+      else if (shape === 'mallow') { const c = Math.cos(t), sn = Math.sin(t), p = 5; pts.push([Math.sign(c) * Math.pow(Math.abs(c), 2 / p) * 12.9, -20 + Math.sign(sn) * Math.pow(Math.abs(sn), 2 / p) * 14.9]); }
+      else { // the soft triangle, as a rounded polygon
+        const V = [[0, -39.8], [15.8, -4.3], [-15.8, -4.3]], f = (k / 120) * 3, e = Math.floor(f), w = f - e, a = V[e], b = V[(e + 1) % 3];
+        const q = [lerp(a[0], b[0], w), lerp(a[1], b[1], w)], cen = [0, -16], pull = Math.pow(Math.abs(w - 0.5) * 2, 6) * 0.22;
+        pts.push([lerp(q[0], cen[0], pull), lerp(q[1], cen[1], pull)]);
+      }
+    }
+    return [{ loop: pts }];
+  }
+  function hand(g, x, Y, s, dark, shape, T, G, seed, col) {
+    const r = rng(seed * 53 + 3);
+    const brush = clamp01((T.HT + 1) / 2) * clamp01(G.level * 2.2); // heart: a brush that swells and lifts · thought: an even pen
+    const irr = clamp01((T.OR + 0.6) / 1.6); // outcomes: some strokes heavier than others · rules: all one weight
+    const flick = clamp01(-T.SD * 1.2) * clamp01(G.level * 2); // disruption: strokes run past their joins · system: clean joins
+    const inline = clamp01(T.LP * 1.3 + 0.1) * G.prog[1]; // loyalty: a second, fine line inside (from the Neighborhood on)
+    const echo = clamp01(T.CI * 1.3 + 0.1) * G.prog[2]; // collective: a soft offset print beside the line (from the City on)
+    const P = (u, v) => [x + u * s, Y + v * s], base = 1.6;
+    const runs = handOutline(shape);
+    const taper = (u, k) => { const sw = Math.pow(Math.sin(Math.PI * clamp01(u)), 0.6); return base * k * lerp(1, 0.3 + 1.25 * sw, brush); };
+    const ribbon = (pts, k) => { // a stroke whose width follows taper()
+      const L = [], R = [];
+      pts.forEach((p, i) => {
+        const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy) || 1;
+        const w = taper(i / (pts.length - 1), k) / 2;
+        L.push(P(p[0] - dy / d * w, p[1] + dx / d * w)); R.push(P(p[0] + dy / d * w, p[1] - dx / d * w));
+      });
+      g.beginPath(); L.forEach(([px, py], i) => i ? g.lineTo(px, py) : g.moveTo(px, py)); for (let i = R.length - 1; i >= 0; i--) g.lineTo(...R[i]); g.closePath(); g.fill();
+    };
+    const arcPts = (c, a0, a1, rad) => { const m = Math.max(4, Math.ceil((a1 - a0) * 18)), out = []; for (let i = 0; i <= m; i++) { const a = a0 + (a1 - a0) * i / m; out.push([c[0] + Math.cos(a) * rad, c[1] + Math.sin(a) * rad]); } return out; };
+    const strokes = []; // [points, weight]
+    runs.forEach(rn => {
+      const k = 1 + irr * (r() * 0.9 - 0.35);
+      if (rn.loop) { // split a smooth outline into a few strokes that slightly overlap
+        const n = rn.loop.length, cuts = 5 + Math.floor(r() * 3), off = Math.floor(r() * n);
+        for (let c = 0; c < cuts; c++) { const a = Math.floor(c * n / cuts) - 2, b = Math.floor((c + 1) * n / cuts) + 2, seg = []; for (let i = a; i <= b; i++) seg.push(rn.loop[((i + off) % n + n) % n]); strokes.push([seg, 1 + irr * (r() * 0.9 - 0.35)]); }
+      } else {
+        const ext = flick * 0.32;
+        strokes.push([arcPts(rn.c, rn.a0 - (rn.closed ? 0 : ext * r()), rn.a1 + (rn.closed ? 0 : ext * (0.5 + r())), rn.c[2]), k]);
+      }
+    });
+    g.save();
+    g.fillStyle = dark ? '#141414' : rgba(col, 1);
+    strokes.forEach(([pts, k]) => ribbon(pts, k));
+    if (inline > 0.02 && !dark) { // a fine line just inside the outline
+      g.strokeStyle = rgba(col, 0.55 * inline); g.lineWidth = 0.45 * s; g.lineCap = 'round';
+      const C = PUFF_SHAPES[shape];
+      if (C && !['mallow', 'oval', 'tri'].includes(shape)) C.forEach(([cx, cy, rr], i) => {
+        const ri = rr - 1.5; let run = [];
+        for (let k = 0; k <= 120; k++) {
+          const a = k / 120 * Math.PI * 2, u = cx + Math.cos(a) * ri, v = cy + Math.sin(a) * ri;
+          const ok = C.every(([dx, dy, r2], j) => j === i || Math.hypot(u - dx, v - dy) >= r2 - 1.5);
+          if (ok) run.push(P(u, v)); else { if (run.length > 1) stroke(g, run); run = []; }
+        }
+        if (run.length > 1) stroke(g, run);
+      });
+      else { const lp = runs[0].loop, cen = shape === 'oval' ? [0, -17] : shape === 'mallow' ? [0, -20] : [0, -16]; stroke(g, lp.concat([lp[0]]).map(([u, v]) => { const d = Math.hypot(u - cen[0], v - cen[1]); return P(u - (u - cen[0]) / d * 1.6, v - (v - cen[1]) / d * 1.6); })); }
+    }
+    g.restore();
+    return echo;
+  }
+  // The offset print sits behind the body, so it's drawn before the character.
+  function handEcho(g, x, Y, s, shape, amount, seed, col) {
+    if (amount < 0.02) return;
+    const r = rng(seed * 53 + 3), side = r() < 0.5 ? -1 : 1, dx = side * 1.5, dy = 1.1;
+    const pale = col.map(c => Math.round(lerp(c, 250, 0.55)));
+    g.save(); g.strokeStyle = rgba(pale, amount); g.lineWidth = 1.7 * s; g.lineCap = 'round';
+    handOutline(shape).forEach(rn => {
+      if (rn.loop) stroke(g, rn.loop.concat([rn.loop[0]]).map(([u, v]) => [x + (u + dx) * s, Y + (v + dy) * s]));
+      else { g.beginPath(); g.arc(x + (rn.c[0] + dx) * s, Y + (rn.c[1] + dy) * s, rn.c[2] * s, rn.a0, rn.a1); g.stroke(); }
+    });
+    g.restore();
+  }
+
+  // ---- 4. Shapes: a small cluster of cut-paper shapes that floats beside you ----
+  // Like a Calder mobile without the strings. One shape arrives at your first unlock; the park builds
+  // a composition of four; each later world adds one more. No circles, stars, hearts, crosses, arrows or drops.
+  const CURVED = ['half', 'quarter', 'arch', 'cloudlet'], ANGULAR = ['tri', 'diamond', 'bar', 'trap'];
+  function shapeLayout(T, G, seed) {
+    const r = rng(seed * 17 + 5), side = r() < 0.5 ? -1 : 1;
+    const count = Math.min(4, Math.ceil(G.prog[0] * 4 - 0.001)) + [1, 2, 3, 4].filter(w => G.prog[w] > 0.99).length;
+    const soft = clamp01((T.HT + 1) / 2), irr = clamp01((T.OR + 1) / 2), drift = clamp01(-T.SD);
+    const near = clamp01(T.LP), apart = clamp01(-T.CI);
+    const items = [];
+    for (let k = 0; k < 8; k++) {
+      const pick = r(), kind = (r() < soft ? CURVED : ANGULAR)[Math.floor(pick * 4)];
+      const fill = k === 0 ? 'ink' : ['ink', 'line', 'hatch'][Math.floor(r() * 3)];
+      const big = k === 1 ? 1.55 : 0.75 + r() * 0.2; // outcomes: one large among small · rules: all one size
+      const size = 5.4 * lerp(1, big, irr);
+      const sx = (r() - 0.5) * 13, sy = (r() - 0.5) * 13, rot = (r() - 0.5) * 2.4, ph = r() * 6.28;
+      items.push({ kind, fill, size, sx, sy, rot, ph });
+    }
+    // system: stacked in a neat column, upright · disruption: scattered and tilted
+    let y = 0;
+    items.forEach((it, k) => {
+      const col = [((k % 2) - 0.5) * 2.2, -y]; y += it.size * 0.95 + 1.6;
+      it.x = lerp(col[0], it.sx, drift); it.y = lerp(col[1], it.sy - 6, drift); it.a = it.rot * drift;
+    });
+    // loyalty: shapes settle into touching pairs · principle: each keeps its own space
+    for (let k = 1; k < 8; k += 2) { const a = items[k - 1], b = items[k]; b.x = lerp(b.x, a.x + side * (a.size + b.size) * 0.48, near); b.y = lerp(b.y, a.y, near); }
+    // individual: the first shape stands apart · collective: all in one cluster
+    items[0].x += side * 7 * apart; items[0].y += 3 * apart;
+    return { side, items: items.slice(0, count) };
+  }
+  function drawShape(g, it, X, Y, s, col, alpha) {
+    const z = it.size * s / 2;
+    g.save(); g.translate(X, Y); g.rotate(it.a);
+    const path = () => {
+      g.beginPath();
+      if (it.kind === 'half') { g.arc(0, z * 0.3, z, Math.PI, 0); g.closePath(); }
+      else if (it.kind === 'quarter') { g.moveTo(-z * 0.7, z * 0.7); g.arc(-z * 0.7, z * 0.7, z * 1.4, -Math.PI / 2, 0); g.closePath(); }
+      else if (it.kind === 'arch') { g.arc(0, z * 0.5, z, Math.PI, 0); g.lineTo(z * 0.45, z * 0.5); g.arc(0, z * 0.5, z * 0.45, 0, Math.PI, true); g.closePath(); }
+      else if (it.kind === 'cloudlet') { g.moveTo(-z, z * 0.5); g.arc(-z * 0.45, z * 0.15, z * 0.55, Math.PI * 0.9, Math.PI * 1.75); g.arc(z * 0.3, -z * 0.05, z * 0.7, Math.PI * 1.15, Math.PI * 0.05); g.lineTo(z, z * 0.5); g.closePath(); }
+      else if (it.kind === 'tri') { g.moveTo(-z, z * 0.75); g.lineTo(z, z * 0.75); g.lineTo(-z * 0.2, -z * 0.95); g.closePath(); }
+      else if (it.kind === 'diamond') { g.moveTo(0, -z); g.lineTo(z * 0.75, 0); g.lineTo(0, z); g.lineTo(-z * 0.75, 0); g.closePath(); }
+      else if (it.kind === 'bar') { g.rect(-z, -z * 0.32, z * 2, z * 0.64); }
+      else { g.moveTo(-z, z * 0.55); g.lineTo(z, z * 0.55); g.lineTo(z * 0.55, -z * 0.55); g.lineTo(-z * 0.7, -z * 0.55); g.closePath(); }
+    };
+    g.lineJoin = 'round'; g.lineWidth = 0.75 * s;
+    path();
+    if (it.fill === 'ink') { g.fillStyle = rgba(col, alpha); g.fill(); }
+    else {
+      g.fillStyle = `rgba(250,250,248,${alpha})`; g.fill();
+      if (it.fill === 'hatch') { g.save(); path(); g.clip(); g.strokeStyle = rgba(col, alpha * 0.8); g.lineWidth = 0.45 * s; for (let k = -3 * z; k < 3 * z; k += 1.3 * s) { g.beginPath(); g.moveTo(k, -2 * z); g.lineTo(k + 2 * z, 2 * z); g.stroke(); } g.restore(); }
+      path(); g.strokeStyle = rgba(col, alpha); g.stroke();
+    }
+    g.restore();
+  }
+  // where the cluster hangs: beside the head, on the seed's side. lag: per-shape offsets while walking.
+  function shapes(g, x, y, s, look, T, G, seed, col, t, lag) {
+    const L = shapeLayout(T, G, seed), top = TOP_Y(look.shape || 'puff');
+    if (!L.items.length) return;
+    // centre the cluster beside the head, a little above the shoulder
+    const xs = L.items.map(it => it.x), ys = L.items.map(it => it.y);
+    const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+    const ax = x + (L.side * 22 - cx) * s, ay = y + (top + 8 - cy) * s;
+    L.items.forEach((it, k) => {
+      const bob = reduce ? 0 : Math.sin((t || 0) * 0.9 + it.ph) * 0.7 * s;
+      const off = lag && lag[k] ? lag[k] : [0, 0];
+      const fade = k < 4 ? clamp01(G.prog[0] * 4 - k) : 1;
+      drawShape(g, it, ax + it.x * s + off[0], ay + it.y * s + bob + off[1], s, col, fade);
+    });
+  }
+  const TOP_Y = shape => { const C = PUFF_SHAPES[shape]; return C && !['mallow', 'oval', 'tri'].includes(shape) ? Math.min(...C.map(([, cy, r]) => cy - r)) : shape === 'oval' ? -28 : shape === 'tri' ? -36 : -34; };
+
+  // ---- 5. Mobile: cut-paper shapes hanging from fine balanced arms, floating beside you ----
+  // Like a small Calder mobile. One shape arrives at your first unlock; the park builds four; each later world adds one.
+  function mobile(g, x, y, s, look, T, G, seed, col, t) {
+    const r = rng(seed * 17 + 5), side = r() < 0.5 ? -1 : 1;
+    const n = Math.min(5, Math.min(3, Math.ceil(G.prog[0] * 3 - 0.001)) + [1, 2, 3, 4].filter(w => G.prog[w] > 0.5).length);
+    if (!n) return;
+    const soft = clamp01((T.HT + 1) / 2), irr = clamp01((T.OR + 1) / 2), drift = clamp01(-T.SD);
+    const near = clamp01((T.LP + 1) / 2), apart = clamp01(-T.CI);
+    const kinds = [], sizes = [];
+    for (let k = 0; k < 8; k++) { const p = r(), q = r(), z = r(); kinds.push((q < soft ? CURVED : ANGULAR)[Math.floor(p * 4)]); sizes.push(5 * lerp(1, k === 0 ? 1.5 : 0.72 + z * 0.25, irr)); }
+    const tilts = [0, 1, 2, 3, 4, 5, 6, 7].map(() => (r() - 0.5) * 2);
+    const top = TOP_Y(look.shape || 'puff'), sway = reduce ? 0 : Math.sin((t || 0) * 0.45) * 0.035;
+    const ax = x + side * 26 * s, ay = y + (top - 6) * s;
+    g.save(); g.translate(ax, ay); g.rotate(sway); g.lineCap = 'round';
+    const thread = (x1, y1, x2, y2, w) => { g.strokeStyle = rgba(col, 0.75); g.lineWidth = w * s; g.beginPath(); g.moveTo(x1 * s, y1 * s); g.lineTo(x2 * s, y2 * s); g.stroke(); };
+    // a fading thread above, so the mobile reads as hanging from the sky
+    const fade = g.createLinearGradient(0, -9 * s, 0, 0); fade.addColorStop(0, rgba(col, 0)); fade.addColorStop(1, rgba(col, 0.6));
+    g.strokeStyle = fade; g.lineWidth = 0.35 * s; g.beginPath(); g.moveTo(0, -9 * s); g.lineTo(0, 0); g.stroke();
+    // a chain of arms: each arm holds one shape at its outer end and the rest of the mobile at its inner end
+    const hang = (k, px, py, dir) => {
+      if (k >= n) return;
+      const last = k === n - 1, armL = lerp(6.5, 4, near) * (k === 0 ? lerp(1, 1.6, apart) : 1);
+      const ang = tilts[k] * drift * 0.35 + (last ? 0 : 0);
+      const ox = dir * armL * Math.cos(ang), oy = armL * Math.sin(ang) * dir;
+      const ix = -dir * armL * 0.55 * Math.cos(ang), iy = -armL * 0.55 * Math.sin(ang) * dir;
+      const drop = k ? 4.2 : 0.6;
+      thread(px, py, px, py + drop, 0.35);
+      if (last) { drawShape(g, { kind: kinds[k], size: sizes[k], a: tilts[k] * drift * 0.5, fill: 'ink' }, px * s, (py + drop + sizes[k] * 0.45) * s, s, col, 1); return; }
+      const bx = px, by = py + drop;
+      thread(bx + ix, by + iy, bx + ox, by + oy, 0.45);
+      thread(bx + ox, by + oy, bx + ox, by + oy + 2, 0.35);
+      drawShape(g, { kind: kinds[k], size: sizes[k], a: tilts[k] * drift * 0.5, fill: 'ink' }, (bx + ox) * s, (by + oy + 2 + sizes[k] * 0.45) * s, s, col, 1);
+      hang(k + 1, bx + ix, by + iy, -dir);
+    };
+    hang(0, 0, 0, side);
+    g.restore();
+  }
+
+  // ---- 6. Aura: a soft watercolour glow behind you ----
+  // Colour comes from where your compass sits; it starts small and pale and grows richer world by world.
+  function aura(g, x, y, s, look, T, G, seed) {
+    const r = rng(seed * 13 + 1), side = r() < 0.5 ? -1 : 1;
+    const px = 0.55 * T.OR - 0.45 * T.SD, py = 0.55 * T.HT + 0.45 * T.CI, base = Math.atan2(py, px);
+    const mag = clamp01(Math.hypot(px, py) * 2.2);
+    const harmony = clamp01((T.LP + 1) / 2); // loyalty: neighbouring colours · principle: contrasting colours
+    const second = base + lerp(2.4, 0.75, harmony) * side, hues = [base, second, base, second, base]; // two colours per player, never more
+    const tone = h => ringColour(h).map((c, i) => lerp(lerp(c, [176, 160, 144][i], (1 - mag) * 0.6), 252, 0.1));
+    const soft = clamp01((T.HT + 1) / 2); // heart: many soft washes · thought: a few crisp bands
+    const drift = clamp01(-T.SD); // disruption: off-centre and uneven · system: centred and even
+    const wide = clamp01((T.CI + 1) / 2); // collective: wide and blending out · individual: close and defined
+    const irr = clamp01((T.OR + 1) / 2); // outcomes: one bright spot · rules: an even glow
+    const top = TOP_Y(look.shape || 'puff'), cx = x + side * drift * 4 * s, cy = y + (top * 0.52) * s;
+    const R = (16.5 + 4 * Math.pow(G.level, 0.7)) * lerp(0.9, 1.12, wide) * s;
+    const ph = [r() * 6.28, r() * 6.28, r() * 6.28];
+    const blob = (rad, k) => {
+      g.beginPath();
+      for (let i = 0; i <= 64; i++) {
+        const a = i / 64 * Math.PI * 2, wob = 1 + (0.05 + 0.13 * drift) * Math.sin(a * 3 + ph[0] + k) + 0.05 * Math.sin(a * 5 + ph[1] - k * 0.7) + drift * 0.12 * Math.cos(a - (side > 0 ? 0 : Math.PI));
+        const px2 = cx + Math.cos(a) * rad * wob, py2 = cy + Math.sin(a) * rad * 1.15 * wob;
+        i ? g.lineTo(px2, py2) : g.moveTo(px2, py2);
+      }
+      g.closePath();
+    };
+    const layers = Math.round(lerp(3, 6, soft)), worlds = 1 + [1, 2, 3, 4].filter(w => G.prog[w] > 0).length;
+    g.save();
+    // each world adds an outer wash in a new colour; the park's colour sits closest to you
+    for (let w = worlds - 1; w >= 0; w--) {
+      const pw = w ? G.prog[w] : clamp01(G.prog[0] * 1.2), outer = 1 + w * 0.075 * lerp(0.8, 1.3, wide);
+      for (let k = 0; k < layers; k++) {
+        const f = k / layers, rad = R * outer * lerp(1, 0.55, f) * lerp(0.85, 1, pw);
+        const c = tone(hues[w]);
+        g.fillStyle = rgba(c.map(Math.round), lerp(0.13, 0.24, 1 - soft) * lerp(0.55, 1, pw) * (w ? 0.5 : 1) * (pw > 0 ? 1 : 0)); blob(rad, k + w * 3); g.fill();
+      }
+    }
+    if (irr > 0.55) { // a brighter spot, off to one side
+      const c = tone(hues[0] + 0.3).map(v => Math.round(v * 0.92));
+      g.fillStyle = rgba(c, 0.16 * (irr - 0.55) / 0.45 * G.prog[0]);
+      g.beginPath(); g.ellipse(cx + side * R * 0.45, cy - R * 0.35, R * 0.32, R * 0.36, 0, 0, Math.PI * 2); g.fill();
+    }
+    g.restore();
+  }
+
+  // ---- 7. Blend: the aura with one colour per letter (Ken's idea, 2026-10-06) ----
+  // Each of the ten letters has its own muted pigment. Your five letters sit around you as a soft,
+  // continuous blend (like the sheen on an opal, not a striped rainbow). The stronger you lean on a
+  // pair, the more room and the more colour its letter gets; a pair near the middle shows only faintly.
+  // A pair joins the aura when it appears on your compass (two questions have touched it).
+  const LETTER_PIGMENT = {
+    O: [204, 154, 70], R: [58, 76, 140], // ochre · indigo
+    C: [182, 96, 64], I: [82, 134, 170], // rust · sky
+    H: [192, 106, 124], T: [40, 124, 118], // rose · teal
+    L: [128, 66, 114], P: [108, 144, 112], // plum · sage
+    S: [98, 104, 128], D: [120, 96, 176], // slate · violet
+  };
+  const PAIR_LETTERS = [['R', 'O'], ['I', 'C'], ['T', 'H'], ['P', 'L'], ['D', 'S']];
+  function blendAura(g, x, y, s, look, lean, G, seed, known) {
+    const settle = 0.3 + 0.7 * clamp01(G.level * 1.9), L = lean.map(v => v * settle);
+    const r = rng(seed * 13 + 1), rot = r() * Math.PI * 2, ph = [r() * 6.28, r() * 6.28];
+    known = known || [1, 2, 3, 4, 5].map(k => clamp01(G.prog[0] * 6 - k + 1)); // the compass shows pairs one by one
+    const parts = L.map((v, i) => {
+      const letter = PAIR_LETTERS[i][v >= 0 ? 1 : 0], strength = clamp01(Math.abs(v) * 2.2);
+      const c = LETTER_PIGMENT[letter].map((ch, n) => lerp(ch, [190, 178, 164][n], (1 - strength) * 0.65));
+      return { c, w: known[i] * (0.35 + 0.65 * strength), a: known[i] };
+    }).filter(p => p.w > 0.01);
+    if (!parts.length) return;
+    const top = TOP_Y(look.shape || 'puff'), cx = x, cy = y + top * 0.52 * s;
+    const R = (19.5 + 3 * Math.pow(G.level, 0.7)) * s;
+    // the five colours around the circle, each taking room by how strongly you lean, blending into the next
+    const total = parts.reduce((t, p) => t + p.w, 0);
+    let grad = null;
+    if (g.createConicGradient && parts.length > 1) {
+      grad = g.createConicGradient(rot, cx, cy);
+      let at = 0;
+      parts.forEach(p => { const mid = (at + p.w / 2) / total; p.mid = mid; at += p.w; });
+      parts.forEach(p => grad.addColorStop(p.mid, `rgb(${p.c.map(Math.round)})`));
+      const first = parts[0], last = parts[parts.length - 1], wrap = (first.c.map((v, n) => (v + last.c[n]) / 2)).map(Math.round);
+      grad.addColorStop(0, `rgb(${wrap})`); grad.addColorStop(1, `rgb(${wrap})`);
+    }
+    const solid = `rgb(${parts[0].c.map(Math.round)})`;
+    const blob = (rad, k) => {
+      g.beginPath();
+      for (let i = 0; i <= 64; i++) {
+        const a = i / 64 * Math.PI * 2, wob = 1 + 0.06 * Math.sin(a * 3 + ph[0] + k) + 0.05 * Math.sin(a * 5 + ph[1] - k * 0.7);
+        const qx = cx + Math.cos(a) * rad * wob, qy = cy + Math.sin(a) * rad * 1.15 * wob;
+        i ? g.lineTo(qx, qy) : g.moveTo(qx, qy);
+      }
+      g.closePath();
+    };
+    const worlds = 1 + [1, 2, 3, 4].filter(w => G.prog[w] > 0.001).length, layers = 5;
+    g.save(); g.fillStyle = grad || solid;
+    for (let w = worlds - 1; w >= 0; w--) {
+      const pw = w ? G.prog[w] : clamp01(G.prog[0] * 1.2), outer = 1 + w * 0.08;
+      if (pw <= 0) continue;
+      g.globalAlpha = 0.26 * lerp(0.6, 1, pw) * (w ? 0.45 : 1);
+      for (let k = 0; k < layers; k++) { blob(R * outer * lerp(1, 0.55, k / layers) * lerp(0.85, 1, pw), k + w * 3); g.fill(); }
+    }
+    g.restore();
+  }
+
+  // Draw one character with a fingerprint.
+  // spec: { concept: 'shapes'|'trail'|'seal'|'hand', lean, answers | growth, seed, pigment, trail: [[x, y, dir], …] newest first, sealAlpha }
+  function drawFig(g, x, y, scale, look, spec, t) {
+    const o = { scale, t: t == null ? 1 : t, phase: 0, dir: spec && spec.dir || 0, moving: !!(spec && spec.moving), walk: spec && spec.walk || 0 };
+    const P = core(o, look);
+    if (!spec) { g.save(); STYLES.puff(g, x, y, o, P); g.restore(); return; }
+    const G = spec.growth || growth(spec.answers), T = traits(spec.lean, G.level), col = inkOf(spec, T);
+    if (G.level > 0.001) {
+      if (spec.concept === 'seal') seal(g, x, y, scale, T, G, spec.seed, col, spec.sealAlpha == null ? 1 : spec.sealAlpha);
+      if (spec.concept === 'aura') aura(g, x, y, scale, look, T, G, spec.seed);
+      if (spec.concept === 'blend') blendAura(g, x, y, scale, look, spec.lean, G, spec.seed);
+      if (spec.concept === 'mobile') spec.after = () => mobile(g, x, y, scale, look, T, G, spec.seed, col, o.t);
+      if (spec.concept === 'shapes') spec.after = () => shapes(g, x, y, scale, look, T, G, spec.seed, col, o.t, spec.lag);
+      if (spec.concept === 'trail' && spec.trail) spec.trail.forEach(([px, py, dir, a, i]) => trailMark(g, px, py, dir, i, scale, T, G, spec.seed, col, a));
+      if (spec.concept === 'hand') {
+        const float = reduce ? 0 : (o.moving ? Math.abs(Math.sin(o.walk * 2)) * 2 : Math.sin(o.t * 1.1) * 1.4) * P.s;
+        const echo = clamp01(T.CI * 1.3 + 0.1) * G.prog[2];
+        handEcho(g, x, y - float, P.s, look.shape || 'puff', echo, spec.seed, col);
+        P.hand = (g2, X, Yy, s, dark, shape) => hand(g2, X, Yy, s, dark, shape, T, G, spec.seed, col);
+      }
+    }
+    g.save(); STYLES.puff(g, x, y, o, P); g.restore();
+    if (spec.after) spec.after();
+  }
+  // A static trail for gallery cells: the last steps behind a figure walking to the right, along a gentle curve.
+  function staticTrail(x, y, scale, spec, n = 12) {
+    const G = spec.growth || growth(spec.answers), T = traits(spec.lean, G.level), gaps = trailSteps(T, n), out = [];
+    let d = 7 * scale;
+    for (let i = 0; i < n; i++) {
+      const px = x - d, py = y + Math.sin(d / (scale * 26)) * 6 * scale - 2 * scale, dir = Math.atan2(Math.cos(d / (scale * 26)) * 6 / 26 * -1, 1);
+      out.push([px, py, dir, Math.pow(1 - i / n, 1.3) * 0.95, n - i]);
+      d += 5.2 * scale * gaps[i];
+    }
+    return out;
+  }
+  // ---------- the page ----------
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  const look = name => CHARACTERS.find(c => c.name === name).look;
+  const PAIRS = [['Rules', 'Outcomes'], ['Individual', 'Collective'], ['Thought', 'Heart'], ['Principle', 'Loyalty'], ['Disruption', 'System']];
+  const LETTERS = [['R', 'O'], ['I', 'C'], ['T', 'H'], ['P', 'L'], ['D', 'S']];
+  const code = lean => lean.map((v, i) => LETTERS[i][v >= 0 ? 1 : 0]).join('');
+  const PROFILES = [
+    { lean: [0.7, 0.6, 0.75, 0.5, 0.6], seed: 11 },
+    { lean: [-0.7, -0.6, -0.7, -0.65, -0.6], seed: 23 },
+    { lean: [-0.6, 0.7, 0.5, -0.7, 0.75], seed: 37 },
+    { lean: [0.75, -0.7, -0.6, 0.7, -0.75], seed: 41 },
+    { lean: [-0.45, 0.4, -0.8, 0.6, -0.8], seed: 59 },
+    { lean: [0.12, -0.15, 0.08, 0.2, -0.1], seed: 73, middle: true },
+  ];
+  const plain = p => p.middle ? 'near the middle on everything' : p.lean.map((v, i) => Math.abs(v) >= 0.4 ? PAIRS[i][v >= 0 ? 1 : 0].toLowerCase() : null).filter(Boolean).join(', ');
+  const mobileSide = seed => rng(seed * 17 + 5)() < 0.5 ? -1 : 1;
+
+  function canvas(w, h) {
+    const c = document.createElement('canvas'); c.width = w * DPR; c.height = h * DPR; c.style.width = w + 'px'; c.style.height = h + 'px';
+    const g = c.getContext('2d'); g.setTransform(DPR, 0, 0, DPR, 0, 0); return [c, g];
+  }
+  // Place a figure in a box of size w×h, leaving room for whatever its direction draws beside it.
+  function place(g, w, h, name, spec, scale) {
+    let x = w / 2;
+    const y = spec && (spec.concept === 'aura' || spec.concept === 'blend') ? h - 18 - 4 * scale : spec && spec.concept === 'trail' ? h - 40 : h - 22;
+    if (spec && spec.concept === 'mobile') x -= mobileSide(spec.seed) * 13 * scale;
+    if (spec && spec.concept === 'trail') { x = w * 0.7; spec = Object.assign({ dir: 0.6 }, spec); spec.trail = staticTrail(x, y, scale, spec); }
+    drawFig(g, x, y, scale, look(name), spec);
+  }
+  function figCell(name, spec, cap, sub, scale = 2.1, w = 150, h = 160) {
+    const d = document.createElement('div'); d.className = 'cell';
+    const [c, g] = canvas(w, h); place(g, w, h, name, spec, scale); d.appendChild(c);
+    if (cap) d.insertAdjacentHTML('beforeend', `<b>${cap}</b>${sub || ''}`);
+    return d;
+  }
+  const rowLabel = txt => { const d = document.createElement('div'); d.className = 'rowlabel'; d.innerHTML = txt; return d; };
+  const headCell = html => { const d = document.createElement('div'); d.className = 'cell'; d.style.padding = '0 4px'; d.innerHTML = html; return d; };
+
+  // One colour per letter
+  const sw = document.getElementById('swatches');
+  PAIR_LETTERS.forEach(([a, b], i) => sw.insertAdjacentHTML('beforeend', `<span>${[a, b].map(l => `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px;background:rgb(${LETTER_PIGMENT[l]})"></span><b>${l}</b> ${{ O: 'Outcomes', R: 'Rules', C: 'Collective', I: 'Individual', H: 'Heart', T: 'Thought', L: 'Loyalty', P: 'Principle', S: 'System', D: 'Disruption' }[l]}`).join(' &nbsp;')}</span>`));
+  const bs = document.getElementById('blendStrip');
+  bs.style.gridTemplateColumns = `110px repeat(${PROFILES.length}, 1fr)`;
+  bs.appendChild(rowLabel('')); PROFILES.forEach(p => bs.appendChild(headCell(`<b>${p.middle ? 'Middle' : code(p.lean)}</b>`)));
+  [['aura', 'Now: two colours'], ['blend', 'Blend']].forEach(([k, lbl]) => {
+    bs.appendChild(rowLabel(lbl));
+    PROFILES.forEach(p => bs.appendChild(figCell('Mof', { concept: k, lean: p.lean, seed: p.seed, answers: 75 }, '', '', 1.75)));
+  });
+  const bg = document.getElementById('blendGrow');
+  bg.style.gridTemplateColumns = `repeat(7, 1fr)`;
+  [[2, '2 answers', 'one pair known'], [4, '4', ''], [6, '6', ''], [8, '8', ''], [10, '10', 'all five known'], [12, 'Park done', ''], [75, 'Every world', '']].forEach(([a, cap, sub]) =>
+    bg.appendChild(figCell('Mof', { concept: 'blend', lean: PROFILES[2].lean, seed: PROFILES[2].seed, answers: a }, cap, sub, 1.45, 110, 140)));
+
+  // How it grows
+  const STAGES = [[0, 'Start', 'no answers'], [2, '2 answers', 'a first wash'], [6, '6', ''], [10, '10', ''], [12, 'Park done', 'your code'], [22, 'Neighborhood', 'walked'], [39, 'City', 'walked'], [53, 'Coast', 'walked'], [75, 'Observatory', 'every world']];
+  const growStrip = document.getElementById('growStrip');
+  growStrip.style.gridTemplateColumns = `repeat(${STAGES.length}, 1fr)`;
+  STAGES.forEach(([a, cap, sub]) => growStrip.appendChild(figCell('Mof', { concept: 'aura', lean: PROFILES[2].lean, seed: PROFILES[2].seed, answers: a }, cap, sub, 1.45, 108, 140)));
+
+  // Three directions
+  const ABOUT = {
+    aura: { name: 'Aura', tag: 'Recommended', ink: 'Colour', map: 'Clear: a coloured glow',
+      why: 'A soft watercolour glow behind your character, in two colours picked by your compass. Pale and small at first; by the end of the park it has its colours; each later world adds a wider, fainter wash.',
+      rows: ['An even glow', 'One brighter spot, off to one side', 'Close and defined', 'Wide, blending outward', 'A few crisp washes', 'Many soft washes', 'Two contrasting colours', 'Two neighbouring colours', 'Off-centre and uneven', 'Centred and even'] },
+    mobile: { name: 'Mobile', tag: 'Pure ink', ink: 'Ink', map: 'Small: a cluster of specks',
+      why: 'A tiny Calder-style mobile floating beside you: cut-paper shapes hanging from fine balanced arms. The first shape arrives at your first unlock; the park hangs three; later worlds add two more.',
+      rows: ['Shapes all one size', 'One large shape among small ones', 'The first shape hangs far out on its own', 'All held close together', 'Angular shapes', 'Curved shapes', 'Long arms, shapes spaced apart', 'Short arms, shapes held close', 'Arms tilted, shapes turned', 'Level arms, shapes upright'] },
+    trail: { name: 'Trail', tag: 'An extra', ink: 'Ink', map: 'Faint, noticeable while walking',
+      why: 'The marks your steps leave on the ground as you walk, fading after a few seconds. Faint, short marks at first; fuller marks by the end of the park; each later world makes every fifth mark a little richer. Only visible while you move.',
+      rows: ['An even rhythm', 'A long-short rhythm', 'One line of marks', 'Two staggered lines', 'Clean slashes', 'Short soft waves', 'Single marks', 'Marks in pairs', 'Each mark at its own angle', 'All marks in line'] },
+  };
+  const conceptsEl = document.getElementById('concepts');
+  Object.entries(ABOUT).forEach(([key, a]) => {
+    const sec = document.createElement('div'); sec.className = 'concept';
+    sec.innerHTML = `<h3>${a.name} <span class="rec">${a.tag}</span></h3><div class="meta"><span><b>Uses</b> ${a.ink}</span><span><b>At map size</b> ${a.map}</span></div><p>${a.why}</p>`;
+    const sc = document.createElement('div'); sc.className = 'scroll';
+    const strip = document.createElement('div'); strip.className = 'strip'; strip.style.gridTemplateColumns = `86px repeat(${PROFILES.length}, 1fr)`;
+    strip.appendChild(rowLabel('')); PROFILES.forEach(p => strip.appendChild(headCell(`<b>${p.middle ? 'Middle' : code(p.lean)}</b>${plain(p)}`)));
+    [[12, 'Park done'], [75, 'Every world']].forEach(([n, lbl]) => {
+      strip.appendChild(rowLabel(lbl));
+      PROFILES.forEach(p => strip.appendChild(figCell('Mof', { concept: key, lean: p.lean, seed: p.seed, answers: n }, '', '', key === 'aura' ? 1.75 : 2.1)));
+    });
+    sc.appendChild(strip); sec.appendChild(sc);
+    const tbl = document.createElement('table');
+    tbl.innerHTML = '<tr><th>Pair</th><th>Leaning to the first</th><th>Leaning to the second</th></tr>' + PAIRS.map((p, i) => `<tr><td>${p[0]} ↔ ${p[1]}</td><td>${a.rows[i * 2]}</td><td>${a.rows[i * 2 + 1]}</td></tr>`).join('');
+    const det = document.createElement('details'); det.innerHTML = '<summary class="note" style="cursor:pointer">How it reads the compass (for us, never shown to players)</summary>'; det.appendChild(tbl);
+    sec.appendChild(det); conceptsEl.appendChild(sec);
+  });
+
+  // Every character
+  const rosterStrip = document.getElementById('rosterStrip');
+  rosterStrip.style.gridTemplateColumns = `70px repeat(${CHARACTERS.length}, 1fr)`;
+  rosterStrip.appendChild(rowLabel('')); CHARACTERS.forEach(c => rosterStrip.appendChild(headCell(`<b>${c.name}</b>`)));
+  ['aura', 'mobile', 'trail'].forEach(k => {
+    rosterStrip.appendChild(rowLabel(ABOUT[k].name));
+    CHARACTERS.forEach((c, i) => { const p = PROFILES[i % 6]; rosterStrip.appendChild(figCell(c.name, { concept: k, lean: p.lean, seed: p.seed + i, answers: 75 }, '', '', 1.6, 112, 132)); });
+  });
+
+  // At map size
+  (() => {
+    const W = 1000, H = 230, [c, g] = canvas(W, H);
+    c.style.width = '100%'; c.style.height = 'auto';
+    document.getElementById('mapStage').appendChild(c);
+    g.fillStyle = '#FAFAF8'; g.fillRect(0, 0, W, H);
+    g.fillStyle = '#EDEDE8'; g.beginPath(); g.moveTo(0, 150); g.bezierCurveTo(300, 120, 600, 190, W, 140); g.lineTo(W, 175); g.bezierCurveTo(600, 225, 300, 155, 0, 185); g.fill();
+    g.strokeStyle = '#DCDCD7'; for (let k = 0; k < 5; k++) { g.beginPath(); g.ellipse(930, 200, 40 + k * 22, 12 + k * 7, 0, Math.PI, Math.PI * 2); g.stroke(); }
+    g.font = '12px Quattrocento Sans, sans-serif';
+    ['aura', 'mobile', 'trail'].forEach((k, i) => {
+      const x0 = 30 + i * 330, p = PROFILES[[0, 3, 1][i]];
+      g.fillStyle = '#6E6E6A'; g.fillText(ABOUT[k].name, x0, 24);
+      const spec1 = { concept: k, lean: p.lean, seed: p.seed, answers: 75, dir: k === 'trail' ? 0.6 : 0 };
+      if (k === 'trail') spec1.trail = staticTrail(x0 + 110, 150, 1, spec1, 10);
+      drawFig(g, x0 + 110, 150, 1, look('Mof'), spec1);
+      const spec2 = Object.assign({}, spec1);
+      if (k === 'trail') spec2.trail = staticTrail(x0 + 250, 168, 1.8, spec2, 8);
+      drawFig(g, x0 + (k === 'mobile' ? 220 : 250), 168, 1.8, look('Mof'), spec2);
+      g.fillStyle = '#6E6E6A'; g.fillText('1×', x0 + 104, 182); g.fillText('1.8×', x0 + 240, 210);
+    });
+  })();
+
+  // Tried and dropped
+  const dropped = document.getElementById('droppedStrip');
+  dropped.style.gridTemplateColumns = `86px repeat(6, 1fr)`;
+  [['seal', 'Seal'], ['hand', 'Hand']].forEach(([k, lbl]) => {
+    dropped.appendChild(rowLabel(lbl));
+    PROFILES.forEach(p => dropped.appendChild(figCell('Mof', { concept: k, lean: p.lean, seed: p.seed, answers: 75 }, '', '', 1.9, 130, 140)));
+  });
+
+  // Try it
+  const st = { concept: 'aura', char: 'Mof', lean: PROFILES[0].lean.slice(), answers: 12, seed: 11, walking: false };
+  const target = () => { const G = growth(st.answers); return { lean: st.lean, level: G.level, prog: G.prog }; };
+  const shown = { lean: st.lean.slice(), level: target().level, prog: target().prog.slice() };
+  function seg(id, items, get, set) {
+    const el = document.getElementById(id);
+    items.forEach(([v, lbl]) => { const b = document.createElement('button'); b.textContent = lbl; b.onclick = () => { set(v); paint(); }; b.dataset.v = v; el.appendChild(b); });
+    const paint = () => el.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === String(get()))));
+    paint(); return paint;
+  }
+  seg('segConcept', [['blend', 'Aura: blend'], ['aura', 'Aura: two colours'], ['mobile', 'Mobile'], ['trail', 'Trail']], () => st.concept, v => { st.concept = v; if (v === 'trail' && !st.walking) toggleWalk(); });
+  seg('segChar', CHARACTERS.map(c => [c.name, c.name]), () => st.char, v => st.char = v);
+  const pairsEl = document.getElementById('pairs'), sliders = [];
+  PAIRS.forEach((p, i) => {
+    const row = document.createElement('div'); row.className = 'pair';
+    row.innerHTML = `<span>${p[0]}</span><input type="range" min="-100" max="100" value="${Math.round(st.lean[i] * 100)}"><span>${p[1]}</span>`;
+    const inp = row.querySelector('input'); inp.oninput = () => { st.lean[i] = inp.value / 100; }; sliders.push(inp);
+    pairsEl.appendChild(row);
+  });
+  const ans = document.getElementById('answers'); ans.oninput = () => { st.answers = +ans.value; game = false; };
+  const btnWalk = document.getElementById('btnWalk');
+  function toggleWalk() { st.walking = !st.walking; btnWalk.textContent = st.walking ? 'Stand still' : 'Walk'; }
+  btnWalk.onclick = toggleWalk;
+  document.getElementById('btnSeed').onclick = () => { st.seed = 1 + Math.floor(Math.random() * 9999); };
+  document.getElementById('btnRandom').onclick = () => { st.lean = st.lean.map(() => Math.round((Math.random() * 2 - 1) * 100) / 100); sliders.forEach((s, i) => s.value = Math.round(st.lean[i] * 100)); };
+  let game = false, gameT = 0;
+  // links can open the playground ready to go: ?try=trail&walk=1&answers=40
+  const q = new URLSearchParams(location.search);
+  if (q.get('try')) { st.concept = q.get('try'); document.querySelectorAll('#segConcept button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === st.concept))); }
+  if (q.get('answers')) { st.answers = +q.get('answers'); ans.value = st.answers; Object.assign(shown, target(), { lean: st.lean.slice() }); }
+  if (q.get('walk')) toggleWalk();
+  if (q.get('try')) setTimeout(() => document.getElementById('play').scrollIntoView(), 50);
+  document.getElementById('btnGame').onclick = () => { game = true; gameT = 0; st.answers = 0; };
+
+  const pc = document.getElementById('playCanvas'), pg = pc.getContext('2d'), cap = document.getElementById('playCap');
+  function sizePlay() { const w = pc.parentElement.clientWidth, h = Math.round(Math.min(440, w * 0.9)); pc.width = w * DPR; pc.height = h * DPR; pc.style.height = h + 'px'; }
+  sizePlay(); addEventListener('resize', sizePlay);
+  function stageName(n) {
+    if (n < 2) return 'Nothing yet';
+    if (n < 12) return 'Park, ' + n + ' answers';
+    if (n === 12) return 'Park done, code revealed';
+    if (n < 26) return 'Neighborhood'; if (n < 45) return 'City'; if (n < 57) return 'Coast';
+    return n >= 69 ? 'Every world walked' : 'Observatory';
+  }
+  let last = performance.now(), th = Math.PI / 2, walkPh = 0, marks = [], sinceMark = 0, markN = 0;
+  function frame(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    if (game) { gameT += dt; const n = Math.min(75, Math.floor(gameT / 0.32)); if (n !== st.answers) { st.answers = n; ans.value = n; } if (n >= 75) game = false; }
+    const T = target(), k = 1 - Math.exp(-dt / 0.7); // a slow ease, about two seconds to settle
+    shown.lean = shown.lean.map((v, i) => lerp(v, T.lean[i], k)); shown.level = lerp(shown.level, T.level, k); shown.prog = shown.prog.map((v, i) => lerp(v, T.prog[i], k));
+    const w = pc.width / DPR, h = pc.height / DPR, sc = Math.min(w / 175, h / 120);
+    pg.setTransform(DPR, 0, 0, DPR, 0, 0); pg.fillStyle = '#FAFAF8'; pg.fillRect(0, 0, w, h);
+    // the walk: a slow loop around the middle of the stage
+    const cx = w / 2, cy = h * 0.6, rx = w * 0.26, ry = h * 0.13;
+    if (st.walking) th += dt * 0.55;
+    const x = cx + Math.cos(th) * rx, y = cy + Math.sin(th) * ry, vx = -Math.sin(th) * rx, vy = Math.cos(th) * ry;
+    const G = { level: shown.level, prog: shown.prog }, Tt = traits(shown.lean, shown.level), gaps = trailSteps(Tt, 2);
+    if (st.walking) {
+      walkPh += dt * 5; sinceMark += Math.hypot(vx, vy) * dt * 0.55;
+      if (sinceMark > 5.2 * sc * gaps[markN % 2]) { sinceMark = 0; marks.push({ x, y, dir: Math.atan2(vy / 0.6, vx), i: markN++, t: now }); }
+    }
+    marks = marks.filter(m => now - m.t < 4500);
+    const spec = { concept: st.concept, lean: shown.lean, seed: st.seed, growth: G, moving: st.walking, walk: walkPh, dir: Math.max(-1, Math.min(1, vx / rx)) * (st.walking ? 0.8 : 0) };
+    if (st.concept === 'trail') spec.trail = marks.map(m => [m.x, m.y, m.dir, Math.pow(1 - (now - m.t) / 4500, 1.2) * 0.95, m.i]);
+    pg.fillStyle = '#EDEDE8'; pg.beginPath(); pg.ellipse(cx, cy + 4, rx + 30 * sc / 4, ry + 14 * sc / 4, 0, 0, Math.PI * 2); pg.fill();
+    pg.fillStyle = '#FAFAF8'; pg.beginPath(); pg.ellipse(cx, cy + 4, rx - 30 * sc / 4, Math.max(4, ry - 14 * sc / 4), 0, 0, Math.PI * 2); pg.fill();
+    drawFig(pg, x, y, sc, look(st.char), spec, now / 1000);
+    cap.textContent = `${stageName(st.answers)} · code ${code(st.lean)} · seed ${st.seed}`;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
